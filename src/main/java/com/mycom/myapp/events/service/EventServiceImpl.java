@@ -22,6 +22,24 @@ public class EventServiceImpl implements EventService {
     private final EventDao eventDao;
 
     @Override
+    public EventResultDto listEvent(Long userId) {
+        EventResultDto result = new EventResultDto();
+
+        try {
+            List<EventDto> eventDtoList = eventDao.listEvent(userId);
+
+            result.setResult("success");
+            result.setEventDtoList(eventDtoList);
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 리스트 조회", e);
+        }
+
+        return result;
+    }
+
+    @Override
     @Transactional
     public EventResultDto createEvent(EventDto eventDto) {
         EventResultDto result = new EventResultDto();
