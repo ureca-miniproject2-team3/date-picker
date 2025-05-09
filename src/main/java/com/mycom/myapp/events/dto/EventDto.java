@@ -1,6 +1,6 @@
 package com.mycom.myapp.events.dto;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Builder;
 import lombok.Data;
@@ -11,6 +11,6 @@ public class EventDto {
 
     private Long eventId;
     private String title;
-    private List<Date> eventDates;
+    private List<LocalDate> eventDates;
     private Long userId;
 }

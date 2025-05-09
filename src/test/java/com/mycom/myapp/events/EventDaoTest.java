@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,7 @@ public class EventDaoTest {
         EventDto eventDto = EventDto.builder()
                 .title("회의")
                 .userId(1L)
-                .eventDates(List.of(Date.valueOf("2025-05-12")))
+                .eventDates(List.of(LocalDate.of(2025, 5, 1)))
                 .build();
 
         // when
@@ -46,7 +47,7 @@ public class EventDaoTest {
         jdbcTemplate.update("INSERT INTO event (id, title) VALUES (1, '테스트 이벤트')");
 
         Long eventId = 1L;
-        Date date = Date.valueOf("2025-05-12");
+        LocalDate date = LocalDate.of(2025, 5, 1);
 
         // when
         eventDao.insertEventDate(eventId, date);

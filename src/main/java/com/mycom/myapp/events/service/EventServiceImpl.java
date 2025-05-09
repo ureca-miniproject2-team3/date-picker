@@ -3,6 +3,7 @@ package com.mycom.myapp.events.service;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import java.time.LocalDate;
 import java.util.Date;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +27,7 @@ public class EventServiceImpl implements EventService {
         try {
             eventDao.insertEvent(eventDto);
 
-            for (Date eventDate : eventDto.getEventDates()) {
+            for (LocalDate eventDate : eventDto.getEventDates()) {
                 eventDao.insertEventDate(eventDto.getEventId(), eventDate);
             }
 

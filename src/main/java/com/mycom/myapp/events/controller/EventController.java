@@ -3,6 +3,8 @@ package com.mycom.myapp.events.controller;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.service.EventService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,11 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name = "Event", description = "이벤트 처리 관련 API")
+
 public class EventController {
 
     private final EventService eventService;
 
     @PostMapping("/events")
+    @Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
     public ResponseEntity<EventResultDto> createEvent(EventDto eventDto) {
         EventResultDto result = eventService.createEvent(eventDto);
 
