@@ -21,10 +21,11 @@ public class EventController {
     public ResponseEntity<EventResultDto> createEvent(EventDto eventDto) {
         EventResultDto result = eventService.createEvent(eventDto);
 
-        return switch (result.getResult()) {
-            case "success" -> ResponseEntity.status(HttpStatus.CREATED).body(result);
-            case "invalid_input" -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
-            default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
-        };
+        if (result.getResult().equals("success")) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
     }
 }
