@@ -1,4 +1,4 @@
-package com.mycom.myapp.events;
+package com.mycom.myapp.events.controller;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -6,7 +6,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.mycom.myapp.events.controller.EventController;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.service.EventService;
@@ -15,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-public class EventControllerTest {
+public class EventCreateControllerTest {
 
     private EventService eventService;
     private EventController controller;

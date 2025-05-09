@@ -1,4 +1,4 @@
-package com.mycom.myapp.events;
+package com.mycom.myapp.events.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -13,15 +13,13 @@ import static org.mockito.Mockito.verify;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
-import com.mycom.myapp.events.service.EventServiceImpl;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class EventServiceTest {
+public class EventCreateServiceTest {
     private EventDao eventDao;
     private EventServiceImpl eventService;
 
