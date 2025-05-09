@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>이벤트 목록</title>
+  <meta name="_csrf" content="${_csrf.token}" />
+  <meta name="_csrf_header" content="${_csrf.headerName}" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -47,8 +49,8 @@
 </head>
 <body>
   <div class="top-bar">
-    <button onclick="location.href='/login'">로그인</button>
-    <button onclick="location.href='/logout'">로그아웃</button>
+    <button onclick="location.href='login.html'">로그인</button>
+    <button id="logoutBtn">로그아웃</button>
   </div>
 
   <div class="event-grid">
@@ -58,8 +60,33 @@
       </div>
     </c:forEach>
   </div>
-  
 
   <button class="modify-btn" onclick="location.href='/event/modify'">이벤트 수정</button>
+
+  <script>
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      const token = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+      const header = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+
+      fetch("/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          [header]: token
+        }
+      })
+      .then(response => {
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else {
+          window.location.href = "/login";
+        }
+      })
+      .catch(error => {
+        alert("로그아웃 중 오류 발생");
+        console.error("Logout Error:", error);
+      });
+    });
+  </script>
 </body>
 </html>
