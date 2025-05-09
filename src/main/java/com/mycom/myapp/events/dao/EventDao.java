@@ -19,4 +19,10 @@ public interface EventDao {
     void updateEventTitle(EventDto eventDto);
 
     List<LocalDate> getExistingDates(@Param("eventId") Long eventId);
+
+    void deleteEvent(@Param("eventId") Long eventId);
+
+    void deleteEventDate(@Param("eventId") Long eventId);
+
+    void deleteUserEvent(@Param("eventId") Long eventId);
 }

@@ -55,7 +55,7 @@ public class EventCreateDaoTest {
     @Test
     void 유저_이벤트_매핑_정상_동작() {
         // given
-        jdbcTemplate.update("INSERT INTO user (id, name, email, password) VALUES (1, '테스트', 'test@example.com', '1234')");
+        jdbcTemplate.update("INSERT INTO user (id, name, email, password) VALUES (100, '테스트', 'test@example.com', '1234')");
         jdbcTemplate.update("INSERT INTO event (id, title) VALUES (1, '테스트 이벤트')");
 
         Long userId = 1L;

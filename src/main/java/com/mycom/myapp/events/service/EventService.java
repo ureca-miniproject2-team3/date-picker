@@ -8,4 +8,6 @@ public interface EventService {
     EventResultDto createEvent(EventDto eventDto);
 
     EventResultDto updateEvent(EventDto eventDto);
+
+    EventResultDto deleteEvent(Long eventId);
 }

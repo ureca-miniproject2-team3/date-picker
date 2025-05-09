@@ -102,15 +102,16 @@ public class EventUpdateServiceTest {
         doThrow(new RuntimeException("DB 오류"))
                 .when(eventDao).updateEventTitle(dto);
 
-        // when / then
-        assertThatThrownBy(() -> eventService.updateEvent(dto))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessage("DB 오류");
+        // when
+        EventResultDto result = eventService.updateEvent(dto);
 
+        // then
+        assertEquals("fail", result.getResult());
         verify(eventDao).updateEventTitle(dto);
 
         // getExistingDates나 insert는 호출되지 않아야 함
         verify(eventDao, never()).getExistingDates(any());
         verify(eventDao, never()).insertEventDate(anyLong(), any());
+
     }
 }

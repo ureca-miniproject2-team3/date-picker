@@ -32,10 +32,28 @@
         set title = #{title}
         where id = #{eventId}
     </update>
-    
+
     <select id="getExistingDates" resultType="java.time.LocalDate">
         select event_date
         from event_date
         where event_id = #{eventId}
     </select>
+
+    <delete id="deleteEvent">
+        delete
+        from event
+        where id = #{eventId}
+    </delete>
+
+    <delete id="deleteEventDate">
+        delete
+        from event_date
+        where event_id = #{eventId}
+    </delete>
+
+    <delete id="deleteUserEvent">
+        delete
+        from user_event
+        where event_id = #{eventId}
+    </delete>
 </mapper>

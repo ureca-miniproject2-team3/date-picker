@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
@@ -38,9 +39,8 @@ public class EventServiceImpl implements EventService {
             result.setEventDto(eventDto);
 
         } catch (Exception e) {
-            log.warn("이벤트 생성 중 예외 발생: {}", e.getMessage());
-            result.setResult("fail");
-            throw e;
+
+            return handleException("이벤트 생성", e);
         }
 
         return result;
@@ -69,11 +69,49 @@ public class EventServiceImpl implements EventService {
             result.setResult("success");
 
         } catch (Exception e) {
-            log.warn("이벤트 수정 중 예외 발생: {}", e.getMessage());
-            result.setResult("fail");
-            throw e;
+
+            return handleException("이벤트 수정", e);
         }
 
         return result;
     }
+
+    @Override
+    @Transactional
+    public EventResultDto deleteEvent(Long eventId) {
+        EventResultDto result = new EventResultDto();
+
+        /*
+        스케줄 삭제 구현 X - 2025.05.09
+        이벤트 관련 테이블 데이터만 삭제 - event, event_date, user_event
+         */
+        try {
+            eventDao.deleteUserEvent(eventId);
+            eventDao.deleteEventDate(eventId);
+            eventDao.deleteEvent(eventId);
+
+            result.setResult("success");
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 삭제", e);
+        }
+
+        return result;
+    }
+
+    private EventResultDto handleException(String operation, Exception e) {
+        log.warn("{} 중 예외 발생: {}", operation, e.getMessage());
+
+        try {
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        } catch (NoTransactionException ex) {
+            log.warn("트랜잭션 활성화 안됨. 롤백 요청 무시 {}", ex.getMessage());
+        }
+
+        EventResultDto result = new EventResultDto();
+        result.setResult("fail");
+        return result;
+    }
+
 }
