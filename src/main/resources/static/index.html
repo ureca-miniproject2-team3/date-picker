@@ -53,10 +53,12 @@
 
   <div class="event-grid">
     <c:forEach items="${eventList}" var="event">
-        <div>${event.title}</div>
-      </c:forEach>
-      
+      <div class="event-card" onclick="location.href='/event/${event.id}'">
+        ${event.title}
+      </div>
+    </c:forEach>
   </div>
+  
 
   <button class="modify-btn" onclick="location.href='/event/modify'">이벤트 수정</button>
 </body>
