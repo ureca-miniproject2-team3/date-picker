@@ -22,7 +22,8 @@ public class SecurityConfig {
 								"/api/auth/csrf-token", // csrf token
 								"/login", // login
 								"/login.html",
-								"/register", // register
+								"/api/users", // register
+								"/register",
 								"/register.html",
 		                        "/v3/api-docs/**", // swagger
 		                        "/swagger-ui/**",
