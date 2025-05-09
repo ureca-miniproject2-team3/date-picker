@@ -19,8 +19,9 @@ public class SecurityConfig {
 					request -> {
 						request.requestMatchers("/",
 								"/index.html",
-								"/csrf-token",
+								"/api/auth/csrf-token",
 								"/login",
+								"/login.html",
 								"/register",
 								"/register.html"
 						)
@@ -35,7 +36,6 @@ public class SecurityConfig {
 					.loginProcessingUrl("/login") // 로그인 처리 URL
 					.successHandler(successHandler) // 로그인 성공 처리
 					.failureHandler(failureHandler) // 로그인 실패 처리
-					.defaultSuccessUrl("/", true)
 					.permitAll()
 				)
 				.logout(logout -> logout.permitAll()) // Logout -> Session Invalidate
