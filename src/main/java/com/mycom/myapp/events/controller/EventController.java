@@ -38,7 +38,7 @@ public class EventController {
     @PutMapping("/events")
     @Operation(summary = "이벤트 수정", description = "이벤트 제목을 수정하고, 날짜를 추가할 수 있습니다.")
     public ResponseEntity<EventResultDto> updateEvent(EventDto eventDto) {
-        EventResultDto result = eventService.createEvent(eventDto);
+        EventResultDto result = eventService.updateEvent(eventDto);
 
         if (result.getResult().equals("success")) {
             return ResponseEntity.status(HttpStatus.OK).body(result);
