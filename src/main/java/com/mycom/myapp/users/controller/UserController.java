@@ -9,16 +9,20 @@ import com.mycom.myapp.users.dto.UserDto;
 import com.mycom.myapp.users.dto.UserResultDto;
 import com.mycom.myapp.users.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
+@Tag(name="User", description="유저 관련 API")
 public class UserController {
 	
 	private final UserService userService;
 	
 	@PostMapping("/users")
+	@Operation(summary="회원 가입")
 	public ResponseEntity<UserResultDto> registerUser(UserDto userDto) {
 		UserResultDto userResultDto = userService.registerUser(userDto);
 		
