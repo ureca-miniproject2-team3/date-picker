@@ -22,7 +22,7 @@ public class EventController {
         EventResultDto result = eventService.createEvent(eventDto);
 
         if (result.getResult().equals("success")) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(result);
+            return ResponseEntity.status(HttpStatus.OK).body(result);
 
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
