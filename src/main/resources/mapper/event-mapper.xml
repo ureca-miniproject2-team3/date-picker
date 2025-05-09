@@ -27,13 +27,13 @@
         values (#{userId}, #{eventId})
     </insert>
 
-    <update id="updateEvent" parameterMap="com.mycom.myapp.events.dto.EventDto">
+    <update id="updateEventTitle" parameterType="com.mycom.myapp.events.dto.EventDto">
         update event
         set title = #{title}
         where id = #{eventId}
     </update>
     
-    <select id="getExistingDates" resultMap="java.time.LocalDate">
+    <select id="getExistingDates" resultType="java.time.LocalDate">
         select event_date
         from event_date
         where event_id = #{eventId}
