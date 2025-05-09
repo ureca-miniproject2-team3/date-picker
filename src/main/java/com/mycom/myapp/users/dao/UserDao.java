@@ -13,7 +13,7 @@ public interface UserDao {
 	
 	List<UserDto> listUser();
 	
-	UserDto detailUser(int userId);
+	UserDto detailUser(Long userId);
 	
 	UserDto detailUserByEmail(String email);
 	

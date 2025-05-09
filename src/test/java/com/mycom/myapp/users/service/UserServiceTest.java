@@ -40,7 +40,7 @@ public class UserServiceTest {
 					.build();
 		
 		when(loginDao.findByEmail("aaa@aaa.com")).thenReturn(UserDto.builder().
-				id(1).
+				id(1L).
 				name("bbb").
 				email("aaa@aaa.com").
 				password("aaa").

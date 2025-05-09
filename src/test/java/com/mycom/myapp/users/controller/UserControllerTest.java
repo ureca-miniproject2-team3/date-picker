@@ -38,7 +38,7 @@ class UserControllerTest {
     @Test
     void registerUser_success() throws Exception {
         UserDto userDto = UserDto.builder().
-        				id(1).
+        				id(1L).
         				name("aaa").
         				email("aaa@aaa.com").
         				password("aaa").
@@ -60,7 +60,7 @@ class UserControllerTest {
     @Test
     void registerUser_exist() throws Exception {
         UserDto userDto = UserDto.builder().
-				id(1).
+				id(1L).
 				name("aaa").
 				email("aaa@aaa.com").
 				password("aaa").
@@ -82,7 +82,7 @@ class UserControllerTest {
     @Test
     void registerUser_fail() throws Exception {
         UserDto userDto = UserDto.builder().
-				id(1).
+				id(1L).
 				name("aaa").
 				email("aaa@aaa.com").
 				password("aaa").

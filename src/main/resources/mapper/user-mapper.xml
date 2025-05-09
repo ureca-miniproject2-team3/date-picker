@@ -14,7 +14,7 @@
 		FROM user
 	</select>
 
-	<select id="detailUser" parameterType="int" resultType="com.mycom.myapp.users.dto.UserDto">
+	<select id="detailUser" parameterType="java.lang.Long" resultType="com.mycom.myapp.users.dto.UserDto">
 		SELECT id, name, email
 		FROM user
 		WHERE id = #{userId}
