@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +41,7 @@ public class EventController {
 
     @PostMapping("/events")
     @Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
-    public ResponseEntity<EventResultDto> createEvent(EventDto eventDto) {
+    public ResponseEntity<EventResultDto> createEvent(@RequestBody EventDto eventDto) {
         EventResultDto result = eventService.createEvent(eventDto);
 
         if (result.getResult().equals("success")) {
@@ -53,7 +54,7 @@ public class EventController {
 
     @PutMapping("/events")
     @Operation(summary = "이벤트 수정", description = "이벤트 제목을 수정하고, 날짜를 추가할 수 있습니다.")
-    public ResponseEntity<EventResultDto> updateEvent(EventDto eventDto) {
+    public ResponseEntity<EventResultDto> updateEvent(@RequestBody EventDto eventDto) {
         EventResultDto result = eventService.updateEvent(eventDto);
 
         if (result.getResult().equals("success")) {
