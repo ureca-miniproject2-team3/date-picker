@@ -15,6 +15,6 @@ public interface UserDao {
 	
 	UserDto detailUser(int userId);
 	
-	UserDto searchUserByEmail(String email);
+	UserDto detailUserByEmail(String email);
 	
 }
