@@ -18,9 +18,11 @@ public class UserController {
 	
 	private final UserService userService;
 	
-	@PostMapping("/users/register")
+	@PostMapping("/users")
 	public ResponseEntity<UserResultDto> registerUser(UserDto userDto) {
 		UserResultDto userResultDto = userService.registerUser(userDto);
+		
+		System.out.println("/users");
 		
 		if("success".equals(userResultDto.getResult())) {
 			return ResponseEntity.ok(userResultDto);

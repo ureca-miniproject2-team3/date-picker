@@ -49,7 +49,7 @@ class UserControllerTest {
 
         when(userService.registerUser(any(UserDto.class))).thenReturn(resultDto);
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/users")
         		 .with(csrf()) 
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
@@ -71,7 +71,7 @@ class UserControllerTest {
 
         when(userService.registerUser(any(UserDto.class))).thenReturn(resultDto);
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/users")
         		 .with(csrf()) 
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
@@ -93,7 +93,7 @@ class UserControllerTest {
 
         when(userService.registerUser(any(UserDto.class))).thenReturn(resultDto);
 
-        mockMvc.perform(post("/api/users/register")
+        mockMvc.perform(post("/api/users")
         		.with(csrf()) 
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(userDto)))
