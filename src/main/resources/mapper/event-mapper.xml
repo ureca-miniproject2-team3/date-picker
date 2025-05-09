@@ -7,7 +7,7 @@
 
     <!--사용자 참여 중 이벤트 조회 (리스트)-->
     <select id="listEvent">
-        select e.id, e.title
+        select e.id eventId, e.title
         from event e, user_event u
         where u.user_id = #{userId}
           and u.event_id = e.id
@@ -44,7 +44,7 @@
 
     <!--event_date 등록된 날짜 조회-->
     <select id="getExistingDates" resultType="java.time.LocalDate">
-        select event_date
+        select event_date eventDate
         from event_date
         where event_id = #{eventId}
     </select>
