@@ -8,5 +8,5 @@ public class EventResultDto {
 
     private String result;
     private EventDto eventDto;
-    private List<EventDto> eventDtoList;
+    private List<EventSummaryDto> eventDtoList;
 }

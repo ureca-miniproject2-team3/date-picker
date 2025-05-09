@@ -1,6 +1,7 @@
 package com.mycom.myapp.events.dao;
 
 import com.mycom.myapp.events.dto.EventDto;
+import com.mycom.myapp.events.dto.EventSummaryDto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -11,7 +12,7 @@ import org.apache.ibatis.annotations.Param;
 public interface EventDao {
 
     // 이벤트 리스트 조회
-    List<EventDto> listEvent(@Param("userId") Long userId);
+    List<EventSummaryDto> listEvent(@Param("userId") Long userId);
 
     // 이벤트 등록
     void insertEvent(EventDto eventDto);

@@ -3,6 +3,7 @@ package com.mycom.myapp.events.service;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.events.dto.EventSummaryDto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -26,7 +27,7 @@ public class EventServiceImpl implements EventService {
         EventResultDto result = new EventResultDto();
 
         try {
-            List<EventDto> eventDtoList = eventDao.listEvent(userId);
+            List<EventSummaryDto> eventDtoList = eventDao.listEvent(userId);
 
             result.setResult("success");
             result.setEventDtoList(eventDtoList);
