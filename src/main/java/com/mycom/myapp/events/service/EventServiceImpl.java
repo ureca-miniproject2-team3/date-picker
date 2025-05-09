@@ -40,7 +40,7 @@ public class EventServiceImpl implements EventService {
         } catch (Exception e) {
             log.warn("이벤트 생성 중 예외 발생: {}", e.getMessage());
             result.setResult("fail");
-            throw e;
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
 
         return result;
@@ -71,7 +71,32 @@ public class EventServiceImpl implements EventService {
         } catch (Exception e) {
             log.warn("이벤트 수정 중 예외 발생: {}", e.getMessage());
             result.setResult("fail");
-            throw e;
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+        }
+
+        return result;
+    }
+
+    @Override
+    @Transactional
+    public EventResultDto deleteEvent(Long eventId) {
+        EventResultDto result = new EventResultDto();
+
+        /*
+        스케줄 삭제 구현 X - 2025.05.09
+        이벤트 관련 테이블 데이터만 삭제 - event, event_date, user_event
+         */
+        try {
+            eventDao.deleteUserEvent(eventId);
+            eventDao.deleteEventDate(eventId);
+            eventDao.deleteEvent(eventId);
+
+            result.setResult("success");
+
+        } catch (Exception e) {
+            log.warn("이벤트 삭제 중 예외 발생: {}", e.getMessage());
+            result.setResult("fail");
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
 
         return result;
