@@ -19,11 +19,14 @@ public class SecurityConfig {
 					request -> {
 						request.requestMatchers("/",
 								"/index.html",
-								"/api/auth/csrf-token",
-								"/login",
+								"/api/auth/csrf-token", // csrf token
+								"/login", // login
 								"/login.html",
-								"/register",
-								"/register.html"
+								"/register", // register
+								"/register.html",
+		                        "/v3/api-docs/**", // swagger
+		                        "/swagger-ui/**",
+		                        "/swagger-ui.html"
 						)
 						.permitAll()
 						.anyRequest().authenticated();
