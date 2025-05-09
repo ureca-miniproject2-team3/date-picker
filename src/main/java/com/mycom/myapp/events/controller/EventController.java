@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -23,6 +24,19 @@ import org.springframework.web.bind.annotation.RestController;
 public class EventController {
 
     private final EventService eventService;
+
+    @GetMapping("/users/{userId}/events")
+    @Operation(summary = "이벤트 리스트 조회", description = "사용자가 참여 중인 이벤트 리스트를 조회합니다.")
+    public ResponseEntity<EventResultDto> listEvent(@PathVariable Long userId) {
+        EventResultDto result = eventService.listEvent(userId);
+
+        if (result.getResult().equals("success")) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
 
     @PostMapping("/events")
     @Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
