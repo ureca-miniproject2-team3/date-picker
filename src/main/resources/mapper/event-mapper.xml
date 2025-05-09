@@ -38,4 +38,22 @@
         from event_date
         where event_id = #{eventId}
     </select>
+
+    <delete id="deleteEvent">
+        delete
+        from event
+        where event_id = #{eventId}
+    </delete>
+
+    <delete id="deleteEventDate">
+        delete
+        from event_date
+        where event_id = #{eventId}
+    </delete>
+
+    <delete id="deleteUserEvent">
+        delete
+        from user_event
+        where event_id = #{eventId}
+    </delete>
 </mapper>
