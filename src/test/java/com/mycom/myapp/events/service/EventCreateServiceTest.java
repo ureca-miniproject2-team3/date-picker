@@ -1,7 +1,6 @@
 package com.mycom.myapp.events.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doNothing;
@@ -72,10 +71,11 @@ public class EventCreateServiceTest {
         RuntimeException ex1 = new RuntimeException("insertEvent error");
         doThrow(ex1).when(eventDao).insertEvent(dto);
 
-        // when / then
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> eventService.createEvent(dto));
-        assertEquals("insertEvent error", thrown.getMessage());
+        // when
+        EventResultDto result = eventService.createEvent(dto);
+
+        // then
+        assertEquals("fail", result.getResult());
 
         verify(eventDao).insertEvent(dto);
         verify(eventDao, never()).insertEventDate(anyLong(), any());
@@ -100,10 +100,11 @@ public class EventCreateServiceTest {
         RuntimeException ex2 = new RuntimeException("insertEventDate error");
         doThrow(ex2).when(eventDao).insertEventDate(8L, d2);
 
-        // when / then
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> eventService.createEvent(dto));
-        assertEquals("insertEventDate error", thrown.getMessage());
+        // when
+        EventResultDto result = eventService.createEvent(dto);
+
+        // then
+        assertEquals("fail", result.getResult());
 
         verify(eventDao).insertEvent(dto);
         verify(eventDao).insertEventDate(8L, d1);
@@ -126,10 +127,11 @@ public class EventCreateServiceTest {
         RuntimeException ex3 = new RuntimeException("insertUserEvent error");
         doThrow(ex3).when(eventDao).insertUserEvent(21L, 13L);
 
-        // when / then
-        RuntimeException thrown = assertThrows(RuntimeException.class,
-                () -> eventService.createEvent(dto));
-        assertEquals("insertUserEvent error", thrown.getMessage());
+        // when
+        EventResultDto result = eventService.createEvent(dto);
+
+        // then
+        assertEquals("fail", result.getResult());
 
         verify(eventDao).insertEvent(dto);
         verify(eventDao).insertEventDate(13L, d1);
