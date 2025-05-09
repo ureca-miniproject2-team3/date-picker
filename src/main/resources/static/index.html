@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>이벤트 목록</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+    .event-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      justify-items: center;
+    }
+    .event-card {
+      background-color: #f2f2f2;
+      border: 1px solid #ccc;
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+    }
+    .modify-btn {
+      display: block;
+      margin: 30px auto 0;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .modify-btn:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="top-bar">
+    <button onclick="location.href='/login'">로그인</button>
+    <button onclick="location.href='/logout'">로그아웃</button>
+  </div>
+
+  <div class="event-grid">
+    <c:forEach items="${eventList}" var="event">
+        <div>${event.title}</div>
+      </c:forEach>
+      
+  </div>
+
+  <button class="modify-btn" onclick="location.href='/event/modify'">이벤트 수정</button>
+</body>
+</html>
