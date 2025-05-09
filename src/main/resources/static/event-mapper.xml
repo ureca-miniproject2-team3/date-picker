@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycom.myapp.events.dao.EventDao">
+
+    <!--1. 이벤트 생성-->
+    <!--
+    useGeneratedKeys="true": DB 에서 생성된 PK 값을 반환받는다.
+    keyProperty="eventId": 반환된 PK 값을 Java 객체의 eventId 필드에 매핑한다.
+    -->
+    <insert id="insertEvent" useGeneratedKeys="true" keyProperty="eventId">
+        insert into event (title)
+        values (#{title})
+    </insert>
+
+    <!--2. 이벤트 날짜 등록-->
+    <insert id="insertEventDate">
+        insert into event_date (event_id, event_date)
+        values (#{eventId}, #{eventDate})
+    </insert>
+
+    <!--3. user_event 등록-->
+    <insert id="insertUserEvent">
+        insert into user_event (user_id, event_id)
+        values (#{userId}, ${eventId})
+    </insert>
+</mapper>
