@@ -24,6 +24,6 @@
     <!--3. user_event 등록-->
     <insert id="insertUserEvent">
         insert into user_event (user_id, event_id)
-        values (#{userId}, ${eventId})
+        values (#{userId}, #{eventId})
     </insert>
 </mapper>
