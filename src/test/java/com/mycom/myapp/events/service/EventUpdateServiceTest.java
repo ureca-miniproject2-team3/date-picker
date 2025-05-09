@@ -6,6 +6,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -52,6 +53,39 @@ public class EventUpdateServiceTest {
         verify(eventDao).updateEventTitle(dto);
         verify(eventDao).getExistingDates(1L);
         verify(eventDao).insertEventDate(1L, LocalDate.of(2025, 5, 3));
+
+        assertEquals("success", result.getResult());
+    }
+
+    @Test
+    void 중복되지_않은_날짜만_추가된다() {
+        // given
+        Long eventId = 1L;
+
+        EventDto dto = EventDto.builder()
+                .eventId(eventId)
+                .title("중복 제거 테스트")
+                .eventDates(List.of(
+                        LocalDate.of(2025, 5, 1),  // 기존에 존재하는 날짜
+                        LocalDate.of(2025, 5, 2),  // 새로 추가할 날짜
+                        LocalDate.of(2025, 5, 3)   // 새로 추가할 날짜
+                ))
+                .build();
+
+        when(eventDao.getExistingDates(eventId))
+                .thenReturn(List.of(
+                        LocalDate.of(2025, 5, 1)  // 이미 등록된 날짜
+                ));
+
+        // when
+        EventResultDto result = eventService.updateEvent(dto);
+
+        // then
+        verify(eventDao).updateEventTitle(dto);
+        verify(eventDao).getExistingDates(eventId);
+        verify(eventDao, times(1)).insertEventDate(eventId, LocalDate.of(2025, 5, 2));
+        verify(eventDao, times(1)).insertEventDate(eventId, LocalDate.of(2025, 5, 3));
+        verify(eventDao, never()).insertEventDate(eventId, LocalDate.of(2025, 5, 1)); // 기존 날짜는 insert 안 됨
 
         assertEquals("success", result.getResult());
     }
