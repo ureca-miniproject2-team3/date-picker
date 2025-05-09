@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>Event ${eventId}에 대한 스케줄</title>
+  <title>Event 스케줄 등록</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -19,30 +19,25 @@
   </style>
 </head>
 <body class="p-10 bg-gray-50">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">Event ${eventId}에 대한 스케줄</h1>
+  <h1 class="text-2xl font-bold text-gray-800 mb-6">Event 스케줄 등록</h1>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
     <!-- 드래그 가능한 시간표 영역 -->
     <div class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-4">시간표를 드래그하여 선택</h2>
+      <h2 class="text-lg font-semibold mb-4">시간표 드래그 선택</h2>
       <form action="/schedule/save" method="post">
-        <input type="hidden" name="eventId" value="${eventId}" />
-        <input type="hidden" id="dragDate" name="date" />
-        <input type="hidden" id="dragStart" name="startTime" />
-        <input type="hidden" id="dragEnd" name="endTime" />
+        <input type="hidden" name="eventId" value="{{eventId}}">
+        <input type="hidden" id="dragDate" name="date">
+        <input type="hidden" id="dragStart" name="startTime">
+        <input type="hidden" id="dragEnd" name="endTime">
 
-        <div class="mb-2">
+        <div class="mb-4">
           <label class="block font-semibold mb-1">날짜 선택</label>
-          <input type="date" id="datePicker" class="border px-3 py-2 rounded w-full" required />
+          <input type="date" id="datePicker" class="border px-3 py-2 rounded w-full" required>
         </div>
 
         <div id="timeGrid" class="border rounded max-h-[600px] overflow-y-auto">
-          <c:forEach var="i" begin="0" end="47">
-            <c:set var="hour" value="${i div 2}" />
-            <c:set var="minute" value="${i mod 2 eq 0 ? '00' : '30'}" />
-            <c:set var="display" value="${hour lt 10 ? '0' : ''}${hour}:${minute}" />
-            <div class="time-cell" data-time="${display}">${display}</div>
-          </c:forEach>
+          <!-- 시간 셀 자바스크립트로 생성 -->
         </div>
 
         <div class="pt-4">
@@ -57,7 +52,7 @@
     <div class="bg-white p-6 rounded-lg shadow">
       <h2 class="text-lg font-semibold mb-4">시간 직접 선택</h2>
       <form action="/schedule/save" method="post" class="space-y-4">
-        <input type="hidden" name="eventId" value="${eventId}" />
+        <input type="hidden" name="eventId" value="{{eventId}}" />
 
         <div>
           <label for="date">날짜</label>
@@ -66,26 +61,12 @@
 
         <div>
           <label for="startTime">시작 시간</label>
-          <select id="startTime" name="startTime" class="w-full border px-3 py-2 rounded mt-1">
-            <c:forEach var="i" begin="0" end="47">
-              <c:set var="hour" value="${i div 2}" />
-              <c:set var="minute" value="${i mod 2 eq 0 ? '00' : '30'}" />
-              <c:set var="display" value="${hour lt 10 ? '0' : ''}${hour}:${minute}" />
-              <option value="${display}">${display}</option>
-            </c:forEach>
-          </select>
+          <select id="startTime" name="startTime" class="w-full border px-3 py-2 rounded mt-1"></select>
         </div>
 
         <div>
           <label for="endTime">종료 시간</label>
-          <select id="endTime" name="endTime" class="w-full border px-3 py-2 rounded mt-1">
-            <c:forEach var="i" begin="0" end="47">
-              <c:set var="hour" value="${i div 2}" />
-              <c:set var="minute" value="${i mod 2 eq 0 ? '00' : '30'}" />
-              <c:set var="display" value="${hour lt 10 ? '0' : ''}${hour}:${minute}" />
-              <option value="${display}">${display}</option>
-            </c:forEach>
-          </select>
+          <select id="endTime" name="endTime" class="w-full border px-3 py-2 rounded mt-1"></select>
         </div>
 
         <div class="pt-4">
@@ -98,19 +79,48 @@
   </div>
 
   <script>
+    const grid = document.getElementById("timeGrid");
+    const startTimeSelect = document.getElementById("startTime");
+    const endTimeSelect = document.getElementById("endTime");
+
+    const times = [];
+    for (let h = 0; h < 24; h++) {
+      times.push(`${h.toString().padStart(2, '0')}:00`);
+      times.push(`${h.toString().padStart(2, '0')}:30`);
+    }
+
+    // 시간 셀 및 드롭다운 옵션 생성
+    times.forEach(t => {
+      const div = document.createElement("div");
+      div.className = "time-cell";
+      div.dataset.time = t;
+      div.textContent = t;
+      grid.appendChild(div);
+
+      const opt1 = document.createElement("option");
+      opt1.value = t;
+      opt1.textContent = t;
+      startTimeSelect.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = t;
+      opt2.textContent = t;
+      endTimeSelect.appendChild(opt2);
+    });
+
     const cells = document.querySelectorAll(".time-cell");
     let isDragging = false;
     let startCell = null;
 
     function updateDropdowns(start, end, date) {
-      document.getElementById("startTime").value = start;
-      document.getElementById("endTime").value = end;
+      startTimeSelect.value = start;
+      endTimeSelect.value = end;
       document.getElementById("date").value = date;
     }
 
     function updateGridFromDropdowns() {
-      const startVal = document.getElementById("startTime").value;
-      const endVal = document.getElementById("endTime").value;
+      const startVal = startTimeSelect.value;
+      const endVal = endTimeSelect.value;
       const startIdx = Array.from(cells).findIndex(c => c.dataset.time === startVal);
       const endIdx = Array.from(cells).findIndex(c => c.dataset.time === endVal);
 
@@ -139,7 +149,9 @@
         if (isDragging && startCell) {
           let startIndex = Array.from(cells).indexOf(startCell);
           let currentIndex = Array.from(cells).indexOf(cell);
+
           cells.forEach(c => c.classList.remove("selected"));
+
           let [from, to] = [startIndex, currentIndex].sort((a, b) => a - b);
           for (let i = from; i <= to; i++) {
             cells[i].classList.add("selected");
@@ -164,8 +176,8 @@
       }
     });
 
-    document.getElementById("startTime").addEventListener("change", updateGridFromDropdowns);
-    document.getElementById("endTime").addEventListener("change", updateGridFromDropdowns);
+    startTimeSelect.addEventListener("change", updateGridFromDropdowns);
+    endTimeSelect.addEventListener("change", updateGridFromDropdowns);
     document.getElementById("date").addEventListener("change", updateGridFromDropdowns);
   </script>
 </body>
