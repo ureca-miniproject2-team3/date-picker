@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
@@ -104,8 +105,8 @@ public class EventServiceImpl implements EventService {
 
         try {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-        } catch (IllegalStateException ex) {
-            log.warn("트랜잭션이 활성화 안됨. 롤백 요청 무시 {}", ex.getMessage());
+        } catch (NoTransactionException ex) {
+            log.warn("트랜잭션 활성화 안됨. 롤백 요청 무시 {}", ex.getMessage());
         }
 
         EventResultDto result = new EventResultDto();
