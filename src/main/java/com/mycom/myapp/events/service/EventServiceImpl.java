@@ -25,37 +25,20 @@ public class EventServiceImpl implements EventService {
 
         try {
             eventDao.insertEvent(eventDto);
-            if (eventDto.getEventId() == null) {
-                throw new IllegalStateException("이벤트 ID 생성 실패");
-            }
 
             for (Date eventDate : eventDto.getEventDates()) {
-                if (eventDate == null) throw new IllegalArgumentException("이벤트 날짜는 null일 수 없습니다.");
                 eventDao.insertEventDate(eventDto.getEventId(), eventDate);
             }
 
-            if (eventDto.getUserId() == null) {
-                throw new IllegalArgumentException("유저 ID가 누락되었습니다.");
-            }
             eventDao.insertUserEvent(eventDto.getUserId(), eventDto.getEventId());
 
             result.setResult("success");
             result.setEventDto(eventDto);
 
-        } catch (IllegalArgumentException e) {
-            log.warn("입력 값 오류: {}", e.getMessage());
-            result.setResult("invalid input");
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-
-        } catch (DataAccessException e) {
-            log.error("DB 접근 오류: {}", e.getMessage(), e);
-            result.setResult("db_error");
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
-
         } catch (Exception e) {
-            log.error("알 수 없는 오류 발생: {}", e.getMessage(), e);
-            result.setResult("unknown_error");
-            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            log.warn("이벤트 생성 중 예외 발생: {}", e.getMessage());
+            result.setResult("fail");
+            throw e;
         }
 
         return result;
