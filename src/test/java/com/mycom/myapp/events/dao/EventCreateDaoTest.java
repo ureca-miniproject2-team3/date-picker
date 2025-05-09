@@ -1,23 +1,19 @@
-package com.mycom.myapp.events;
+package com.mycom.myapp.events.dao;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
-import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
-import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @Transactional
-public class EventDaoTest {
+public class EventCreateDaoTest {
 
     @Autowired
     private EventDao eventDao;
