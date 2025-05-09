@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Param;
 public interface EventDao {
 
     // 이벤트 리스트 조회
-    List<EventDto> listEvent(@Param("eventId") Long eventId);
+    List<EventDto> listEvent(@Param("userId") Long userId);
 
     // 이벤트 등록
     void insertEvent(EventDto eventDto);
