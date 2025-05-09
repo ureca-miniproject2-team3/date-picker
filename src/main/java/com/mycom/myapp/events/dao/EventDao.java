@@ -14,4 +14,6 @@ public interface EventDao {
     void insertEventDate(@Param("eventId") Long eventId, @Param("eventDate") LocalDate eventDate);
 
     void insertUserEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
+
+    void updateEventTitle(EventDto eventDto);
 }
