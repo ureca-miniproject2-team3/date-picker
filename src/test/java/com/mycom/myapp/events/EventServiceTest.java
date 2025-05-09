@@ -14,6 +14,7 @@ import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.service.EventServiceImpl;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Arrays;
 import java.util.List;
@@ -33,9 +34,9 @@ public class EventServiceTest {
     @Test
     void 이벤트_정상_생성() {
         // given
-        Date d1 = new Date();
-        Date d2 = new Date(d1.getTime() + 86400000);
-        List<Date> dates = Arrays.asList(d1, d2);
+        LocalDate d1 = LocalDate.of(2025, 5, 1);
+        LocalDate d2 = LocalDate.of(2025, 5, 2);
+        List<LocalDate> dates = Arrays.asList(d1, d2);
 
         EventDto dto = EventDto.builder()
                 .eventId(1L)
@@ -63,11 +64,11 @@ public class EventServiceTest {
     @Test
     void insertEvent_도중_예외_발생() {
         // given
-        Date d = new Date();
+        LocalDate day = LocalDate.of(2025, 5, 1);
         EventDto dto = EventDto.builder()
                 .eventId(5L)
                 .userId(7L)
-                .eventDates(List.of(d))
+                .eventDates(List.of(day))
                 .build();
 
         RuntimeException ex1 = new RuntimeException("insertEvent error");
@@ -86,9 +87,9 @@ public class EventServiceTest {
     @Test
     void insertEventDate_도중_예외_발생() {
         // given
-        Date d1 = new Date();
-        Date d2 = new Date(d1.getTime() + 86400000);
-        List<Date> dates = Arrays.asList(d1, d2);
+        LocalDate d1 = LocalDate.of(2025, 5, 1);
+        LocalDate d2 = LocalDate.of(2025, 5, 2);
+        List<LocalDate> dates = Arrays.asList(d1, d2);
 
         EventDto dto = EventDto.builder()
                 .eventId(8L)
@@ -115,15 +116,15 @@ public class EventServiceTest {
     @Test
     void insertUserEvent_도중_예외_발생() {
         // given
-        Date d = new Date();
+        LocalDate d1 = LocalDate.of(2025, 5, 1);
         EventDto dto = EventDto.builder()
                 .eventId(13L)
                 .userId(21L)
-                .eventDates(List.of(d))
+                .eventDates(List.of(d1))
                 .build();
 
         doNothing().when(eventDao).insertEvent(dto);
-        doNothing().when(eventDao).insertEventDate(13L, d);
+        doNothing().when(eventDao).insertEventDate(13L, d1);
         RuntimeException ex3 = new RuntimeException("insertUserEvent error");
         doThrow(ex3).when(eventDao).insertUserEvent(21L, 13L);
 
@@ -133,7 +134,7 @@ public class EventServiceTest {
         assertEquals("insertUserEvent error", thrown.getMessage());
 
         verify(eventDao).insertEvent(dto);
-        verify(eventDao).insertEventDate(13L, d);
+        verify(eventDao).insertEventDate(13L, d1);
         verify(eventDao).insertUserEvent(21L, 13L);
     }
 }
