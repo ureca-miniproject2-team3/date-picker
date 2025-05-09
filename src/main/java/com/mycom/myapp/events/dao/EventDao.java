@@ -3,6 +3,7 @@ package com.mycom.myapp.events.dao;
 import com.mycom.myapp.events.dto.EventDto;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -16,4 +17,6 @@ public interface EventDao {
     void insertUserEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
 
     void updateEventTitle(EventDto eventDto);
+
+    List<LocalDate> getExistingDates(@Param("eventId") Long eventId);
 }

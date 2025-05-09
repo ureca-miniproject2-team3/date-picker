@@ -32,4 +32,10 @@
         set title = #{title}
         where id = #{eventId}
     </update>
+    
+    <select id="getExistingDates" resultMap="java.time.LocalDate">
+        select event_date
+        from event_date
+        where event_id = #{eventId}
+    </select>
 </mapper>
