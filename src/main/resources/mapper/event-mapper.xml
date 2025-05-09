@@ -5,7 +5,14 @@
 
 <mapper namespace="com.mycom.myapp.events.dao.EventDao">
 
-    <!--1. 이벤트 생성-->
+    <!--사용자 참여 이벤트 조회 (리스트)-->
+    <select id="listEvent">
+        select id, title
+        from event
+        where id = #{eventId}
+    </select>
+
+    <!--event 추가-->
     <!--
     useGeneratedKeys="true": DB 에서 생성된 PK 값을 반환받는다.
     keyProperty="eventId": 반환된 PK 값을 Java 객체의 eventId 필드에 매핑한다.
@@ -15,42 +22,47 @@
         values (#{title})
     </insert>
 
-    <!--2. 이벤트 날짜 등록-->
+    <!--event_date 추가-->
     <insert id="insertEventDate">
         insert into event_date (event_id, event_date)
         values (#{eventId}, #{eventDate})
     </insert>
 
-    <!--3. user_event 등록-->
+    <!--user_event 추가-->
     <insert id="insertUserEvent">
         insert into user_event (user_id, event_id)
         values (#{userId}, #{eventId})
     </insert>
 
+    <!--event 수정-->
     <update id="updateEventTitle" parameterType="com.mycom.myapp.events.dto.EventDto">
         update event
         set title = #{title}
         where id = #{eventId}
     </update>
 
+    <!--event_date 등록된 날짜 조회-->
     <select id="getExistingDates" resultType="java.time.LocalDate">
         select event_date
         from event_date
         where event_id = #{eventId}
     </select>
 
+    <!--event 삭제-->
     <delete id="deleteEvent">
         delete
         from event
         where id = #{eventId}
     </delete>
 
+    <!--event_date 삭제-->
     <delete id="deleteEventDate">
         delete
         from event_date
         where event_id = #{eventId}
     </delete>
 
+    <!--user_event 삭제-->
     <delete id="deleteUserEvent">
         delete
         from user_event
