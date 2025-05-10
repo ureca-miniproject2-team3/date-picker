@@ -39,6 +39,22 @@ public class EventController {
         }
     }
 
+    @GetMapping("/events/{eventId}")
+    @Operation(summary = "이벤트 상세 조회", description = "이벤트 상세 정보를 조회합니다.")
+    public ResponseEntity<EventResultDto> detailEvent(@PathVariable Long eventId) {
+        EventResultDto result = eventService.listEvent(eventId);
+
+        if (result.getResult().equals("success")) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+
+        } else if (result.getResult().equals("not found")) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
+
     @PostMapping("/events")
     @Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
     public ResponseEntity<EventResultDto> createEvent(@RequestBody EventDto eventDto) {
