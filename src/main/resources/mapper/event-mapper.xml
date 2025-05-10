@@ -19,7 +19,7 @@
         <result property="title" column="title"/>
         <result property="ownerId" column="ownerId"/>
 
-        <collection property="userId" ofType="java.lang.Long"
+        <collection property="userIds" ofType="java.lang.Long"
                     select="findUserIdsByEventId" column="eventId"/>
 
         <collection property="eventDates" ofType="java.time.LocalDate"
@@ -28,8 +28,8 @@
 
     <select id="detailEvent" resultMap="EventDetailResultMap">
         select
-            e.id as eventId
-            e.title as title
+            e.id as eventId,
+            e.title as title,
             e.owner_id as ownerId
         from event e
         where e.id = #{eventId}
