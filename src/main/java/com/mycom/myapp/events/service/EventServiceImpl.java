@@ -7,6 +7,7 @@ import com.mycom.myapp.events.dto.EventSummaryDto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -137,6 +138,38 @@ public class EventServiceImpl implements EventService {
         } catch (Exception e) {
 
             return handleException("이벤트 삭제", e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public EventResultDto inviteUserToEvent(Long inviterId, Long eventId, List<Long> invitedIds) {
+        EventResultDto result = new EventResultDto();
+
+        try {
+            Long ownerId = eventDao.detailEvent(eventId).getOwnerId();
+
+            if (!Objects.equals(ownerId, inviterId)) {
+                result.setResult("forbidden");
+
+            } else {
+                List<Long> participantsIds = eventDao.getParticipantsByEventId(eventId);
+
+                List<Long> newInvitedUserIds = invitedIds.stream()
+                        .filter(invitedId -> !participantsIds.contains(invitedId))
+                        .toList();
+
+                for (Long invitedId : newInvitedUserIds) {
+                    eventDao.insertUserEvent(invitedId, eventId);
+                }
+
+                result.setResult("success");
+            }
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 초대", e);
         }
 
         return result;

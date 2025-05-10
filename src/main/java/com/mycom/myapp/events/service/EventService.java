@@ -2,6 +2,7 @@ package com.mycom.myapp.events.service;
 
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import java.util.List;
 
 public interface EventService {
 
@@ -14,4 +15,6 @@ public interface EventService {
     EventResultDto updateEvent(EventDto eventDto);
 
     EventResultDto deleteEvent(Long eventId);
+
+    EventResultDto inviteUserToEvent(Long inviterId, Long eventId, List<Long> invitedIds);
 }
