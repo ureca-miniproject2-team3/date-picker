@@ -72,7 +72,7 @@ public class EventController {
 
     @PostMapping("/events/invite")
     @Operation(summary = "이벤트에 사용자 초대", description = "이벤트 생성자가 이벤트에 다른 사용자를 초대할 수 있습니다.")
-    public ResponseEntity<EventResultDto> inviteUserToEvent(Long inviterId, Long eventId, List<Long> invitedIds) {
+    public ResponseEntity<EventResultDto> inviteUserToEvent(@RequestParam Long inviterId,@RequestParam Long eventId,@RequestParam List<Long> invitedIds) {
 
         return createResponse(eventService.inviteUserToEvent(inviterId, eventId, invitedIds));
     }
