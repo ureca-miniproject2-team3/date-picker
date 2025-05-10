@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
 		try {
 			List<UserDto> listUser = userDao.listUser();
 			
-			userResultDto.setResult("successs");
+			userResultDto.setResult("success");
 			userResultDto.setUserDtoList(listUser);
 			
 		} catch (Exception e) {
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
 		try {
 			UserDto userDto = userDao.detailUser(userId);
 			
-			userResultDto.setResult("successs");
+			userResultDto.setResult("success");
 			userResultDto.setUserDto(userDto);
 			
 		} catch (Exception e) {
@@ -93,7 +93,7 @@ public class UserServiceImpl implements UserService {
 		try {
 			UserDto userDto = userDao.detailUserByEmail(email);
 			
-			userResultDto.setResult("successs");
+			userResultDto.setResult("success");
 			userResultDto.setUserDto(userDto);
 			
 		} catch (Exception e) {
