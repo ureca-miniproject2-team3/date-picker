@@ -47,8 +47,10 @@ public class EventServiceImpl implements EventService {
 
         try {
             EventDto eventDto = eventDao.detailEvent(eventId);
+            eventDto.setUserIds(eventDao.findUserIdsByEventId(eventId));
+            eventDto.setEventDates(eventDao.findEventDatesByEventId(eventId));
 
-            if (eventDto == null) {
+            if (eventDto.getEventId() == null) {
                 result.setResult("not found");
 
             } else {
@@ -97,7 +99,7 @@ public class EventServiceImpl implements EventService {
         try {
             eventDao.updateEventTitle(eventDto);
 
-            List<LocalDate> existingDates = eventDao.getExistingDates(eventDto.getEventId());
+            List<LocalDate> existingDates = eventDao.findEventDatesByEventId(eventDto.getEventId());
 
             // 새롭게 추가되는 날짜만 필터링
             List<LocalDate> newDates = eventDto.getEventDates();
