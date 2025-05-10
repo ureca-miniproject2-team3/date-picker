@@ -5,6 +5,7 @@ import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +89,22 @@ public class EventController {
 
         if (result.getResult().equals("success")) {
             return ResponseEntity.status(HttpStatus.OK).body(result);
+
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+        }
+    }
+
+    @PostMapping("/events/invite")
+    @Operation(summary = "이벤트에 사용자 초대", description = "이벤트 생성자가 이벤트에 다른 사용자를 초대할 수 있습니다.")
+    public ResponseEntity<EventResultDto> inviteUserToEvent(Long inviterId, Long eventId, List<Long> invitedIds) {
+        EventResultDto result = eventService.inviteUserToEvent(inviterId, eventId, invitedIds);
+
+        if (result.getResult().equals("success")) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+
+        } else if (result.getResult().equals("forbidden")) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(result);
 
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
