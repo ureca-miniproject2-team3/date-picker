@@ -33,7 +33,6 @@ public class EventController {
             "forbidden", HttpStatus.FORBIDDEN
     );
 
-
     private final EventService eventService;
 
     @GetMapping("/users/{userId}/events")
