@@ -1,80 +1,81 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Event 스케줄 등록</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-    }
     .time-cell {
       height: 40px;
-      border-bottom: 1px solid #ccc;
+      border-bottom: 1px solid #e2e8f0;
       cursor: pointer;
+      padding-left: 1rem;
+      display: flex;
+      align-items: center;
     }
     .time-cell.selected {
       background-color: #a5a1e4;
+      color: white;
     }
   </style>
 </head>
-<body class="p-10 bg-gray-50">
-  <h1 class="text-2xl font-bold text-gray-800 mb-6">Event 스케줄 등록</h1>
+<body class="min-h-screen bg-[#f8f1e7] p-10 text-gray-800">
+  <div class="max-w-6xl mx-auto space-y-10">
+    <h1 class="text-3xl font-bold">Event 스케줄 등록</h1>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-    <!-- 드래그 가능한 시간표 영역 -->
-    <div class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-4">시간표 드래그 선택</h2>
-      <form action="/schedule/save" method="post">
-        <input type="hidden" name="eventId" value="{{eventId}}">
-        <input type="hidden" id="dragDate" name="date">
-        <input type="hidden" id="dragStart" name="startTime">
-        <input type="hidden" id="dragEnd" name="endTime">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <!-- 좌측: 시간표 드래그 선택 -->
+      <div class="bg-white p-6 rounded-2xl shadow space-y-4">
+        <h2 class="text-xl font-semibold">시간표 드래그 선택</h2>
+        <form action="/schedule/save" method="post" class="space-y-4">
+          <input type="hidden" name="eventId" value="{{eventId}}">
+          <input type="hidden" id="dragDate" name="date">
+          <input type="hidden" id="dragStart" name="startTime">
+          <input type="hidden" id="dragEnd" name="endTime">
 
-        <div class="mb-4">
-          <label class="block font-semibold mb-1">날짜 선택</label>
-          <input type="date" id="datePicker" class="border px-3 py-2 rounded w-full" required>
-        </div>
+          <div>
+            <label for="datePicker" class="block font-medium mb-1">날짜 선택</label>
+            <input type="date" id="datePicker" class="w-full border rounded px-3 py-2" required>
+          </div>
 
-        <div id="timeGrid" class="border rounded max-h-[600px] overflow-y-auto">
-          <!-- 시간 셀 자바스크립트로 생성 -->
-        </div>
+          <div id="timeGrid" class="border rounded h-[600px] overflow-y-scroll bg-gray-50 text-sm"></div>
 
-        <div class="pt-4">
-          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-            스케줄 저장
-          </button>
-        </div>
-      </form>
-    </div>
+          <div class="pt-4">
+            <button type="submit" class="bg-[#7c6dfa] text-white px-4 py-2 rounded hover:bg-[#6b5de6] transition">
+              스케줄 저장
+            </button>
+          </div>
+        </form>
+      </div>
 
-    <!-- 드롭다운으로 시간 직접 선택 -->
-    <div class="bg-white p-6 rounded-lg shadow">
-      <h2 class="text-lg font-semibold mb-4">시간 직접 선택</h2>
-      <form action="/schedule/save" method="post" class="space-y-4">
-        <input type="hidden" name="eventId" value="{{eventId}}" />
+      <!-- 우측: 시간 직접 선택 -->
+      <div class="bg-white p-6 rounded-2xl shadow space-y-4">
+        <h2 class="text-xl font-semibold">시간 직접 선택</h2>
+        <form action="/schedule/save" method="post" class="space-y-4">
+          <input type="hidden" name="eventId" value="{{eventId}}" />
 
-        <div>
-          <label for="date">날짜</label>
-          <input type="date" id="date" name="date" required class="w-full border px-3 py-2 rounded mt-1" />
-        </div>
+          <div>
+            <label for="date" class="block font-medium mb-1">날짜</label>
+            <input type="date" id="date" name="date" required class="w-full border rounded px-3 py-2" />
+          </div>
 
-        <div>
-          <label for="startTime">시작 시간</label>
-          <select id="startTime" name="startTime" class="w-full border px-3 py-2 rounded mt-1"></select>
-        </div>
+          <div>
+            <label for="startTime" class="block font-medium mb-1">시작 시간</label>
+            <select id="startTime" name="startTime" class="w-full border rounded px-3 py-2"></select>
+          </div>
 
-        <div>
-          <label for="endTime">종료 시간</label>
-          <select id="endTime" name="endTime" class="w-full border px-3 py-2 rounded mt-1"></select>
-        </div>
+          <div>
+            <label for="endTime" class="block font-medium mb-1">종료 시간</label>
+            <select id="endTime" name="endTime" class="w-full border rounded px-3 py-2"></select>
+          </div>
 
-        <div class="pt-4">
-          <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
-            스케줄 저장
-          </button>
-        </div>
-      </form>
+          <div class="pt-4">
+            <button type="submit" class="bg-[#7c6dfa] text-white px-4 py-2 rounded hover:bg-[#6b5de6] transition">
+              스케줄 저장
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -89,7 +90,6 @@
       times.push(`${h.toString().padStart(2, '0')}:30`);
     }
 
-    // 시간 셀 및 드롭다운 옵션 생성
     times.forEach(t => {
       const div = document.createElement("div");
       div.className = "time-cell";

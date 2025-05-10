@@ -1,65 +1,63 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>이벤트 목록</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-    }
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 30px;
-    }
-    .event-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      justify-items: center;
-    }
-    .event-card {
-      background-color: #f2f2f2;
-      border: 1px solid #ccc;
-      width: 100px;
-      height: 100px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-    }
-    .modify-btn {
-      display: block;
-      margin: 30px auto 0;
-      padding: 10px 20px;
-      background-color: #007BFF;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .modify-btn:hover {
-      background-color: #0056b3;
-    }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="_csrf" content="${_csrf.token}" />
+  <meta name="_csrf_header" content="${_csrf.headerName}" />
 </head>
-<body>
-  <div class="top-bar">
-    <button onclick="location.href='/login'">로그인</button>
-    <button onclick="location.href='/logout'">로그아웃</button>
+<body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
+  <div class="max-w-5xl mx-auto space-y-8">
+    <!-- 상단 바 -->
+    <div class="flex justify-between items-center">
+      <button onclick="location.href='login.html'" class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">
+        로그인
+      </button>
+      <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded-full shadow hover:bg-red-400 transition">
+        로그아웃
+      </button>
+    </div>
+
+    <!-- 이벤트 목록 -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <c:forEach items="${eventList}" var="event">
+        <div onclick="location.href='/event/${event.id}'"
+             class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
+          ${event.title}
+        </div>
+      </c:forEach>
+    </div>
+
+    <!-- 하단 버튼 -->
+    <div class="text-center">
+      <button onclick="location.href='/event/modify'"
+              class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">
+        이벤트 수정
+      </button>
+    </div>
   </div>
 
-  <div class="event-grid">
-    <c:forEach items="${eventList}" var="event">
-      <div class="event-card" onclick="location.href='/event/${event.id}'">
-        ${event.title}
-      </div>
-    </c:forEach>
-  </div>
-  
+  <!-- 로그아웃 처리 -->
+  <script>
+    document.getElementById("logoutBtn").addEventListener("click", function () {
+      const token = document.querySelector('meta[name="_csrf"]').getAttribute("content");
+      const header = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
 
-  <button class="modify-btn" onclick="location.href='/event/modify'">이벤트 수정</button>
+      fetch("/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          [header]: token
+        }
+      }).then(response => {
+        if (response.redirected) {
+          window.location.href = response.url;
+        } else {
+          window.location.href = "/login";
+        }
+      });
+    });
+  </script>
 </body>
 </html>
