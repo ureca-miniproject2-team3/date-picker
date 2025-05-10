@@ -6,7 +6,7 @@
 <mapper namespace="com.mycom.myapp.events.dao.EventDao">
 
     <!--사용자 참여 중 이벤트 조회 (리스트)-->
-    <select id="listEvent">
+    <select id="listEvent" resultType="com.mycom.myapp.events.dto.EventSummaryDto">
         select e.id as eventId, e.title
         from event e, user_event u
         where u.user_id = #{userId}
@@ -42,9 +42,9 @@
         where event_id = #{eventId}
     </select>
 
-    <!--이벤트 날짜 조회-->
+    <!--event_date 등록된 날짜 조회-->
     <select id="findEventDatesByEventId" resultType="java.time.LocalDate">
-        select event_date
+        select event_date as eventDate
         from event_date
         where event_id = #{eventId}
     </select>
@@ -77,13 +77,6 @@
         set title = #{title}
         where id = #{eventId}
     </update>
-
-    <!--event_date 등록된 날짜 조회-->
-    <select id="getExistingDates" resultType="java.time.LocalDate">
-        select event_date as eventDate
-        from event_date
-        where event_id = #{eventId}
-    </select>
 
     <!--event 삭제-->
     <delete id="deleteEvent">
