@@ -11,6 +11,7 @@ public class EventDto {
 
     private Long eventId;
     private String title;
+    private Long ownerId;
     private List<LocalDate> eventDates;
-    private Long userId;
+    private List<Long> userIds;
 }
