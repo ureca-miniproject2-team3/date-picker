@@ -14,19 +14,7 @@
     </select>
 
     <!--이벤트 상세 정보 조회-->
-    <resultMap id="EventDetailResultMap" type="com.mycom.myapp.events.dto.EventDto">
-        <id property="eventId" column="eventId"/>
-        <result property="title" column="title"/>
-        <result property="ownerId" column="ownerId"/>
-
-        <collection property="userIds" ofType="java.lang.Long"
-                    select="findUserIdsByEventId" column="eventId"/>
-
-        <collection property="eventDates" ofType="java.time.LocalDate"
-                    select="findEventDatesByEventId" column="eventId"/>
-    </resultMap>
-
-    <select id="detailEvent" resultMap="EventDetailResultMap">
+    <select id="detailEvent" resultType="com.mycom.myapp.events.dto.EventDto">
         select
             e.id as eventId,
             e.title as title,
