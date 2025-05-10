@@ -4,7 +4,8 @@
     "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.mycom.myapp.users.dao.UserDao">
-	<insert id="registerUser" parameterType="com.mycom.myapp.users.dto.UserDto">
+	<insert id="registerUser" parameterType="com.mycom.myapp.users.dto.UserDto"
+			useGeneratedKeys="true" keyProperty="id">
 		INSERT INTO user (name, email, password)
 		VALUES (#{name}, #{email}, #{password})
 	</insert>
