@@ -25,7 +25,6 @@ public interface EventDao {
 
     // 이벤트 수정
     void updateEventTitle(EventDto eventDto);
-    List<LocalDate> getExistingDates(@Param("eventId") Long eventId);
 
     // 이벤트 삭제
     void deleteEvent(@Param("eventId") Long eventId);
