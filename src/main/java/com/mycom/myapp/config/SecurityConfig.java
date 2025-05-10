@@ -2,6 +2,7 @@ package com.mycom.myapp.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,13 +23,14 @@ public class SecurityConfig {
 								"/api/auth/csrf-token", // csrf token
 								"/login", // login
 								"/login.html",
-								"/api/users", // register
-								"/register",
+								"/register", // register
 								"/register.html",
 		                        "/v3/api-docs/**", // swagger
 		                        "/swagger-ui/**",
 		                        "/swagger-ui.html"
 						)
+						.permitAll();
+						request.requestMatchers(HttpMethod.POST, "/api/users")
 						.permitAll()
 						.anyRequest().authenticated();
 					}	
