@@ -37,7 +37,7 @@ public class EventCreateServiceTest {
 
         EventDto dto = EventDto.builder()
                 .eventId(1L)
-                .userId(42L)
+                .ownerId(42L)
                 .eventDates(dates)
                 .build();
 
@@ -64,7 +64,7 @@ public class EventCreateServiceTest {
         LocalDate day = LocalDate.of(2025, 5, 1);
         EventDto dto = EventDto.builder()
                 .eventId(5L)
-                .userId(7L)
+                .ownerId(7L)
                 .eventDates(List.of(day))
                 .build();
 
@@ -91,7 +91,7 @@ public class EventCreateServiceTest {
 
         EventDto dto = EventDto.builder()
                 .eventId(8L)
-                .userId(9L)
+                .ownerId(9L)
                 .eventDates(dates)
                 .build();
 
@@ -118,7 +118,7 @@ public class EventCreateServiceTest {
         LocalDate d1 = LocalDate.of(2025, 5, 1);
         EventDto dto = EventDto.builder()
                 .eventId(13L)
-                .userId(21L)
+                .ownerId(21L)
                 .eventDates(List.of(d1))
                 .build();
 
