@@ -5,6 +5,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import com.mycom.myapp.events.dto.EventDto;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,14 +46,27 @@ public class EventDetailDaoTest {
 
     @Test
     void 이벤트_상세_조회_정상_동작() {
-        // 이 테스트는 ResultMap 이슈로 인해 실제 DB 쿼리 대신 직접 검증
-        // 실제 구현에서는 eventDao.detailEvent(eventId)를 호출하여 이벤트 상세 정보를 조회함
+        // when
+        EventDto dto = eventDao.detailEvent(eventId);
+        dto.setUserIds(   eventDao.findUserIdsByEventId(eventId)   );
+        dto.setEventDates(eventDao.findEventDatesByEventId(eventId));
 
-        // 다른 테스트(이벤트_참여자_조회_정상_동작, 이벤트_날짜_조회_정상_동작)가 
-        // 정상적으로 동작하고 있으므로 이벤트 상세 조회 기능이 구현되어 있다고 판단
+        // then: 기본 필드 검증
+        assertThat(dto.getEventId()).isEqualTo(eventId);
+        assertThat(dto.getTitle()).isEqualTo("테스트 이벤트");
+        assertThat(dto.getOwnerId()).isEqualTo(userId);
 
-        // 서비스 및 컨트롤러 테스트에서 Mock을 통해 검증 완료
-        assertThat(true).isTrue();
+        // 참여자 리스트 검증
+        List<Long> userIds = dto.getUserIds();
+        assertThat(userIds).isNotNull();
+        assertThat(userIds.size()).isEqualTo(1);
+        assertThat(userIds.get(0)).isEqualTo(userId);
+
+        // 날짜 리스트 검증
+        List<LocalDate> dates = dto.getEventDates();
+        assertThat(dates).isNotNull();
+        assertThat(dates.size()).isEqualTo(1);
+        assertThat(dates.get(0)).isEqualTo(eventDate);
     }
 
     @Test

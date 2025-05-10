@@ -7,6 +7,7 @@ import com.mycom.myapp.events.dto.EventSummaryDto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
@@ -46,8 +47,10 @@ public class EventServiceImpl implements EventService {
 
         try {
             EventDto eventDto = eventDao.detailEvent(eventId);
+            eventDto.setUserIds(eventDao.findUserIdsByEventId(eventId));
+            eventDto.setEventDates(eventDao.findEventDatesByEventId(eventId));
 
-            if (eventDto == null) {
+            if (eventDto.getEventId() == null) {
                 result.setResult("not found");
 
             } else {
@@ -96,7 +99,7 @@ public class EventServiceImpl implements EventService {
         try {
             eventDao.updateEventTitle(eventDto);
 
-            List<LocalDate> existingDates = eventDao.getExistingDates(eventDto.getEventId());
+            List<LocalDate> existingDates = eventDao.findEventDatesByEventId(eventDto.getEventId());
 
             // 새롭게 추가되는 날짜만 필터링
             List<LocalDate> newDates = eventDto.getEventDates();
@@ -120,7 +123,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventResultDto deleteEvent(Long eventId) {
+    public EventResultDto deleteEvent(Long eventId, Long userId) {
         EventResultDto result = new EventResultDto();
 
         /*
@@ -128,15 +131,54 @@ public class EventServiceImpl implements EventService {
         이벤트 관련 테이블 데이터만 삭제 - event, event_date, user_event
          */
         try {
-            eventDao.deleteUserEvent(eventId);
-            eventDao.deleteEventDate(eventId);
-            eventDao.deleteEvent(eventId);
+            Long ownerId = eventDao.detailEvent(eventId).getOwnerId();
 
-            result.setResult("success");
+            if (!Objects.equals(userId, ownerId)) {
+                result.setResult("forbidden");
+
+            } else {
+                eventDao.deleteUserEvent(eventId);
+                eventDao.deleteEventDate(eventId);
+                eventDao.deleteEvent(eventId);
+
+                result.setResult("success");
+            }
 
         } catch (Exception e) {
 
             return handleException("이벤트 삭제", e);
+        }
+
+        return result;
+    }
+
+    @Override
+    public EventResultDto inviteUserToEvent(Long inviterId, Long eventId, List<Long> invitedIds) {
+        EventResultDto result = new EventResultDto();
+
+        try {
+            Long ownerId = eventDao.detailEvent(eventId).getOwnerId();
+
+            if (!Objects.equals(ownerId, inviterId)) {
+                result.setResult("forbidden");
+
+            } else {
+                List<Long> participantsIds = eventDao.getParticipantsByEventId(eventId);
+
+                List<Long> newInvitedUserIds = invitedIds.stream()
+                        .filter(invitedId -> !participantsIds.contains(invitedId))
+                        .toList();
+
+                for (Long invitedId : newInvitedUserIds) {
+                    eventDao.insertUserEvent(invitedId, eventId);
+                }
+
+                result.setResult("success");
+            }
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 초대", e);
         }
 
         return result;

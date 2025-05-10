@@ -6,7 +6,7 @@
 <mapper namespace="com.mycom.myapp.events.dao.EventDao">
 
     <!--사용자 참여 중 이벤트 조회 (리스트)-->
-    <select id="listEvent">
+    <select id="listEvent" resultType="com.mycom.myapp.events.dto.EventSummaryDto">
         select e.id as eventId, e.title
         from event e, user_event u
         where u.user_id = #{userId}
@@ -14,19 +14,7 @@
     </select>
 
     <!--이벤트 상세 정보 조회-->
-    <resultMap id="EventDetailResultMap" type="com.mycom.myapp.events.dto.EventDto">
-        <id property="eventId" column="eventId"/>
-        <result property="title" column="title"/>
-        <result property="ownerId" column="ownerId"/>
-
-        <collection property="userIds" ofType="java.lang.Long"
-                    select="findUserIdsByEventId" column="eventId"/>
-
-        <collection property="eventDates" ofType="java.time.LocalDate"
-                    select="findEventDatesByEventId" column="eventId"/>
-    </resultMap>
-
-    <select id="detailEvent" resultMap="EventDetailResultMap">
+    <select id="detailEvent" resultType="com.mycom.myapp.events.dto.EventDto">
         select
             e.id as eventId,
             e.title as title,
@@ -42,9 +30,9 @@
         where event_id = #{eventId}
     </select>
 
-    <!--이벤트 날짜 조회-->
+    <!--event_date 등록된 날짜 조회-->
     <select id="findEventDatesByEventId" resultType="java.time.LocalDate">
-        select event_date
+        select event_date as eventDate
         from event_date
         where event_id = #{eventId}
     </select>
@@ -78,13 +66,6 @@
         where id = #{eventId}
     </update>
 
-    <!--event_date 등록된 날짜 조회-->
-    <select id="getExistingDates" resultType="java.time.LocalDate">
-        select event_date as eventDate
-        from event_date
-        where event_id = #{eventId}
-    </select>
-
     <!--event 삭제-->
     <delete id="deleteEvent">
         delete
@@ -105,4 +86,11 @@
         from user_event
         where event_id = #{eventId}
     </delete>
+
+    <!--이벤트에 참여 중인 유저 id 리스트-->
+    <select id="getParticipantsByEventId">
+        select user_id as userId
+        from user_event
+        where event_id = #{eventId}
+    </select>
 </mapper>
