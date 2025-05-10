@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -43,6 +44,8 @@ public class EventDetailServiceTest {
                 .build();
 
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
+        when(eventDao.findUserIdsByEventId(eventId)).thenReturn(Arrays.asList(ownerId));
+        when(eventDao.findEventDatesByEventId(eventId)).thenReturn(dates);
 
         // when
         EventResultDto result = eventService.detailEvent(eventId);
@@ -51,13 +54,19 @@ public class EventDetailServiceTest {
         assertEquals("success", result.getResult());
         assertEquals(mockEventDto, result.getEventDto());
         verify(eventDao).detailEvent(eventId);
+        verify(eventDao).findUserIdsByEventId(eventId);
+        verify(eventDao).findEventDatesByEventId(eventId);
     }
 
     @Test
     void 이벤트_상세_조회_이벤트_없음() {
         // given
         Long eventId = 999L;
-        when(eventDao.detailEvent(eventId)).thenReturn(null);
+        // Return an EventDto with null eventId to simulate "not found"
+        EventDto emptyEventDto = EventDto.builder().build();
+        when(eventDao.detailEvent(eventId)).thenReturn(emptyEventDto);
+        when(eventDao.findUserIdsByEventId(eventId)).thenReturn(Arrays.asList());
+        when(eventDao.findEventDatesByEventId(eventId)).thenReturn(Arrays.asList());
 
         // when
         EventResultDto result = eventService.detailEvent(eventId);
@@ -66,6 +75,8 @@ public class EventDetailServiceTest {
         assertEquals("not found", result.getResult());
         assertNull(result.getEventDto());
         verify(eventDao).detailEvent(eventId);
+        verify(eventDao).findUserIdsByEventId(eventId);
+        verify(eventDao).findEventDatesByEventId(eventId);
     }
 
     @Test
@@ -81,5 +92,8 @@ public class EventDetailServiceTest {
         // then
         assertEquals("fail", result.getResult());
         verify(eventDao).detailEvent(eventId);
+        // Additional method calls should not be made when an exception occurs
+        verify(eventDao, never()).findUserIdsByEventId(anyLong());
+        verify(eventDao, never()).findEventDatesByEventId(anyLong());
     }
 }
