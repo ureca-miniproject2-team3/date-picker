@@ -7,6 +7,8 @@ public interface EventService {
 
     EventResultDto listEvent(Long userId);
 
+    EventResultDto detailEvent(Long eventId);
+
     EventResultDto createEvent(EventDto eventDto);
 
     EventResultDto updateEvent(EventDto eventDto);
