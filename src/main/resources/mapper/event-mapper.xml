@@ -52,9 +52,9 @@
     useGeneratedKeys="true": DB 에서 생성된 PK 값을 반환받는다.
     keyProperty="eventId": 반환된 PK 값을 Java 객체의 eventId 필드에 매핑한다.
     -->
-    <insert id="insertEvent" useGeneratedKeys="true" keyProperty="eventId">
-        insert into event (title)
-        values (#{title})
+    <insert id="insertEvent" useGeneratedKeys="true" keyProperty="eventId" parameterType="com.mycom.myapp.events.dto.EventDto">
+        insert into event (title, owner_id)
+        values (#{title}, #{ownerId})
     </insert>
 
     <!--event_date 추가-->

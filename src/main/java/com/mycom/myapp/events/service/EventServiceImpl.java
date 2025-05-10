@@ -52,7 +52,7 @@ public class EventServiceImpl implements EventService {
                 eventDao.insertEventDate(eventDto.getEventId(), eventDate);
             }
 
-            eventDao.insertUserEvent(eventDto.getUserId(), eventDto.getEventId());
+            eventDao.insertUserEvent(eventDto.getOwnerId(), eventDto.getEventId());
 
             result.setResult("success");
             result.setEventDto(eventDto);
