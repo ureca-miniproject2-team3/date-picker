@@ -3,6 +3,7 @@ package com.mycom.myapp.events.service;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.events.dto.EventSummaryDto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -20,6 +21,24 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 public class EventServiceImpl implements EventService {
 
     private final EventDao eventDao;
+
+    @Override
+    public EventResultDto listEvent(Long userId) {
+        EventResultDto result = new EventResultDto();
+
+        try {
+            List<EventSummaryDto> eventDtoList = eventDao.listEvent(userId);
+
+            result.setResult("success");
+            result.setEventDtoList(eventDtoList);
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 리스트 조회", e);
+        }
+
+        return result;
+    }
 
     @Override
     @Transactional
