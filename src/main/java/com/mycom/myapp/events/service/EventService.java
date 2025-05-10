@@ -14,7 +14,7 @@ public interface EventService {
 
     EventResultDto updateEvent(EventDto eventDto);
 
-    EventResultDto deleteEvent(Long eventId);
+    EventResultDto deleteEvent(Long eventId, Long userId);
 
     EventResultDto inviteUserToEvent(Long inviterId, Long eventId, List<Long> invitedIds);
 }

@@ -121,7 +121,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventResultDto deleteEvent(Long eventId) {
+    public EventResultDto deleteEvent(Long eventId, Long userId) {
         EventResultDto result = new EventResultDto();
 
         /*
@@ -129,11 +129,18 @@ public class EventServiceImpl implements EventService {
         이벤트 관련 테이블 데이터만 삭제 - event, event_date, user_event
          */
         try {
-            eventDao.deleteUserEvent(eventId);
-            eventDao.deleteEventDate(eventId);
-            eventDao.deleteEvent(eventId);
+            Long ownerId = eventDao.detailEvent(eventId).getOwnerId();
 
-            result.setResult("success");
+            if (!Objects.equals(userId, ownerId)) {
+                result.setResult("forbidden");
+
+            } else {
+                eventDao.deleteUserEvent(eventId);
+                eventDao.deleteEventDate(eventId);
+                eventDao.deleteEvent(eventId);
+
+                result.setResult("success");
+            }
 
         } catch (Exception e) {
 
