@@ -42,7 +42,7 @@ public class EventController {
     @GetMapping("/events/{eventId}")
     @Operation(summary = "이벤트 상세 조회", description = "이벤트 상세 정보를 조회합니다.")
     public ResponseEntity<EventResultDto> detailEvent(@PathVariable Long eventId) {
-        EventResultDto result = eventService.listEvent(eventId);
+        EventResultDto result = eventService.detailEvent(eventId);
 
         if (result.getResult().equals("success")) {
             return ResponseEntity.status(HttpStatus.OK).body(result);
