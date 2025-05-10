@@ -7,4 +7,10 @@ public interface UserService {
 
 	public UserResultDto registerUser(UserDto userDto);
 	
+	public UserResultDto listUser();
+	
+	public UserResultDto detailUser(Long userId);
+	
+	public UserResultDto detailUserByEmail(String email);
+	
 }

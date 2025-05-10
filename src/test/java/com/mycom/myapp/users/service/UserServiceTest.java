@@ -1,8 +1,12 @@
 package com.mycom.myapp.users.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -40,7 +44,7 @@ public class UserServiceTest {
 					.build();
 		
 		when(loginDao.findByEmail("aaa@aaa.com")).thenReturn(UserDto.builder().
-				id(1).
+				id(1L).
 				name("bbb").
 				email("aaa@aaa.com").
 				password("aaa").
@@ -78,5 +82,93 @@ public class UserServiceTest {
         UserResultDto result = userService.registerUser(userDto);
         assertEquals("fail", result.getResult());
     }
+    
+    @Test
+    public void listUserTest_Success() {
+        UserDto user1 = UserDto.builder()
+                .name("aaa")
+                .email("aaa@aaa.com")
+                .password("aaa")
+                .build();
+        
+        UserDto user2 = UserDto.builder()
+                .name("bbb")
+                .email("bbb@bbb.com")
+                .password("bbb")
+                .build();
+        
+        when(userDao.listUser())
+        	.thenReturn(List.of(user1, user2));
+        
+        UserResultDto result = userService.listUser();
+        assertEquals("success", result.getResult());
+        assertEquals(2, result.getUserDtoList().size());
+    }
+    
+    @Test
+    public void listUserTest_Fail() {
+        when(userDao.listUser())
+        	.thenThrow(new RuntimeException("DB error"));
+        
+        UserResultDto result = userService.listUser();
+        assertEquals("fail", result.getResult());
+    }
+    
+    @Test
+    public void detailUserTest_Success() {
+        UserDto user = UserDto.builder()
+                .name("aaa")
+                .email("aaa@aaa.com")
+                .password("aaa")
+                .build();
+        
+        when(userDao.detailUser(user.getId()))
+        	.thenReturn(user);
+        
+        UserResultDto result = userService.detailUser(user.getId());
+        assertEquals("success", result.getResult());
+        assertEquals(result.getUserDto().getId(), user.getId());
+        assertEquals(result.getUserDto().getName(), user.getName());
+        assertEquals(result.getUserDto().getEmail(), user.getEmail());
+    }
+    
+    @Test
+    public void detailUserTest_Fail() {
+        when(userDao.detailUser(any(Long.class)))
+        		.thenThrow(new RuntimeException("DB error"));
+        
+        UserResultDto result = userService.detailUser(any(Long.class));
+        
+        assertEquals("fail", result.getResult());
+    }
+    
+    @Test
+    public void detailUserByEmailTest_Success() {
+        UserDto user = UserDto.builder()
+                .name("aaa")
+                .email("aaa@aaa.com")
+                .password("aaa")
+                .build();
+        
+        when(userDao.detailUserByEmail(user.getEmail()))
+        	.thenReturn(user);
+        
+        UserResultDto result = userService.detailUserByEmail(user.getEmail());
+        assertEquals("success", result.getResult());
+        assertEquals(result.getUserDto().getId(), user.getId());
+        assertEquals(result.getUserDto().getName(), user.getName());
+        assertEquals(result.getUserDto().getEmail(), user.getEmail());
+    }
+    
+    @Test
+    public void detailUserByEmailTest_Fail() {
+        when(userDao.detailUserByEmail(any(String.class)))
+        		.thenThrow(new RuntimeException("DB error"));
+        
+        UserResultDto result = userService.detailUserByEmail(any(String.class));
+        
+        assertEquals("fail", result.getResult());
+    }
 }
+
 
