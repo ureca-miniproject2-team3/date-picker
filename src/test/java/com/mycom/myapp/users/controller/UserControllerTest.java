@@ -3,9 +3,12 @@ package com.mycom.myapp.users.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,7 +81,7 @@ class UserControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.result").value("exist"));
     }
-
+    
     @Test
     void registerUser_fail() throws Exception {
         UserDto userDto = UserDto.builder().
@@ -99,5 +102,125 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(userDto)))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.result").value("fail"));
+    }
+
+    @Test
+    void listUser_fail() throws Exception {
+        UserResultDto resultDto = new UserResultDto();
+        resultDto.setResult("fail");
+
+        when(userService.listUser()).thenReturn(resultDto);
+
+        mockMvc.perform(get("/api/users")
+        		.with(csrf()) 
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.result").value("fail"));
+    }
+    
+    @Test
+    void listUser_success() throws Exception {
+        UserDto user1 = UserDto.builder().
+        				id(1L).
+        				name("aaa").
+        				email("aaa@aaa.com").
+        				password("aaa").
+        				build();
+        
+        UserDto user2 = UserDto.builder().
+        		id(2L).
+        		name("bbb").
+        		email("bbb@bbb.com").
+        		password("bbb").
+        		build();
+        
+        UserResultDto resultDto = new UserResultDto();
+        resultDto.setResult("success");
+        resultDto.setUserDtoList(List.of(user1,user2));
+        
+        when(userService.listUser()).thenReturn(resultDto);
+
+        mockMvc.perform(get("/api/users")
+        		 .with(csrf()) 
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("success"));
+    }
+    
+    @Test
+    void detailUser_fail() throws Exception {
+    	Long userId = Long.MAX_VALUE;
+        UserResultDto resultDto = new UserResultDto();
+        resultDto.setResult("fail");
+
+        when(userService.detailUser(userId)).thenReturn(resultDto);
+
+        mockMvc.perform(get("/api/users/" + userId)
+        		.with(csrf()) 
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.result").value("fail"));
+    }
+    
+    @Test
+    void detailUser_success() throws Exception {
+        UserDto userDto = UserDto.builder().
+        				id(1L).
+        				name("aaa").
+        				email("aaa@aaa.com").
+        				password("aaa").
+        				build();
+        
+        UserResultDto resultDto = new UserResultDto();
+        resultDto.setResult("success");
+        resultDto.setUserDto(userDto);
+        
+        when(userService.detailUser(1L)).thenReturn(resultDto);
+
+        mockMvc.perform(get("/api/users/1")
+        		 .with(csrf()) 
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("success"));
+    }
+    
+    @Test
+    void detailUserByEmail_fail() throws Exception {
+    	String email = "aaa@aaa.com";
+        UserResultDto resultDto = new UserResultDto();
+        resultDto.setResult("fail");
+
+        when(userService.detailUserByEmail(email)).thenReturn(resultDto);
+
+        mockMvc.perform(get("/api/users/search")
+        		.param("email", email)
+        		.with(csrf()) 
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.result").value("fail"));
+    }
+    
+    @Test
+    void detailUserByEmail_success() throws Exception {
+    	String email = "aaa@aaa.com";
+        UserDto userDto = UserDto.builder().
+        				id(1L).
+        				name("aaa").
+        				email(email).
+        				password("aaa").
+        				build();
+        
+        UserResultDto resultDto = new UserResultDto();
+        resultDto.setResult("success");
+        resultDto.setUserDto(userDto);
+        
+        when(userService.detailUserByEmail(email)).thenReturn(resultDto);
+
+        mockMvc.perform(get("/api/users/search")
+        		.param("email", email)
+        		.with(csrf()) 
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.result").value("success"));
     }
 }
