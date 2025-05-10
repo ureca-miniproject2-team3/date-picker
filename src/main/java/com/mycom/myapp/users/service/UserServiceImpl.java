@@ -1,5 +1,7 @@
 package com.mycom.myapp.users.service;
 
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +41,60 @@ public class UserServiceImpl implements UserService {
 			userDao.registerUser(userDto);
 			
 			userResultDto.setResult("success");
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			userResultDto.setResult("fail");
+		}
+		
+		return userResultDto;
+	}
+
+	@Override
+	public UserResultDto listUser() {
+		UserResultDto userResultDto = new UserResultDto();
+		
+		try {
+			List<UserDto> listUser = userDao.listUser();
+			
+			userResultDto.setResult("successs");
+			userResultDto.setUserDtoList(listUser);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			userResultDto.setResult("fail");
+		}
+		
+		return userResultDto;
+	}
+
+	@Override
+	public UserResultDto detailUser(Long userId) {
+		UserResultDto userResultDto = new UserResultDto();
+		
+		try {
+			UserDto userDto = userDao.detailUser(userId);
+			
+			userResultDto.setResult("successs");
+			userResultDto.setUserDto(userDto);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+			userResultDto.setResult("fail");
+		}
+		
+		return userResultDto;
+	}
+
+	@Override
+	public UserResultDto detailUserByEmail(String email) {
+		UserResultDto userResultDto = new UserResultDto();
+		
+		try {
+			UserDto userDto = userDao.detailUserByEmail(email);
+			
+			userResultDto.setResult("successs");
+			userResultDto.setUserDto(userDto);
 			
 		} catch (Exception e) {
 			e.printStackTrace();
