@@ -26,7 +26,7 @@ public class EventCreateDaoTest {
         // given
         EventDto eventDto = EventDto.builder()
                 .title("회의")
-                .userId(1L)
+                .ownerId(1L)
                 .eventDates(List.of(LocalDate.of(2025, 5, 1)))
                 .build();
 
@@ -40,7 +40,7 @@ public class EventCreateDaoTest {
     @Test
     void 이벤트_날짜_등록_정상_동작() {
         // given
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (1, '테스트 이벤트')");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id) VALUES (1, '테스트 이벤트', 1)");
 
         Long eventId = 1L;
         LocalDate date = LocalDate.of(2025, 5, 1);
@@ -56,7 +56,7 @@ public class EventCreateDaoTest {
     void 유저_이벤트_매핑_정상_동작() {
         // given
         jdbcTemplate.update("INSERT INTO user (id, name, email, password) VALUES (100, '테스트', 'test@example.com', '1234')");
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (1, '테스트 이벤트')");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id) VALUES (1, '테스트 이벤트', 1)");
 
         Long userId = 1L;
         Long eventId = 1L;

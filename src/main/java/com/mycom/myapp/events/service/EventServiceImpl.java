@@ -41,6 +41,29 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    public EventResultDto detailEvent(Long eventId) {
+        EventResultDto result = new EventResultDto();
+
+        try {
+            EventDto eventDto = eventDao.detailEvent(eventId);
+
+            if (eventDto == null) {
+                result.setResult("not found");
+
+            } else {
+                result.setResult("success");
+                result.setEventDto(eventDto);
+            }
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 상세 조회", e);
+        }
+
+        return result;
+    }
+
+    @Override
     @Transactional
     public EventResultDto createEvent(EventDto eventDto) {
         EventResultDto result = new EventResultDto();
@@ -52,7 +75,7 @@ public class EventServiceImpl implements EventService {
                 eventDao.insertEventDate(eventDto.getEventId(), eventDate);
             }
 
-            eventDao.insertUserEvent(eventDto.getUserId(), eventDto.getEventId());
+            eventDao.insertUserEvent(eventDto.getOwnerId(), eventDto.getEventId());
 
             result.setResult("success");
             result.setEventDto(eventDto);
