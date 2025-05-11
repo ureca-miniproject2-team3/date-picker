@@ -61,4 +61,17 @@ public class ScheduleController {
 			return ResponseEntity.internalServerError().body(scheduleResultDto);
 		}
 	}
+
+	@GetMapping("/schedules/overlap/{eventId}")
+	@Operation(summary = "가장 많이 겹치는 시간 조회", description = "이벤트 ID 와 일치하는 이벤트의 스케줄 중 가장 많은 인원이 참여 가능한 스케줄 리스트를 조회합니다.")
+	public ResponseEntity<ScheduleResultDto> getMaxOverlapSlots(@PathVariable("eventId") Long eventId) {
+		ScheduleResultDto scheduleResultDto = scheduleService.getMaxOverlapSlots(eventId);
+
+		if("success".equals(scheduleResultDto.getResult())) {
+			return ResponseEntity.ok(scheduleResultDto);
+		}
+		else {
+			return ResponseEntity.internalServerError().body(scheduleResultDto);
+		}
+	}
 }
