@@ -37,14 +37,6 @@ public class ScheduleControllerTest {
 	
 	@Test
 	void insertSchedule_Success() throws Exception {
-		ScheduleDto scheduleDto = ScheduleDto.builder()
-				.scheduleId(1L)
-				.userId(1L)
-				.eventId(205L)
-				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
-				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
-				.build();
-		
 		ScheduleResultDto resultDto = new ScheduleResultDto();
 		resultDto.setResult("success");
 		
@@ -64,14 +56,6 @@ public class ScheduleControllerTest {
 	
 	@Test
 	void insertSchedule_Fail() throws Exception {
-		ScheduleDto scheduleDto = ScheduleDto.builder()
-				.scheduleId(1L)
-				.userId(1L)
-				.eventId(205L)
-				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
-				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
-				.build();
-		
 		ScheduleResultDto resultDto = new ScheduleResultDto();
 		resultDto.setResult("fail");
 		
