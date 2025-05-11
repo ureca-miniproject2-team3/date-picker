@@ -2,7 +2,6 @@ package com.mycom.myapp.users.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -10,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.mycom.myapp.users.dto.UserDto;
@@ -22,9 +20,6 @@ public class UserDaoTest {
 	
 	@Autowired
 	private UserDao userDao;
-	
-	@Autowired
-	private PasswordEncoder passwordEncoder;
 	
 	@Test
 	void registerUserTest() {
