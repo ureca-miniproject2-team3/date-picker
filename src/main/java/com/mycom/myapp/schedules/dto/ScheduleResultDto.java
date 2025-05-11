@@ -12,5 +12,8 @@ public class ScheduleResultDto {
 	private ScheduleDto scheduleDto;
 	
 	private List<ScheduleDto> scheduleDtoList;
-	
+
+	private Integer maxCount;
+
+	private List<TimeSlotDto> timeSlots;
 }
