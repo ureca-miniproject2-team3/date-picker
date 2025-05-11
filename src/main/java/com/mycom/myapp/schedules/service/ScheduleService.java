@@ -7,4 +7,8 @@ public interface ScheduleService {
 	
 	ScheduleResultDto insertSchedule(ScheduleDto scheduleDto);
 	
+	ScheduleResultDto listSchedule(Long eventId);
+	
+	ScheduleResultDto detailSchedule(Long scheduleId);
+	
 }

@@ -35,40 +35,25 @@ class UserControllerTest {
     @MockitoBean
     private UserService userService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     @Test
     void registerUser_success() throws Exception {
-        UserDto userDto = UserDto.builder().
-        				id(1L).
-        				name("aaa").
-        				email("aaa@aaa.com").
-        				password("aaa").
-        				build();
-        
         UserResultDto resultDto = new UserResultDto();
         resultDto.setResult("success");
 
         when(userService.registerUser(any(UserDto.class))).thenReturn(resultDto);
 
         mockMvc.perform(post("/api/users")
-        		 .with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.result").value("success"));
+        		 .with(csrf())
+        		 .param("id", "1")
+        		 .param("name", "aaa")
+        		 .param("email", "aaa@aaa.com")
+        		 .param("password", "aaa"))
+                 .andExpect(status().isOk())
+                 .andExpect(jsonPath("$.result").value("success"));
     }
 
     @Test
     void registerUser_exist() throws Exception {
-        UserDto userDto = UserDto.builder().
-				id(1L).
-				name("aaa").
-				email("aaa@aaa.com").
-				password("aaa").
-				build();
-        
         UserResultDto resultDto = new UserResultDto();
         resultDto.setResult("exist");
 
@@ -76,21 +61,16 @@ class UserControllerTest {
 
         mockMvc.perform(post("/api/users")
         		 .with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userDto)))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.result").value("exist"));
+        		 .param("id", "1")
+        		 .param("name", "aaa")
+        		 .param("email", "aaa@aaa.com")
+        		 .param("password", "aaa"))
+                 .andExpect(status().isBadRequest())
+                 .andExpect(jsonPath("$.result").value("exist"));
     }
     
     @Test
     void registerUser_fail() throws Exception {
-        UserDto userDto = UserDto.builder().
-				id(1L).
-				name("aaa").
-				email("aaa@aaa.com").
-				password("aaa").
-				build();
-        
         UserResultDto resultDto = new UserResultDto();
         resultDto.setResult("fail");
 
@@ -98,8 +78,10 @@ class UserControllerTest {
 
         mockMvc.perform(post("/api/users")
         		.with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(userDto)))
+        		.param("id", "1")
+       			.param("name", "aaa")
+       		 	.param("email", "aaa@aaa.com")
+       		 	.param("password", "aaa"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.result").value("fail"));
     }
@@ -112,8 +94,7 @@ class UserControllerTest {
         when(userService.listUser()).thenReturn(resultDto);
 
         mockMvc.perform(get("/api/users")
-        		.with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON))
+        		.with(csrf())) 
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.result").value("fail"));
     }
@@ -141,8 +122,7 @@ class UserControllerTest {
         when(userService.listUser()).thenReturn(resultDto);
 
         mockMvc.perform(get("/api/users")
-        		 .with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON))
+        		 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("success"));
     }
@@ -178,8 +158,7 @@ class UserControllerTest {
         when(userService.detailUser(1L)).thenReturn(resultDto);
 
         mockMvc.perform(get("/api/users/1")
-        		 .with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON))
+        		 .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("success"));
     }
@@ -194,8 +173,7 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/users/search")
         		.param("email", email)
-        		.with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON))
+        		.with(csrf()))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.result").value("fail"));
     }
@@ -218,8 +196,7 @@ class UserControllerTest {
 
         mockMvc.perform(get("/api/users/search")
         		.param("email", email)
-        		.with(csrf()) 
-                .contentType(MediaType.APPLICATION_JSON))
+        		.with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("success"));
     }
