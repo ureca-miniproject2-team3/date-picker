@@ -28,6 +28,7 @@ public class SecurityConfig {
 		                        "/v3/api-docs/**", // swagger
 		                        "/swagger-ui/**",
 		                        "/swagger-ui.html"
+//		                        ,"/api/**" // Postman API 테스트용
 						)
 						.permitAll();
 						request.requestMatchers(HttpMethod.POST, "/api/users")
@@ -36,6 +37,7 @@ public class SecurityConfig {
 					}	
 				)
 				.csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())) // Cookie -> CSRF
+//				.csrf(csrf -> csrf.disable()) // Postman API 테스트용
 				.formLogin(
 					form -> form
 					.loginPage("/login.html")
