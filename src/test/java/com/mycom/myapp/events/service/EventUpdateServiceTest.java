@@ -43,7 +43,7 @@ public class EventUpdateServiceTest {
                 .eventDates(List.of(LocalDate.of(2025, 5, 1), LocalDate.of(2025, 5, 3)))
                 .build();
 
-        when(eventDao.getExistingDates(1L))
+        when(eventDao.findEventDatesByEventId(1L))
                 .thenReturn(List.of(LocalDate.of(2025, 5, 1)));
 
         // when
@@ -51,7 +51,7 @@ public class EventUpdateServiceTest {
 
         // then
         verify(eventDao).updateEventTitle(dto);
-        verify(eventDao).getExistingDates(1L);
+        verify(eventDao).findEventDatesByEventId(1L);
         verify(eventDao).insertEventDate(1L, LocalDate.of(2025, 5, 3));
 
         assertEquals("success", result.getResult());
@@ -72,7 +72,7 @@ public class EventUpdateServiceTest {
                 ))
                 .build();
 
-        when(eventDao.getExistingDates(eventId))
+        when(eventDao.findEventDatesByEventId(eventId))
                 .thenReturn(List.of(
                         LocalDate.of(2025, 5, 1)  // 이미 등록된 날짜
                 ));
@@ -82,7 +82,7 @@ public class EventUpdateServiceTest {
 
         // then
         verify(eventDao).updateEventTitle(dto);
-        verify(eventDao).getExistingDates(eventId);
+        verify(eventDao).findEventDatesByEventId(eventId);
         verify(eventDao, times(1)).insertEventDate(eventId, LocalDate.of(2025, 5, 2));
         verify(eventDao, times(1)).insertEventDate(eventId, LocalDate.of(2025, 5, 3));
         verify(eventDao, never()).insertEventDate(eventId, LocalDate.of(2025, 5, 1)); // 기존 날짜는 insert 안 됨
@@ -109,8 +109,8 @@ public class EventUpdateServiceTest {
         assertEquals("fail", result.getResult());
         verify(eventDao).updateEventTitle(dto);
 
-        // getExistingDates나 insert는 호출되지 않아야 함
-        verify(eventDao, never()).getExistingDates(any());
+        // findEventDatesByEventId나 insert는 호출되지 않아야 함
+        verify(eventDao, never()).findEventDatesByEventId(any());
         verify(eventDao, never()).insertEventDate(anyLong(), any());
 
     }
