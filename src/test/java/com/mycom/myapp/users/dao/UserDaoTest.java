@@ -27,7 +27,7 @@ public class UserDaoTest {
 	private PasswordEncoder passwordEncoder;
 	
 	@Test
-	public void registerUserTest() {
+	void registerUserTest() {
 		UserDto userDto = UserDto.builder()
 						.name("aaa")
 						.email("aaa@aaa.com")
@@ -40,7 +40,7 @@ public class UserDaoTest {
 	}
 	
 	@Test
-	public void listUserTest() {
+	void listUserTest() {
 		UserDto userDto = UserDto.builder()
 				.name("aaa")
 				.email("aaa@aaa.com")
@@ -55,7 +55,7 @@ public class UserDaoTest {
 	}
 	
 	@Test
-	public void detailUserTest() {
+	void detailUserTest() {
 		UserDto userDto = UserDto.builder()
 				.name("aaa")
 				.email("aaa@aaa.com")
@@ -72,7 +72,7 @@ public class UserDaoTest {
 	}
 	
 	@Test
-	public void detailUserByEmailTest() {
+	void detailUserByEmailTest() {
 		UserDto userDto = UserDto.builder()
 				.name("aaa")
 				.email("aaa@aaa.com")

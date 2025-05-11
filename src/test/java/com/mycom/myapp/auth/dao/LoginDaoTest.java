@@ -19,7 +19,7 @@ public class LoginDaoTest {
 	private LoginDao loginDao;
 	
 	@Test
-	public void findByEmailTest() {
+	void findByEmailTest() {
 		UserDto userDto = loginDao.findByEmail("hong@gildong.com");
 		
 		assertEquals(1, userDto.getId());

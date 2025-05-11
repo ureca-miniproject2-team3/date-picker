@@ -17,7 +17,7 @@ public class CsrfControllerTest {
 	private MockMvc mockMvc;
 	
 	@Test
-	public void csrfTest() throws Exception {
+	void csrfTest() throws Exception {
 		this.mockMvc.perform(get("/api/auth/csrf-token"))
 			.andExpect(status().isOk());
 	}
