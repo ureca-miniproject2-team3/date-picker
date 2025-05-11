@@ -46,7 +46,11 @@ public class SecurityConfig {
 					.failureHandler(failureHandler) // 로그인 실패 처리
 					.permitAll()
 				)
-				.logout(logout -> logout.permitAll()) // Logout -> Session Invalidate
+				.logout(logout -> 
+					logout
+					.permitAll()
+					.logoutSuccessUrl("/")
+				) // Logout -> Session Invalidate
 				.build();
 	}
 	
