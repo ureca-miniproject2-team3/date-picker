@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <title>이벤트 목록</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <meta name="_csrf" content="${_csrf.token}" />
-  <meta name="_csrf_header" content="${_csrf.headerName}" />
 </head>
 <body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
   <div class="max-w-5xl mx-auto space-y-8">
@@ -40,24 +38,39 @@
 
   <!-- 로그아웃 처리 -->
   <script>
-    document.getElementById("logoutBtn").addEventListener("click", function () {
-      const token = document.querySelector('meta[name="_csrf"]').getAttribute("content");
-      const header = document.querySelector('meta[name="_csrf_header"]').getAttribute("content");
+  	window.onload = function() {	    
+	    document.getElementById("logoutBtn").addEventListener("click", logout);
+	}
+  	
+	async function getCsrfToken(){
+	    let response = await fetch('/api/auth/csrf-token', { method: 'GET', credentials: 'same-origin' }); // 자격 증명
+	    let data = await response.json();
+	    
+	    return data.token;
+	}
 
-      fetch("/logout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-          [header]: token
-        }
-      }).then(response => {
-        if (response.redirected) {
-          window.location.href = response.url;
-        } else {
-          window.location.href = "/login";
-        }
-      });
-    });
+	async function logout() {
+	    const csrfToken = await getCsrfToken();
+	    
+	    let urlParams = new URLSearchParams({
+	        _csrf: csrfToken
+	    });
+	    
+	    let response = await fetch("/logout", {
+	        method: "POST",
+	        body: urlParams,
+	        headers: {
+	            "Content-Type": "application/x-www-form-urlencoded"
+	        },
+	        credentials: "same-origin"
+	    });
+	    
+	    if (response.redirected) {
+	        window.location.href = response.url;
+	    } else {
+	        window.location.href = "/";
+	    }
+	}
   </script>
 </body>
 </html>
