@@ -36,7 +36,7 @@ public class UserServiceTest {
 	private PasswordEncoder passwordEncoder; 
 	
 	@Test
-	public void registerUserTest_Exist() {
+	void registerUserTest_Exist() {
 		UserDto user1 = UserDto.builder()
 					.name("aaa")
 					.email("aaa@aaa.com")
@@ -56,7 +56,7 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void registerUserTest_Success() {
+	void registerUserTest_Success() {
 		UserDto userDto = UserDto.builder()
 				.name("aaa")
 				.email("aaa@aaa.com")
@@ -69,7 +69,7 @@ public class UserServiceTest {
 	}
 	
     @Test
-    public void registerUserTest_Fail() {
+    void registerUserTest_Fail() {
         UserDto userDto = UserDto.builder()
                 .name("aaa")
                 .email("aaa@aaa.com")
@@ -84,7 +84,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void listUserTest_Success() {
+    void listUserTest_Success() {
         UserDto user1 = UserDto.builder()
                 .name("aaa")
                 .email("aaa@aaa.com")
@@ -106,7 +106,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void listUserTest_Fail() {
+    void listUserTest_Fail() {
         when(userDao.listUser())
         	.thenThrow(new RuntimeException("DB error"));
         
@@ -115,7 +115,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void detailUserTest_Success() {
+    void detailUserTest_Success() {
         UserDto user = UserDto.builder()
                 .name("aaa")
                 .email("aaa@aaa.com")
@@ -133,7 +133,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void detailUserTest_Fail() {
+    void detailUserTest_Fail() {
         when(userDao.detailUser(any(Long.class)))
         		.thenThrow(new RuntimeException("DB error"));
         
@@ -143,7 +143,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void detailUserByEmailTest_Success() {
+    void detailUserByEmailTest_Success() {
         UserDto user = UserDto.builder()
                 .name("aaa")
                 .email("aaa@aaa.com")
@@ -161,7 +161,7 @@ public class UserServiceTest {
     }
     
     @Test
-    public void detailUserByEmailTest_Fail() {
+    void detailUserByEmailTest_Fail() {
         when(userDao.detailUserByEmail(any(String.class)))
         		.thenThrow(new RuntimeException("DB error"));
         
