@@ -1,4 +1,3 @@
-<!-- ✅ index.html - 사용자별 이벤트 목록 조회 (/users/{userId}/events) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -8,26 +7,28 @@
 </head>
 <body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
   <div class="max-w-5xl mx-auto space-y-8">
+    <!-- 상단 로그인/로그아웃 버튼 -->
     <div class="flex justify-between items-center">
-      <button onclick="location.href='login.html'" class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">로그인</button>
-      <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded-full shadow hover:bg-red-400 transition">로그아웃</button>
+      <button onclick="location.href='login.html'" class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">
+        로그인
+      </button>
+      <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded-full shadow hover:bg-red-400 transition">
+        로그아웃
+      </button>
     </div>
 
+    <!-- 이벤트 목록 또는 안내 카드 -->
     <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
 
+    <!-- 하단 생성 버튼 -->
     <div class="text-center">
-      <button onclick="location.href='create.html'" class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">이벤트 생성</button>
+      <button onclick="location.href='create.html'" class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">
+        이벤트 생성
+      </button>
     </div>
   </div>
 
   <script>
-    const userId = sessionStorage.getItem("userId");
-
-if (!userId) {
-  alert("로그인이 필요합니다.");
-  location.href = "/login.html";
-}
-
     window.onload = function () {
       document.getElementById("logoutBtn").addEventListener("click", logout);
       fetchEvents();
@@ -40,6 +41,19 @@ if (!userId) {
     }
 
     async function fetchEvents() {
+      const list = document.getElementById("eventList");
+      const userId = sessionStorage.getItem("userId");
+
+      if (!userId) {
+        // 로그인하지 않은 경우 안내 카드 표시
+        list.innerHTML = `
+          <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full">
+            <p class="text-lg font-semibold mb-2">로그인이 필요합니다</p>
+            <p class="text-sm text-gray-500">이벤트 목록을 보려면 먼저 로그인 해주세요.</p>
+          </div>`;
+        return;
+      }
+
       try {
         const csrf = await getCsrfToken();
         const res = await fetch(`/users/${userId}/events`, {
@@ -50,7 +64,6 @@ if (!userId) {
 
         const result = await res.json();
         if (result.result === "success") {
-          const list = document.getElementById("eventList");
           list.innerHTML = result.events.map(e => `
             <div onclick="location.href='event.html?id=${e.eventId}'"
                  class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
