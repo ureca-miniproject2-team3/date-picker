@@ -1,4 +1,3 @@
-<!-- ✅ event.html - 이벤트 상세 및 수정/삭제 -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -13,10 +12,10 @@
     const eventId = new URLSearchParams(location.search).get("id");
     const userId = sessionStorage.getItem("userId");
 
-if (!userId) {
-  alert("로그인이 필요합니다.");
-  location.href = "/login.html";
-}
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      location.href = "/login.html";
+    }
 
     async function getCsrfToken() {
       const res = await fetch('/api/auth/csrf-token', { credentials: 'same-origin' });
@@ -26,29 +25,46 @@ if (!userId) {
 
     async function renderEvent() {
       const res = await fetch(`/api/events/${eventId}`);
-      const data = await res.json();
+      const result = await res.json();
+      const event = result?.eventDto;
+
+      if (!event) {
+        document.getElementById("eventContainer").innerHTML = `
+          <div class="text-red-500 font-semibold">이벤트 정보를 불러오지 못했습니다.</div>`;
+        return;
+      }
 
       const container = document.getElementById("eventContainer");
       container.innerHTML = `
         <div class="flex justify-between items-center">
-          <h1 class="text-3xl font-bold">${data.title}</h1>
-          <button onclick="location.href='/events/invite?id=${data.id}'" class="bg-[#7c6dfa] text-white px-4 py-2 rounded-full text-sm">사용자 초대</button>
+          <h1 class="text-3xl font-bold">${event.title}</h1>
+          <button onclick="location.href='/events/invite?id=${event.eventId}'" class="bg-[#7c6dfa] text-white px-4 py-2 rounded-full text-sm">사용자 초대</button>
         </div>
-        <div><h2 class="text-lg font-semibold mb-2">참여자 목록</h2><ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600">${data.users.map(u => `<li class="bg-[#f3f0ea] px-4 py-2 rounded-xl">${u.name}</li>`).join('')}</ul></div>
-        <div><h2 class="text-lg font-semibold mb-2">이벤트 날짜</h2><ul class="flex flex-wrap gap-2 text-sm text-gray-600">${data.dates.map(d => `<li class="bg-[#fcf8f3] px-4 py-2 rounded-full">${d}</li>`).join('')}</ul></div>
-        <div><h2 class="text-lg font-semibold mb-2">등록된 스케줄</h2><ul class="space-y-2">${data.schedules.map(s => `<li onclick="location.href='/schedule/${s.id}/edit'" class="cursor-pointer bg-[#f8f3ec] hover:bg-[#efe8dc] px-4 py-3 rounded-xl text-sm shadow-sm">${s.ownerName} - ${s.date} ${s.startTime} ~ ${s.endTime}</li>`).join('')}</ul></div>
+        <div><h2 class="text-lg font-semibold mb-2">참여자 ID</h2>
+             <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600">
+               ${event.userIds.map(id => `<li class="bg-[#f3f0ea] px-4 py-2 rounded-xl">사용자 ${id}</li>`).join('')}
+             </ul>
+        </div>
+        <div><h2 class="text-lg font-semibold mb-2">이벤트 날짜</h2>
+             <ul class="flex flex-wrap gap-2 text-sm text-gray-600">
+               ${event.eventDates.map(d => `<li class="bg-[#fcf8f3] px-4 py-2 rounded-full">${d}</li>`).join('')}
+             </ul>
+        </div>
         <div class="flex justify-between items-center">
           <div class="space-x-2">
-            <button onclick="editEvent('${data.id}', '${data.title}', ${JSON.stringify(data.dates)})" class="bg-yellow-400 hover:bg-yellow-300 text-white px-4 py-2 rounded-full">이벤트 수정</button>
-            <button onclick="deleteEvent('${data.id}')" class="bg-red-400 hover:bg-red-300 text-white px-4 py-2 rounded-full">이벤트 삭제</button>
+            <button onclick="editEvent('${event.eventId}', '${event.title}', ${JSON.stringify(event.eventDates)})"
+                    class="bg-yellow-400 hover:bg-yellow-300 text-white px-4 py-2 rounded-full">이벤트 수정</button>
+            <button onclick="deleteEvent('${event.eventId}')" 
+                    class="bg-red-400 hover:bg-red-300 text-white px-4 py-2 rounded-full">이벤트 삭제</button>
           </div>
-          <button onclick="location.href='/schedule/create?eventId=${data.id}'" class="bg-[#7c6dfa] text-white px-6 py-2 rounded-full">스케줄 생성</button>
+          <button onclick="location.href='/schedule/create?eventId=${event.eventId}'"
+                  class="bg-[#7c6dfa] text-white px-6 py-2 rounded-full">스케줄 생성</button>
         </div>`;
     }
 
     async function deleteEvent(eventId) {
       const csrf = await getCsrfToken();
-      const res = await fetch('/events', {
+      const res = await fetch('/api/events', {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, eventId, _csrf: csrf })
@@ -66,10 +82,16 @@ if (!userId) {
       const newDate = prompt("추가할 날짜를 입력하세요 (예: 2025-05-31)");
       if (!newDate) return;
       const csrf = await getCsrfToken();
-      const res = await fetch('/events', {
+      const res = await fetch('/api/events', {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, eventId, title, eventDates: [...dates, newDate], _csrf: csrf })
+        body: JSON.stringify({
+          userId,
+          eventId,
+          title,
+          eventDates: [...dates, newDate],
+          _csrf: csrf
+        })
       });
       const result = await res.json();
       if (result.result === "success") {

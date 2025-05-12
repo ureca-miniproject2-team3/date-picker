@@ -75,162 +75,163 @@
     </div>
   </div>
 
-  <script>
-    const eventId = new URLSearchParams(location.search).get("eventId");
-    const userId = sessionStorage.getItem("userId");
+  <<script>
+  const eventId = new URLSearchParams(location.search).get("eventId");
+  const userId = sessionStorage.getItem("userId");
 
-if (!userId) {
-  alert("로그인이 필요합니다.");
-  location.href = "/login.html";
-}
+  if (!userId) {
+    alert("로그인이 필요합니다.");
+    location.href = "/login.html";
+  }
 
-    const grid = document.getElementById("timeGrid");
-    const startTimeSelect = document.getElementById("startTime");
-    const endTimeSelect = document.getElementById("endTime");
+  const grid = document.getElementById("timeGrid");
+  const startTimeSelect = document.getElementById("startTime");
+  const endTimeSelect = document.getElementById("endTime");
 
-    const times = [];
-    for (let h = 0; h < 24; h++) {
-      times.push(`${h.toString().padStart(2, '0')}:00`);
-      times.push(`${h.toString().padStart(2, '0')}:30`);
-    }
+  const times = [];
+  for (let h = 0; h < 24; h++) {
+    times.push(`${h.toString().padStart(2, '0')}:00`);
+    times.push(`${h.toString().padStart(2, '0')}:30`);
+  }
 
-    times.forEach(t => {
-      const div = document.createElement("div");
-      div.className = "time-cell";
-      div.dataset.time = t;
-      div.textContent = t;
-      grid.appendChild(div);
+  times.forEach(t => {
+    const div = document.createElement("div");
+    div.className = "time-cell";
+    div.dataset.time = t;
+    div.textContent = t;
+    grid.appendChild(div);
 
-      const opt1 = new Option(t, t);
-      const opt2 = new Option(t, t);
-      startTimeSelect.appendChild(opt1);
-      endTimeSelect.appendChild(opt2);
+    const opt1 = new Option(t, t);
+    const opt2 = new Option(t, t);
+    startTimeSelect.appendChild(opt1);
+    endTimeSelect.appendChild(opt2);
+  });
+
+  const cells = document.querySelectorAll(".time-cell");
+  let isDragging = false;
+  let startCell = null;
+
+  cells.forEach(cell => {
+    cell.addEventListener("mousedown", () => {
+      isDragging = true;
+      startCell = cell;
+      cells.forEach(c => c.classList.remove("selected"));
+      cell.classList.add("selected");
     });
 
-    const cells = document.querySelectorAll(".time-cell");
-    let isDragging = false;
-    let startCell = null;
-
-    cells.forEach(cell => {
-      cell.addEventListener("mousedown", () => {
-        isDragging = true;
-        startCell = cell;
-        cells.forEach(c => c.classList.remove("selected"));
-        cell.classList.add("selected");
-      });
-
-      cell.addEventListener("mouseenter", () => {
-        if (isDragging && startCell) {
-          let startIndex = [...cells].indexOf(startCell);
-          let currentIndex = [...cells].indexOf(cell);
-
-          cells.forEach(c => c.classList.remove("selected"));
-
-          let [from, to] = [startIndex, currentIndex].sort((a, b) => a - b);
-          for (let i = from; i <= to; i++) {
-            cells[i].classList.add("selected");
-          }
-        }
-      });
-    });
-
-    document.addEventListener("mouseup", () => {
+    cell.addEventListener("mouseenter", () => {
       if (isDragging && startCell) {
-        isDragging = false;
-        const selected = document.querySelectorAll(".time-cell.selected");
-        if (selected.length > 0) {
-          const start = selected[0].dataset.time;
-          const end = selected[selected.length - 1].dataset.time;
-          const date = document.getElementById("datePicker").value;
-          document.getElementById("dragStart").value = start;
-          document.getElementById("dragEnd").value = end;
-        }
-      }
-    });
+        let startIndex = [...cells].indexOf(startCell);
+        let currentIndex = [...cells].indexOf(cell);
 
-    async function getCsrfToken() {
-      const res = await fetch('/api/auth/csrf-token', { credentials: 'same-origin' });
-      const data = await res.json();
-      return data.token;
-    }
-
-    async function submitSchedule(data) {
-      try {
-        const csrf = await getCsrfToken();
-
-        const res = await fetch("/schedules", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId,
-            eventId,
-            startTime: data.startTime,
-            endTime: data.endTime,
-            _csrf: csrf
-          })
-        });
-
-        const result = await res.json();
-        if (result.result === "success") {
-          alert("스케줄이 저장되었습니다.");
-          location.href = `/event.html?id=${eventId}`;
-        } else {
-          alert("실패: " + JSON.stringify(result));
-        }
-      } catch (err) {
-        alert("서버 오류 발생");
-        console.error(err);
-      }
-    }
-
-    function formatTime(date, time) {
-      return `${date}T${time}:00`;
-    }
-
-    // 공통 폼 제출 처리
-    document.getElementById("form-drag").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const date = document.getElementById("datePicker").value;
-      const start = document.getElementById("dragStart").value;
-      const end = document.getElementById("dragEnd").value;
-      if (!start || !end) return alert("시간을 선택해주세요.");
-      submitSchedule({
-        startTime: formatTime(date, start),
-        endTime: formatTime(date, end)
-      });
-    });
-
-    document.getElementById("form-direct").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const date = document.getElementById("date").value;
-      const start = document.getElementById("startTime").value;
-      const end = document.getElementById("endTime").value;
-      if (!start || !end) return alert("시간을 선택해주세요.");
-      submitSchedule({
-        startTime: formatTime(date, start),
-        endTime: formatTime(date, end)
-      });
-    });
-
-    // 셀렉트박스 바뀔 때 드래그 반영
-    startTimeSelect.addEventListener("change", updateGridFromDropdowns);
-    endTimeSelect.addEventListener("change", updateGridFromDropdowns);
-    document.getElementById("date").addEventListener("change", updateGridFromDropdowns);
-
-    function updateGridFromDropdowns() {
-      const startVal = startTimeSelect.value;
-      const endVal = endTimeSelect.value;
-      const startIdx = [...cells].findIndex(c => c.dataset.time === startVal);
-      const endIdx = [...cells].findIndex(c => c.dataset.time === endVal);
-
-      if (startIdx >= 0 && endIdx >= 0) {
         cells.forEach(c => c.classList.remove("selected"));
-        const [from, to] = [startIdx, endIdx].sort((a, b) => a - b);
+
+        let [from, to] = [startIndex, currentIndex].sort((a, b) => a - b);
         for (let i = from; i <= to; i++) {
           cells[i].classList.add("selected");
         }
       }
+    });
+  });
+
+  document.addEventListener("mouseup", () => {
+    if (isDragging && startCell) {
+      isDragging = false;
+      const selected = document.querySelectorAll(".time-cell.selected");
+      if (selected.length > 0) {
+        const start = selected[0].dataset.time;
+        const end = selected[selected.length - 1].dataset.time;
+        const date = document.getElementById("datePicker").value;
+        document.getElementById("dragStart").value = start;
+        document.getElementById("dragEnd").value = end;
+      }
     }
-  </script>
+  });
+
+  async function getCsrfToken() {
+    const res = await fetch('/api/auth/csrf-token', { credentials: 'same-origin' });
+    const data = await res.json();
+    return data.token;
+  }
+
+  async function submitSchedule(data) {
+    try {
+      const csrf = await getCsrfToken();
+
+      const res = await fetch("/api/schedules", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: new URLSearchParams({
+          userId,
+          eventId,
+          startTime: data.startTime,
+          endTime: data.endTime,
+          _csrf: csrf
+        })
+      });
+
+      const result = await res.json();
+      if (result.result === "success") {
+        alert("스케줄이 저장되었습니다.");
+        location.href = `/event.html?id=${eventId}`;
+      } else {
+        alert("실패: " + JSON.stringify(result));
+      }
+    } catch (err) {
+      alert("서버 오류 발생");
+      console.error(err);
+    }
+  }
+
+  function formatTime(date, time) {
+    return `${date}T${time}:00`;
+  }
+
+  document.getElementById("form-drag").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const date = document.getElementById("datePicker").value;
+    const start = document.getElementById("dragStart").value;
+    const end = document.getElementById("dragEnd").value;
+    if (!start || !end) return alert("시간을 선택해주세요.");
+    submitSchedule({
+      startTime: formatTime(date, start),
+      endTime: formatTime(date, end)
+    });
+  });
+
+  document.getElementById("form-direct").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const date = document.getElementById("date").value;
+    const start = document.getElementById("startTime").value;
+    const end = document.getElementById("endTime").value;
+    if (!start || !end) return alert("시간을 선택해주세요.");
+    submitSchedule({
+      startTime: formatTime(date, start),
+      endTime: formatTime(date, end)
+    });
+  });
+
+  startTimeSelect.addEventListener("change", updateGridFromDropdowns);
+  endTimeSelect.addEventListener("change", updateGridFromDropdowns);
+  document.getElementById("date").addEventListener("change", updateGridFromDropdowns);
+
+  function updateGridFromDropdowns() {
+    const startVal = startTimeSelect.value;
+    const endVal = endTimeSelect.value;
+    const startIdx = [...cells].findIndex(c => c.dataset.time === startVal);
+    const endIdx = [...cells].findIndex(c => c.dataset.time === endVal);
+
+    if (startIdx >= 0 && endIdx >= 0) {
+      cells.forEach(c => c.classList.remove("selected"));
+      const [from, to] = [startIdx, endIdx].sort((a, b) => a - b);
+      for (let i = from; i <= to; i++) {
+        cells[i].classList.add("selected");
+      }
+    }
+  }
+</script>
+
 </body>
 </html>
