@@ -201,11 +201,26 @@
                 return new Date(a.start) - new Date(b.start);
             });
 
-            // 사용자 정보 매핑을 위한 Map 생성 (실제 구현에서는 사용자 정보를 가져와야 함)
+            // 사용자 정보 매핑을 위한 Map 생성
             const userMap = {};
-            event.userIds.forEach(id => {
-                userMap[id] = `사용자 ${id}`;
-            });
+
+            // 모든 사용자 정보 가져오기
+            try {
+                const usersRes = await fetch(`/api/users`);
+                const usersResult = await usersRes.json();
+                const users = usersResult?.userDtoList || [];
+
+                // 사용자 ID를 키로, 이름을 값으로 하는 맵 생성
+                users.forEach(user => {
+                    userMap[user.id] = user.name || `사용자 ${user.id}`;
+                });
+            } catch (error) {
+                console.error('Error fetching users:', error);
+                // 오류 발생 시 기본값으로 설정
+                event.userIds.forEach(id => {
+                    userMap[id] = `사용자 ${id}`;
+                });
+            }
 
             const container = document.getElementById("eventContainer");
             container.innerHTML = `
@@ -233,7 +248,7 @@
                     <span class="w-6 h-6 rounded-full bg-[#7c6dfa] text-white flex items-center justify-center text-xs mr-2">
                       ${id}
                     </span>
-                    사용자 ${id}
+                    ${userMap[id] || `사용자 ${id}`}
                   </div>
                 `).join('')}
               </div>
@@ -498,7 +513,7 @@
                             afterLabel: function (context) {
                                 const slotIndex = context.dataIndex;
                                 const slot = timeSlots[slotIndex];
-                                return slot.userIds.map(id => `사용자 ${id}`);
+                                return slot.userIds.map(id => userMap[id] || `사용자 ${id}`);
                             }
                         }
                     }
