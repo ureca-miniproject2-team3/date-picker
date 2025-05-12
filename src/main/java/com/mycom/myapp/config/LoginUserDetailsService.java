@@ -22,6 +22,7 @@ public class LoginUserDetailsService implements UserDetailsService {
 		
 		if(userDto != null) {
 			UserDetails userDetails = LoginUserDetails.builder()
+							.userId(userDto.getId())
 							.username(userDto.getEmail())
 							.password(userDto.getPassword())
 							.build();

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 // Login 성공
 @Component
@@ -20,9 +21,20 @@ public class LoginAuthenticationSuccessHandler implements AuthenticationSuccessH
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentType("application/json");
 		
-		String jsonStr = """
-					{"result":"success"}
-				""";
+		LoginUserDetails userDetails = (LoginUserDetails) authentication.getPrincipal();
+		
+		Long userId = userDetails.getUserId();
+		
+		HttpSession session = request.getSession();
+		
+		session.setAttribute("userId", userDetails.getUserId());
+		
+		String jsonStr = String.format("""
+					{
+						"result":"success",
+						"userId":"%s"
+					}
+					""", userId);
 		
 		response.getWriter().write(jsonStr);
 	}
