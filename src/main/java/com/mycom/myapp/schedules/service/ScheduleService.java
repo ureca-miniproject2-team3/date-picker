@@ -6,6 +6,8 @@ import com.mycom.myapp.schedules.dto.ScheduleResultDto;
 public interface ScheduleService {
 	
 	ScheduleResultDto insertSchedule(ScheduleDto scheduleDto);
+
+	ScheduleResultDto deleteSchedule(Long scheduleId, Long userId);
 	
 	ScheduleResultDto listSchedule(Long eventId);
 	
