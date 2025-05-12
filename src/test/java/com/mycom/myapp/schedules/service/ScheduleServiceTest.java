@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
@@ -221,5 +222,93 @@ public class ScheduleServiceTest {
 		assertEquals("fail", result.getResult());
 		assertNull(result.getTimeSlots());
 		assertNull(result.getMaxCount());
+	}
+
+	@Test
+	void deleteScheduleTest_Success() {
+		// given
+		Long scheduleId = 1L;
+		Long userId = 1L;
+
+		ScheduleDto scheduleDto = ScheduleDto.builder()
+				.scheduleId(scheduleId)
+				.userId(userId)
+				.eventId(205L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+
+		when(scheduleDao.detailSchedule(scheduleId)).thenReturn(scheduleDto);
+		when(scheduleDao.deleteSchedule(scheduleId)).thenReturn(1);
+
+		// when
+		ScheduleResultDto result = scheduleService.deleteSchedule(scheduleId, userId);
+
+		// then
+		assertEquals("success", result.getResult());
+	}
+
+	@Test
+	void deleteScheduleTest_Forbidden() {
+		// given
+		Long scheduleId = 1L;
+		Long ownerId = 1L;
+		Long differentUserId = 2L;
+
+		ScheduleDto scheduleDto = ScheduleDto.builder()
+				.scheduleId(scheduleId)
+				.userId(ownerId)
+				.eventId(205L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+
+		when(scheduleDao.detailSchedule(scheduleId)).thenReturn(scheduleDto);
+
+		// when
+		ScheduleResultDto result = scheduleService.deleteSchedule(scheduleId, differentUserId);
+
+		// then
+		assertEquals("forbidden", result.getResult());
+	}
+
+	@Test
+	void deleteScheduleTest_Fail() {
+		// given
+		Long scheduleId = 1L;
+		Long userId = 1L;
+
+		ScheduleDto scheduleDto = ScheduleDto.builder()
+				.scheduleId(scheduleId)
+				.userId(userId)
+				.eventId(205L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+
+		when(scheduleDao.detailSchedule(scheduleId)).thenReturn(scheduleDto);
+		when(scheduleDao.deleteSchedule(scheduleId)).thenReturn(0);
+
+		// when
+		ScheduleResultDto result = scheduleService.deleteSchedule(scheduleId, userId);
+
+		// then
+		assertEquals("fail", result.getResult());
+	}
+
+	@Test
+	void deleteScheduleTest_Exception() {
+		// given
+		Long scheduleId = 1L;
+		Long userId = 1L;
+
+		when(scheduleDao.detailSchedule(anyLong()))
+				.thenThrow(new RuntimeException("DB Error"));
+
+		// when
+		ScheduleResultDto result = scheduleService.deleteSchedule(scheduleId, userId);
+
+		// then
+		assertEquals("fail", result.getResult());
 	}
 }
