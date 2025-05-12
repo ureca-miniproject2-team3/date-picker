@@ -55,11 +55,9 @@
       }
 
       try {
-        const csrf = await getCsrfToken();
         const res = await fetch(`/users/${userId}/events`, {
           method: "GET",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ _csrf: csrf })
+          credentials: "same-origin"
         });
 
         const result = await res.json();
@@ -74,6 +72,7 @@
         }
       } catch (err) {
         alert("서버 오류");
+        console.error(err);
       }
     }
 
