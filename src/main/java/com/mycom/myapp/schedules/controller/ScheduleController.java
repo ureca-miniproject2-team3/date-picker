@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.mycom.myapp.schedules.dto.ScheduleDto;
@@ -41,7 +42,7 @@ public class ScheduleController {
 
 	@DeleteMapping("/schedules/{scheduleId}")
 	@Operation(summary = "스케줄 삭제", description = "스케줄 ID 와 일치하는 스케줄을 삭제합니다.")
-	public ResponseEntity<ScheduleResultDto> deleteSchedule(@PathVariable("scheduleId") Long scheduleId, Long userId) {
+	public ResponseEntity<ScheduleResultDto> deleteSchedule(@PathVariable("scheduleId") Long scheduleId, @RequestParam("userId") Long userId) {
 		ScheduleResultDto scheduleResultDto = scheduleService.deleteSchedule(scheduleId, userId);
 
 		if ("success".equals(scheduleResultDto.getResult())) {
