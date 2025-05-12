@@ -104,6 +104,8 @@
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         credentials: "same-origin"
       });
+      
+      sessionStorage.clear();
 
       window.location.href = res.redirected ? res.url : "/";
     }
