@@ -291,7 +291,7 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1 text-[#7c6dfa]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              가장 많은 인원이 가능한 시간
+              가장 많이 가능한 시간
               <span class="text-[#7c6dfa] font-bold ml-1">(최대 ${maxCount}명)</span>
             </h2>
 
@@ -482,7 +482,11 @@
 
         const labels = timeSlots.map(slot => {
             const start = new Date(slot.start);
-            return `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`;
+            const dateStr = start.toLocaleDateString('ko-KR', {
+                month: 'short',
+                day: 'numeric'
+            });
+            return `${dateStr} ${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`;
         });
 
         const data = timeSlots.map(slot => slot.userIds.length);
@@ -550,7 +554,7 @@
                         },
                         title: {
                             display: true,
-                            text: '시간',
+                            text: '날짜 및 시간',
                             font: {
                                 size: 14
                             }
