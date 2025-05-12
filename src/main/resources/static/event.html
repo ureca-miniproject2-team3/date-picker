@@ -226,12 +226,14 @@
             container.innerHTML = `
           <div class="flex justify-between items-center border-b pb-5">
             <h1 class="text-3xl font-bold">${event.title}</h1>
+            ${userId == event.ownerId ? `
             <button onclick="showInviteModal()" class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-4 py-2 rounded-full text-sm flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
               </svg>
               사용자 초대
             </button>
+            ` : ''}
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -433,6 +435,7 @@
 
           <div class="flex justify-between items-center mt-8">
             <div class="space-x-4 flex">
+              ${userId == event.ownerId ? `
               <button onclick="editEvent('${event.eventId}', '${event.title}', ${event.eventId})"
                       data-dates='${JSON.stringify(event.eventDates)}'
                       class="bg-yellow-400 hover:bg-yellow-300 text-white px-5 py-2.5 rounded-full flex items-center shadow-sm transition duration-200 ease-in-out hover:shadow">
@@ -448,6 +451,7 @@
                 </svg>
                 <span class="leading-normal">이벤트 삭제</span>
               </button>
+              ` : ''}
             </div>
             <button onclick="location.href='/schedule/create?eventId=${event.eventId}'"
                     class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-5 py-2.5 rounded-full flex items-center shadow-sm transition duration-200 ease-in-out hover:shadow">
