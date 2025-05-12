@@ -51,14 +51,14 @@ public class EventController {
 
     @PostMapping("/events")
     @Operation(summary = "이벤트 생성", description = "새로운 이벤트를 생성합니다.")
-    public ResponseEntity<EventResultDto> createEvent(@RequestParam("eventDto") EventDto eventDto) {
+    public ResponseEntity<EventResultDto> createEvent(EventDto eventDto) {
 
         return createResponse(eventService.createEvent(eventDto));
     }
 
     @PutMapping("/events")
     @Operation(summary = "이벤트 수정", description = "이벤트 제목을 수정하고, 날짜를 추가할 수 있습니다.")
-    public ResponseEntity<EventResultDto> updateEvent(@RequestParam("eventDto") EventDto eventDto) {
+    public ResponseEntity<EventResultDto> updateEvent(EventDto eventDto) {
 
         return createResponse(eventService.updateEvent(eventDto));
     }
