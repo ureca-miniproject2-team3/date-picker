@@ -263,7 +263,7 @@ public class ScheduleServiceTest {
 		
 		ScheduleResultDto result = scheduleService.updateSchedule(inputSchedule);
 		
-		assertEquals("unauthorized", result.getResult());
+		assertEquals("forbidden", result.getResult());
 	}
 	
 	@Test
