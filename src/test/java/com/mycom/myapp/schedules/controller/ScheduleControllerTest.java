@@ -3,6 +3,7 @@ package com.mycom.myapp.schedules.controller;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -192,6 +193,48 @@ public class ScheduleControllerTest {
 
 		mockMvc.perform(get("/api/schedules/overlap/205")
 				.with(csrf()))
+				.andExpect(status().isInternalServerError())
+				.andExpect(jsonPath("$.result").value("fail"));
+	}
+
+	@Test
+	void deleteSchedule_Success() throws Exception {
+		ScheduleResultDto resultDto = new ScheduleResultDto();
+		resultDto.setResult("success");
+
+		when(scheduleService.deleteSchedule(1L, 1L)).thenReturn(resultDto);
+
+		mockMvc.perform(delete("/api/schedules/1")
+				.with(csrf())
+				.param("userId", "1"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.result").value("success"));
+	}
+
+	@Test
+	void deleteSchedule_Forbidden() throws Exception {
+		ScheduleResultDto resultDto = new ScheduleResultDto();
+		resultDto.setResult("forbidden");
+
+		when(scheduleService.deleteSchedule(1L, 2L)).thenReturn(resultDto);
+
+		mockMvc.perform(delete("/api/schedules/1")
+				.with(csrf())
+				.param("userId", "2"))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.result").value("forbidden"));
+	}
+
+	@Test
+	void deleteSchedule_Fail() throws Exception {
+		ScheduleResultDto resultDto = new ScheduleResultDto();
+		resultDto.setResult("fail");
+
+		when(scheduleService.deleteSchedule(1L, 1L)).thenReturn(resultDto);
+
+		mockMvc.perform(delete("/api/schedules/1")
+				.with(csrf())
+				.param("userId", "1"))
 				.andExpect(status().isInternalServerError())
 				.andExpect(jsonPath("$.result").value("fail"));
 	}

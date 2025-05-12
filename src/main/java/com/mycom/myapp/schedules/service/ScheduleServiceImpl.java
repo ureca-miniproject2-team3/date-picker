@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,33 @@ public class ScheduleServiceImpl implements ScheduleService {
 			scheduleResultDto.setResult("fail");
 		}
 		
+		return scheduleResultDto;
+	}
+
+	@Override
+	public ScheduleResultDto deleteSchedule(Long scheduleId, Long userId) {
+		ScheduleResultDto scheduleResultDto = new ScheduleResultDto();
+
+		try {
+			ScheduleDto schedule = scheduleDao.detailSchedule(scheduleId);
+
+			if (!Objects.equals(schedule.getScheduleId(), userId)) {
+				scheduleResultDto.setResult("forbidden");
+
+			} else {
+				int ret = scheduleDao.deleteSchedule(scheduleId);
+
+				if (ret == 1) {
+					scheduleResultDto.setResult("success");
+				} else {
+					scheduleResultDto.setResult("fail");
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			scheduleResultDto.setResult("fail");
+		}
+
 		return scheduleResultDto;
 	}
 

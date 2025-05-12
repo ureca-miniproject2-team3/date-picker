@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,12 +19,14 @@ import org.junit.jupiter.api.Test;
 public class EventListServiceTest {
 
     private EventDao eventDao;
+    private ScheduleDao scheduleDao;
     private EventServiceImpl eventService;
 
     @BeforeEach
     void setUp() {
         eventDao = mock(EventDao.class);
-        eventService = new EventServiceImpl(eventDao);
+        scheduleDao = mock(ScheduleDao.class);
+        eventService = new EventServiceImpl(eventDao, scheduleDao);
     }
 
     @Test
@@ -31,18 +34,18 @@ public class EventListServiceTest {
         // given
         Long userId = 1L;
         List<EventSummaryDto> eventList = new ArrayList<>();
-        
+
         EventSummaryDto event1 = new EventSummaryDto();
         event1.setEventId(1L);
         event1.setTitle("테스트 이벤트1");
-        
+
         EventSummaryDto event2 = new EventSummaryDto();
         event2.setEventId(2L);
         event2.setTitle("테스트 이벤트2");
-        
+
         eventList.add(event1);
         eventList.add(event2);
-        
+
         when(eventDao.listEvent(userId)).thenReturn(eventList);
 
         // when

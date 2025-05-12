@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +26,9 @@ public class EventUpdateServiceTest {
 
     @Mock
     private EventDao eventDao;
+
+    @Mock
+    private ScheduleDao scheduleDao;
 
     @InjectMocks
     private EventServiceImpl eventService;
