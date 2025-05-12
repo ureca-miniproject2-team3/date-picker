@@ -1,19 +1,20 @@
 package com.mycom.myapp.schedules.service;
 
-import com.mycom.myapp.schedules.dto.TimeSlotDto;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+
 import org.springframework.stereotype.Service;
 
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import com.mycom.myapp.schedules.dto.ScheduleDto;
 import com.mycom.myapp.schedules.dto.ScheduleResultDto;
+import com.mycom.myapp.schedules.dto.TimeSlotDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -150,8 +151,8 @@ public class ScheduleServiceImpl implements ScheduleService {
 			ScheduleDto findScheduleDto = scheduleDao.detailSchedule(scheduleDto.getScheduleId());
 			
 			// 스케줄 등록자와 수정자가 다른 경우 -> 불가
-			if(scheduleDto.getUserId() != findScheduleDto.getUserId()) {
-				scheduleResultDto.setResult("unauthorized");
+			if(!Objects.equals(scheduleDto.getUserId(), findScheduleDto.getUserId())) {
+				scheduleResultDto.setResult("forbidden");
 				return scheduleResultDto;
 			}
 			
