@@ -391,7 +391,7 @@
                                             <div class="bg-[#f0efff] px-4 py-3 font-medium text-[#7c6dfa]">
                                                 ${dateStr}
                                             </div>
-                                            <div class="divide-y">
+                                            <div class="divide-y max-h-64 overflow-y-auto">
                                                 ${dateSchedules.map(schedule => {
                                                     const startTime = new Date(schedule.startTime);
                                                     const endTime = new Date(schedule.endTime);
@@ -457,7 +457,7 @@
               </button>
               ` : ''}
             </div>
-            <button onclick="location.href='/schedule/create?eventId=${event.eventId}'"
+            <button onclick="location.href='/schedule.html?eventId=${event.eventId}'"
                     class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-5 py-2.5 rounded-full flex items-center shadow-sm transition duration-200 ease-in-out hover:shadow">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
