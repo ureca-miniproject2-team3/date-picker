@@ -77,7 +77,12 @@
 
   <script>
     const eventId = new URLSearchParams(location.search).get("eventId");
-    const userId = 1; // 실제 사용자는 로그인 정보로 대체되어야 합니다
+    const userId = sessionStorage.getItem("userId");
+
+if (!userId) {
+  alert("로그인이 필요합니다.");
+  location.href = "/login.html";
+}
 
     const grid = document.getElementById("timeGrid");
     const startTimeSelect = document.getElementById("startTime");
