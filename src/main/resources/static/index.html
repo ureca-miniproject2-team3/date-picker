@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>이벤트 목록</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
   <div class="max-w-5xl mx-auto space-y-8">
-    <!-- 로그인/로그아웃 버튼 -->
+    <!-- 로그인 / 로그아웃 버튼 -->
     <div class="flex justify-between items-center">
       <button onclick="location.href='login.html'" class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">
         로그인
@@ -17,7 +17,7 @@
       </button>
     </div>
 
-    <!-- 이벤트 목록 or 안내 -->
+    <!-- 이벤트 목록 -->
     <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
 
     <!-- 이벤트 생성 버튼 -->
@@ -59,31 +59,31 @@
           credentials: "same-origin"
         });
 
-        if (!res.ok) {
-          const errorText = await res.text();
-          list.innerHTML = `
-            <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
-              <p class="text-lg font-semibold">요청 실패 (${res.status} ${res.statusText})</p>
-              <pre class="text-sm mt-2 whitespace-pre-wrap break-words">${errorText}</pre>
-            </div>`;
-          return;
-        }
-
         const result = await res.json();
-        if (result.result === "success") {
-          list.innerHTML = result.events.map(e => `
-            <div onclick="location.href='event.html?id=${e.eventId}'"
-                 class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
-              ${e.title}
-            </div>`).join('');
+        console.log("서버 응답:", result);
+
+        const events = result?.events;
+
+        if (result.result === "success" && Array.isArray(events)) {
+          if (events.length === 0) {
+            list.innerHTML = `
+              <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
+                등록된 이벤트가 없습니다.
+              </div>`;
+          } else {
+            list.innerHTML = events.map(e => `
+              <div onclick="location.href='event.html?id=${e.eventId}'"
+                   class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
+                ${e.title}
+              </div>`).join('');
+          }
         } else {
           list.innerHTML = `
             <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
               <p class="text-lg font-semibold">API 응답 오류</p>
-              <pre class="text-sm mt-2">${JSON.stringify(result)}</pre>
+              <pre class="text-sm mt-2 whitespace-pre-wrap">${JSON.stringify(result, null, 2)}</pre>
             </div>`;
         }
-
       } catch (err) {
         list.innerHTML = `
           <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
@@ -98,7 +98,7 @@
       const csrf = await getCsrfToken();
       const urlParams = new URLSearchParams({ _csrf: csrf });
 
-      const res = await fetch("/logout", {
+      const res = await fetch("/api/logout", {
         method: "POST",
         body: urlParams,
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
