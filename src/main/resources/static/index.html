@@ -1,76 +1,80 @@
+<!-- ✅ index.html - 사용자별 이벤트 목록 조회 (/users/{userId}/events) -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>이벤트 목록</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
   <div class="max-w-5xl mx-auto space-y-8">
-    <!-- 상단 바 -->
     <div class="flex justify-between items-center">
-      <button onclick="location.href='login.html'" class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">
-        로그인
-      </button>
-      <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded-full shadow hover:bg-red-400 transition">
-        로그아웃
-      </button>
+      <button onclick="location.href='login.html'" class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">로그인</button>
+      <button id="logoutBtn" class="px-4 py-2 bg-red-500 text-white rounded-full shadow hover:bg-red-400 transition">로그아웃</button>
     </div>
 
-    <!-- 이벤트 목록 -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      <c:forEach items="${eventList}" var="event">
-        <div onclick="location.href='/event/${event.id}'"
-             class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
-          ${event.title}
-        </div>
-      </c:forEach>
-    </div>
+    <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
 
-    <!-- 하단 버튼 -->
     <div class="text-center">
-      <button onclick="location.href='/event/modify'"
-              class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">
-        이벤트 수정
-      </button>
+      <button onclick="location.href='create.html'" class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">이벤트 생성</button>
     </div>
   </div>
 
-  <!-- 로그아웃 처리 -->
   <script>
-  	window.onload = function() {	    
-	    document.getElementById("logoutBtn").addEventListener("click", logout);
-	}
-  	
-	async function getCsrfToken(){
-	    let response = await fetch('/api/auth/csrf-token', { method: 'GET', credentials: 'same-origin' }); // 자격 증명
-	    let data = await response.json();
-	    
-	    return data.token;
-	}
+    const userId = sessionStorage.getItem("userId");
 
-	async function logout() {
-	    const csrfToken = await getCsrfToken();
-	    
-	    let urlParams = new URLSearchParams({
-	        _csrf: csrfToken
-	    });
-	    
-	    let response = await fetch("/logout", {
-	        method: "POST",
-	        body: urlParams,
-	        headers: {
-	            "Content-Type": "application/x-www-form-urlencoded"
-	        },
-	        credentials: "same-origin"
-	    });
-	    
-	    if (response.redirected) {
-	        window.location.href = response.url;
-	    } else {
-	        window.location.href = "/";
-	    }
-	}
+if (!userId) {
+  alert("로그인이 필요합니다.");
+  location.href = "/login.html";
+}
+
+    window.onload = function () {
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+      fetchEvents();
+    };
+
+    async function getCsrfToken() {
+      const res = await fetch('/api/auth/csrf-token', { credentials: 'same-origin' });
+      const data = await res.json();
+      return data.token;
+    }
+
+    async function fetchEvents() {
+      try {
+        const csrf = await getCsrfToken();
+        const res = await fetch(`/users/${userId}/events`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ _csrf: csrf })
+        });
+
+        const result = await res.json();
+        if (result.result === "success") {
+          const list = document.getElementById("eventList");
+          list.innerHTML = result.events.map(e => `
+            <div onclick="location.href='event.html?id=${e.eventId}'"
+                 class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
+              ${e.title}
+            </div>`).join('');
+        } else {
+          alert("이벤트 목록 조회 실패");
+        }
+      } catch (err) {
+        alert("서버 오류");
+      }
+    }
+
+    async function logout() {
+      const csrf = await getCsrfToken();
+      const urlParams = new URLSearchParams({ _csrf: csrf });
+      const res = await fetch("/logout", {
+        method: "POST",
+        body: urlParams,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        credentials: "same-origin"
+      });
+      window.location.href = res.redirected ? res.url : "/";
+    }
   </script>
 </body>
 </html>

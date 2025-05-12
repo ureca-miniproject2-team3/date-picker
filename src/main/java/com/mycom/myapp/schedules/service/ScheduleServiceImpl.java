@@ -42,6 +42,33 @@ public class ScheduleServiceImpl implements ScheduleService {
 	}
 
 	@Override
+	public ScheduleResultDto deleteSchedule(Long scheduleId, Long userId) {
+		ScheduleResultDto scheduleResultDto = new ScheduleResultDto();
+
+		try {
+			ScheduleDto schedule = scheduleDao.detailSchedule(scheduleId);
+
+			if (!Objects.equals(schedule.getScheduleId(), userId)) {
+				scheduleResultDto.setResult("forbidden");
+
+			} else {
+				int ret = scheduleDao.deleteSchedule(scheduleId);
+
+				if (ret == 1) {
+					scheduleResultDto.setResult("success");
+				} else {
+					scheduleResultDto.setResult("fail");
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			scheduleResultDto.setResult("fail");
+		}
+
+		return scheduleResultDto;
+	}
+
+	@Override
 	public ScheduleResultDto listSchedule(Long eventId) {
 		ScheduleResultDto scheduleResultDto = new ScheduleResultDto();
 		

@@ -9,6 +9,12 @@
 		INSERT INTO schedule(user_id, event_id, start_time, end_time)
 		VALUES (#{userId}, #{eventId}, #{startTime}, #{endTime})			
 	</insert>
+
+	<delete id="deleteSchedule">
+		delete
+		from schedule
+		where id = #{scheduleId}
+	</delete>
 	
 	<select id="listSchedule" parameterType="java.lang.Long" resultType="com.mycom.myapp.schedules.dto.ScheduleDto">
 		SELECT id as scheduleId, user_id as userId, event_id as eventId, start_time as startTime, end_time as endTime

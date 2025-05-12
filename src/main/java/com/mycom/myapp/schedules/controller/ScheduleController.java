@@ -2,6 +2,7 @@ package com.mycom.myapp.schedules.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -34,6 +35,22 @@ public class ScheduleController {
 			return ResponseEntity.ok(scheduleResultDto);
 		} 
 		else {
+			return ResponseEntity.internalServerError().body(scheduleResultDto);
+		}
+	}
+
+	@DeleteMapping("/schedules/{scheduleId}")
+	@Operation(summary = "스케줄 삭제", description = "스케줄 ID 와 일치하는 스케줄을 삭제합니다.")
+	public ResponseEntity<ScheduleResultDto> deleteSchedule(@PathVariable("scheduleId") Long scheduleId, Long userId) {
+		ScheduleResultDto scheduleResultDto = scheduleService.deleteSchedule(scheduleId, userId);
+
+		if ("success".equals(scheduleResultDto.getResult())) {
+			return ResponseEntity.ok(scheduleResultDto);
+
+		} else if ("forbidden".equals(scheduleResultDto.getResult())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(scheduleResultDto);
+
+		}else {
 			return ResponseEntity.internalServerError().body(scheduleResultDto);
 		}
 	}

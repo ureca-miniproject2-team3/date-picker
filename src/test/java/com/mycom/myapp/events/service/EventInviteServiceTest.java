@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,12 +15,14 @@ import org.junit.jupiter.api.Test;
 
 public class EventInviteServiceTest {
     private EventDao eventDao;
+    private ScheduleDao scheduleDao;
     private EventServiceImpl eventService;
 
     @BeforeEach
     void setUp() {
         eventDao = mock(EventDao.class);
-        eventService = new EventServiceImpl(eventDao);
+        scheduleDao = mock(ScheduleDao.class);
+        eventService = new EventServiceImpl(eventDao, scheduleDao);
     }
 
     @Test
@@ -29,13 +32,13 @@ public class EventInviteServiceTest {
         Long eventId = 100L;
         List<Long> invitedIds = Arrays.asList(2L, 3L);
         List<Long> existingParticipants = Arrays.asList(1L);
-        
+
         EventDto mockEventDto = EventDto.builder()
                 .eventId(eventId)
                 .title("테스트 이벤트")
                 .ownerId(inviterId)
                 .build();
-        
+
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
         when(eventDao.getParticipantsByEventId(eventId)).thenReturn(existingParticipants);
 
@@ -57,13 +60,13 @@ public class EventInviteServiceTest {
         Long ownerId = 1L;
         Long eventId = 100L;
         List<Long> invitedIds = Arrays.asList(3L, 4L);
-        
+
         EventDto mockEventDto = EventDto.builder()
                 .eventId(eventId)
                 .title("테스트 이벤트")
                 .ownerId(ownerId)
                 .build();
-        
+
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
 
         // when
@@ -83,13 +86,13 @@ public class EventInviteServiceTest {
         Long eventId = 100L;
         List<Long> invitedIds = Arrays.asList(2L, 3L);
         List<Long> existingParticipants = Arrays.asList(1L, 2L); // 2L은 이미 참가자
-        
+
         EventDto mockEventDto = EventDto.builder()
                 .eventId(eventId)
                 .title("테스트 이벤트")
                 .ownerId(inviterId)
                 .build();
-        
+
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
         when(eventDao.getParticipantsByEventId(eventId)).thenReturn(existingParticipants);
 
@@ -110,13 +113,13 @@ public class EventInviteServiceTest {
         Long inviterId = 1L;
         Long eventId = 100L;
         List<Long> invitedIds = Arrays.asList(2L, 3L);
-        
+
         EventDto mockEventDto = EventDto.builder()
                 .eventId(eventId)
                 .title("테스트 이벤트")
                 .ownerId(inviterId)
                 .build();
-        
+
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
         when(eventDao.getParticipantsByEventId(eventId)).thenThrow(new RuntimeException("데이터베이스 오류"));
 

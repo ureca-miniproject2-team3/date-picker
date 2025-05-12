@@ -9,21 +9,17 @@
       background-color: #7c6dfa !important;
       color: white !important;
     }
-    
     .date-disabled {
       opacity: 0.3;
       cursor: not-allowed !important;
       pointer-events: none;
     }
-    
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     }
-    
     .card-shadow {
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
     }
-    
     .btn-transition {
       transition: all 0.2s ease;
     }
@@ -31,23 +27,22 @@
 </head>
 <body class="bg-[#f8f1e7] min-h-screen flex items-center justify-center px-4 py-8">
   <div class="w-full max-w-3xl bg-white rounded-3xl p-8 card-shadow flex flex-col relative">
-    <!-- Header with back button -->
+    <!-- Header -->
     <div class="mb-6 flex items-center">
-      <button class="text-2xl text-gray-600 hover:text-gray-800 transition-colors">&#8592;</button>
+      <button class="text-2xl text-gray-600 hover:text-gray-800 transition-colors" onclick="history.back()">&#8592;</button>
       <h1 class="text-2xl font-bold text-gray-800 ml-4">새 이벤트 만들기</h1>
     </div>
-    
+
     <div class="flex flex-col md:flex-row gap-8">
       <!-- 왼쪽 입력 -->
       <div class="flex-1">
         <div class="mb-6">
           <label for="title" class="block font-bold text-gray-800 mb-2">이벤트 제목 <span class="font-normal text-sm text-gray-400">최대 50자</span></label>
-          <input type="text" id="title" placeholder="어떤 이벤트인가요?"
-            class="w-full px-4 py-3 rounded-xl bg-[#f0e9dd] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa] transition" maxlength="50" />
+          <input type="text" id="title" placeholder="어떤 이벤트인가요?" maxlength="50"
+            class="w-full px-4 py-3 rounded-xl bg-[#f0e9dd] text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa] transition" />
         </div>
 
         <div class="mb-6">
-          
           <div class="bg-[#f8f3ec] rounded-xl p-4 mt-6">
             <ul class="text-gray-600 text-sm mt-2 list-disc pl-5 space-y-1">
               <li>여러 날짜를 선택할 수 있습니다.</li>
@@ -61,9 +56,6 @@
       <div class="flex-1">
         <div class="mb-4">
           <label class="block font-bold text-gray-800 mb-2">설문 범위 <span class="font-normal text-sm text-gray-400">설문할 날짜의 범위를 설정해주세요.</span></label>
-          <div class="flex gap-2 mt-2">
-            <button class="bg-[#7c6dfa] text-white px-5 py-2 rounded-full text-sm font-medium shadow-sm btn-transition">날짜</button>
-          </div>
         </div>
 
         <div class="bg-[#fcf8f3] rounded-2xl p-4 shadow-sm">
@@ -72,7 +64,7 @@
             <div class="text-gray-800 font-semibold text-lg" id="calendar-title">2025.05</div>
             <button id="nextMonth" class="text-gray-500 hover:text-gray-800 btn-transition">&#9654;</button>
           </div>
-          
+
           <div class="grid grid-cols-7 text-center text-sm font-medium text-gray-500 mb-2">
             <div class="text-red-400">일</div>
             <div>월</div>
@@ -85,15 +77,15 @@
 
           <div id="calendar" class="grid grid-cols-7 gap-1 text-center text-gray-700"></div>
         </div>
-        
+
         <div class="mt-4 text-sm text-gray-500">
           <span class="inline-block w-3 h-3 bg-[#7c6dfa] rounded-full mr-1"></span> 선택된 날짜
           <span class="inline-block ml-3 opacity-30">&#9679;</span> 선택 불가능한 날짜
         </div>
       </div>
     </div>
-    
-    <!-- 생성 버튼 - 카드 하단 중앙으로 이동 -->
+
+    <!-- 생성 버튼 -->
     <div class="mt-8 flex justify-center">
       <button id="createBtn" class="bg-[#e6dfd6] text-gray-400 px-8 py-3 rounded-full font-semibold cursor-not-allowed transition-all duration-200 shadow-sm" disabled>
         이벤트 생성하기
@@ -101,31 +93,28 @@
     </div>
   </div>
 
-  <!-- 스크립트 -->
+  <!-- JavaScript -->
   <script>
     const selectedDates = new Set();
     let currentYear = 2025;
     let currentMonth = 5;
-    
-    // 오늘 날짜 구하기
+
     const today = new Date();
     const todayYear = today.getFullYear();
     const todayMonth = today.getMonth() + 1;
     const todayDate = today.getDate();
-    
+
     const generateCalendar = (year, month) => {
       const calendar = document.getElementById("calendar");
-      calendar.innerHTML = ""; // 초기화
+      calendar.innerHTML = "";
 
       const firstDay = new Date(year, month - 1, 1);
       const lastDay = new Date(year, month, 0);
       const startWeekday = firstDay.getDay();
       const totalDays = lastDay.getDate();
 
-      // 빈칸
       for (let i = 0; i < startWeekday; i++) {
-        const blank = document.createElement("div");
-        calendar.appendChild(blank);
+        calendar.appendChild(document.createElement("div"));
       }
 
       for (let day = 1; day <= totalDays; day++) {
@@ -134,20 +123,18 @@
         btn.textContent = day;
         btn.dataset.date = dateStr;
         btn.className = "date-btn py-2 rounded-full hover:bg-[#e5dbff] cursor-pointer btn-transition";
-        
-        // 날짜가 오늘 이전인지 확인
-        const isPastDate = (year < todayYear) || 
-                          (year === todayYear && month < todayMonth) || 
-                          (year === todayYear && month === todayMonth && day < todayDate);
-        
+
+        const isPastDate = (year < todayYear) ||
+                           (year === todayYear && month < todayMonth) ||
+                           (year === todayYear && month === todayMonth && day < todayDate);
+
         if (isPastDate) {
           btn.classList.add("date-disabled");
         } else {
-          // 이미 선택된 날짜인 경우 selected 클래스 추가
           if (selectedDates.has(dateStr)) {
             btn.classList.add("selected");
           }
-          
+
           btn.addEventListener("click", () => {
             if (selectedDates.has(dateStr)) {
               selectedDates.delete(dateStr);
@@ -156,11 +143,9 @@
               selectedDates.add(dateStr);
               btn.classList.add("selected");
             }
-
             updateCreateButton();
           });
         }
-
         calendar.appendChild(btn);
       }
 
@@ -181,10 +166,7 @@
       }
     };
 
-    // 제목 입력 감지 → 버튼 활성화 조건 체크
     document.getElementById("title").addEventListener("input", updateCreateButton);
-    
-    // 월 이동 기능
     document.getElementById("prevMonth").addEventListener("click", () => {
       currentMonth--;
       if (currentMonth < 1) {
@@ -193,7 +175,6 @@
       }
       generateCalendar(currentYear, currentMonth);
     });
-    
     document.getElementById("nextMonth").addEventListener("click", () => {
       currentMonth++;
       if (currentMonth > 12) {
@@ -203,7 +184,47 @@
       generateCalendar(currentYear, currentMonth);
     });
 
-    // 초기 달력 로드
+    async function getCsrfToken() {
+      const res = await fetch("/api/auth/csrf-token", {
+        method: "GET",
+        credentials: "same-origin"
+      });
+      const data = await res.json();
+      return data.token;
+    }
+
+    document.getElementById("createBtn").addEventListener("click", async () => {
+      const title = document.getElementById("title").value.trim();
+      const eventDates = Array.from(selectedDates);
+      const ownerId = 1; // 로그인 사용자 ID로 대체 필요
+      const _csrf = await getCsrfToken();
+
+      if (title === "" || eventDates.length === 0) {
+        alert("제목과 날짜를 모두 입력해주세요.");
+        return;
+      }
+
+      try {
+        const response = await fetch("/events", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ownerId, title, eventDates, _csrf })
+        });
+
+        const result = await response.json();
+
+        if (result.result === "success") {
+          alert("이벤트가 성공적으로 생성되었습니다.");
+          window.location.href = "/";
+        } else {
+          alert("이벤트 생성 실패: " + JSON.stringify(result));
+        }
+      } catch (error) {
+        console.error("오류 발생:", error);
+        alert("서버 오류");
+      }
+    });
+
     generateCalendar(currentYear, currentMonth);
   </script>
 </body>

@@ -26,6 +26,7 @@ public class EventListDaoTest {
     @BeforeEach
     public void setUp() {
         // 기존 테스트 데이터 정리
+        jdbcTemplate.update("DELETE FROM schedule");
         jdbcTemplate.update("DELETE FROM user_event");
         jdbcTemplate.update("DELETE FROM event_date");
         jdbcTemplate.update("DELETE FROM event");

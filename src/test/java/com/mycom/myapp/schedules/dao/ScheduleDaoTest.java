@@ -2,6 +2,7 @@ package com.mycom.myapp.schedules.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +22,7 @@ public class ScheduleDaoTest {
 
 	@Autowired
 	private ScheduleDao scheduleDao;
-	
+
 	@Test
 	void insertScheduleTest() {
 		ScheduleDto scheduleDto = ScheduleDto.builder()	
@@ -30,12 +31,36 @@ public class ScheduleDaoTest {
 							.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
 							.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
 							.build();
-		
+
 		int ret = scheduleDao.insertSchedule(scheduleDto);
-		
+
 		assertEquals(1, ret);
 	}
-	
+
+	@Test
+	void deleteScheduleTest() {
+		// 1. 스케줄 생성
+		ScheduleDto scheduleDto = ScheduleDto.builder()	
+							.userId(1L)
+							.eventId(205L)
+							.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+							.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+							.build();
+
+		scheduleDao.insertSchedule(scheduleDto);
+		Long scheduleId = scheduleDto.getScheduleId();
+
+		// 2. 스케줄 삭제
+		int ret = scheduleDao.deleteSchedule(scheduleId);
+
+		// 3. 삭제 결과 확인
+		assertEquals(1, ret);
+
+		// 4. 삭제된 스케줄 조회 시도
+		ScheduleDto deletedSchedule = scheduleDao.detailSchedule(scheduleId);
+		assertNull(deletedSchedule);
+	}
+
 	@Test
 	void listScheduleTest() {
 		ScheduleDto scheduleDto = ScheduleDto.builder()	
@@ -46,12 +71,12 @@ public class ScheduleDaoTest {
 				.build();
 
 		scheduleDao.insertSchedule(scheduleDto);
-		
+
 		List<ScheduleDto> scheduleDtoList = scheduleDao.listSchedule(205L);
-		
+
 		assertNotNull(scheduleDtoList);
 	}
-	
+
 	@Test
 	void detailScheduleTest() {
 		ScheduleDto scheduleDto = ScheduleDto.builder()	
@@ -62,11 +87,11 @@ public class ScheduleDaoTest {
 				.build();
 
 		scheduleDao.insertSchedule(scheduleDto);
-		
+
 		System.out.println(scheduleDto.getScheduleId());
-		
+
 		ScheduleDto findScheduleDto = scheduleDao.detailSchedule(scheduleDto.getScheduleId());
-		
+
 		assertEquals(scheduleDto.getScheduleId(),findScheduleDto.getScheduleId());
 		assertEquals(1L, findScheduleDto.getUserId());
 		assertEquals(205L, findScheduleDto.getEventId());
