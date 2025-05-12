@@ -27,18 +27,16 @@
       <!-- 좌측: 시간표 드래그 선택 -->
       <div class="bg-white p-6 rounded-2xl shadow space-y-4">
         <h2 class="text-xl font-semibold">시간표 드래그 선택</h2>
-        <form action="/schedule/save" method="post" class="space-y-4">
-          <input type="hidden" name="eventId" value="{{eventId}}">
-          <input type="hidden" id="dragDate" name="date">
-          <input type="hidden" id="dragStart" name="startTime">
-          <input type="hidden" id="dragEnd" name="endTime">
-
+        <form id="form-drag" class="space-y-4">
           <div>
             <label for="datePicker" class="block font-medium mb-1">날짜 선택</label>
-            <input type="date" id="datePicker" class="w-full border rounded px-3 py-2" required>
+            <input type="date" id="datePicker" class="w-full border rounded px-3 py-2" required name="date">
           </div>
 
           <div id="timeGrid" class="border rounded h-[600px] overflow-y-scroll bg-gray-50 text-sm"></div>
+
+          <input type="hidden" name="startTime" id="dragStart">
+          <input type="hidden" name="endTime" id="dragEnd">
 
           <div class="pt-4">
             <button type="submit" class="bg-[#7c6dfa] text-white px-4 py-2 rounded hover:bg-[#6b5de6] transition">
@@ -51,9 +49,7 @@
       <!-- 우측: 시간 직접 선택 -->
       <div class="bg-white p-6 rounded-2xl shadow space-y-4">
         <h2 class="text-xl font-semibold">시간 직접 선택</h2>
-        <form action="/schedule/save" method="post" class="space-y-4">
-          <input type="hidden" name="eventId" value="{{eventId}}" />
-
+        <form id="form-direct" class="space-y-4">
           <div>
             <label for="date" class="block font-medium mb-1">날짜</label>
             <input type="date" id="date" name="date" required class="w-full border rounded px-3 py-2" />
@@ -80,6 +76,9 @@
   </div>
 
   <script>
+    const eventId = new URLSearchParams(location.search).get("eventId");
+    const userId = 1; // 실제 사용자는 로그인 정보로 대체되어야 합니다
+
     const grid = document.getElementById("timeGrid");
     const startTimeSelect = document.getElementById("startTime");
     const endTimeSelect = document.getElementById("endTime");
@@ -97,45 +96,15 @@
       div.textContent = t;
       grid.appendChild(div);
 
-      const opt1 = document.createElement("option");
-      opt1.value = t;
-      opt1.textContent = t;
+      const opt1 = new Option(t, t);
+      const opt2 = new Option(t, t);
       startTimeSelect.appendChild(opt1);
-
-      const opt2 = document.createElement("option");
-      opt2.value = t;
-      opt2.textContent = t;
       endTimeSelect.appendChild(opt2);
     });
 
     const cells = document.querySelectorAll(".time-cell");
     let isDragging = false;
     let startCell = null;
-
-    function updateDropdowns(start, end, date) {
-      startTimeSelect.value = start;
-      endTimeSelect.value = end;
-      document.getElementById("date").value = date;
-    }
-
-    function updateGridFromDropdowns() {
-      const startVal = startTimeSelect.value;
-      const endVal = endTimeSelect.value;
-      const startIdx = Array.from(cells).findIndex(c => c.dataset.time === startVal);
-      const endIdx = Array.from(cells).findIndex(c => c.dataset.time === endVal);
-
-      if (startIdx >= 0 && endIdx >= 0) {
-        cells.forEach(c => c.classList.remove("selected"));
-        const [from, to] = [startIdx, endIdx].sort((a, b) => a - b);
-        for (let i = from; i <= to; i++) {
-          cells[i].classList.add("selected");
-        }
-        document.getElementById("dragStart").value = startVal;
-        document.getElementById("dragEnd").value = endVal;
-        document.getElementById("dragDate").value = document.getElementById("date").value;
-        document.getElementById("datePicker").value = document.getElementById("date").value;
-      }
-    }
 
     cells.forEach(cell => {
       cell.addEventListener("mousedown", () => {
@@ -147,8 +116,8 @@
 
       cell.addEventListener("mouseenter", () => {
         if (isDragging && startCell) {
-          let startIndex = Array.from(cells).indexOf(startCell);
-          let currentIndex = Array.from(cells).indexOf(cell);
+          let startIndex = [...cells].indexOf(startCell);
+          let currentIndex = [...cells].indexOf(cell);
 
           cells.forEach(c => c.classList.remove("selected"));
 
@@ -165,20 +134,98 @@
         isDragging = false;
         const selected = document.querySelectorAll(".time-cell.selected");
         if (selected.length > 0) {
-          const start = selected[0].getAttribute("data-time");
-          const end = selected[selected.length - 1].getAttribute("data-time");
+          const start = selected[0].dataset.time;
+          const end = selected[selected.length - 1].dataset.time;
           const date = document.getElementById("datePicker").value;
           document.getElementById("dragStart").value = start;
           document.getElementById("dragEnd").value = end;
-          document.getElementById("dragDate").value = date;
-          updateDropdowns(start, end, date);
         }
       }
     });
 
+    async function getCsrfToken() {
+      const res = await fetch('/api/auth/csrf-token', { credentials: 'same-origin' });
+      const data = await res.json();
+      return data.token;
+    }
+
+    async function submitSchedule(data) {
+      try {
+        const csrf = await getCsrfToken();
+
+        const res = await fetch("/schedules", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId,
+            eventId,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            _csrf: csrf
+          })
+        });
+
+        const result = await res.json();
+        if (result.result === "success") {
+          alert("스케줄이 저장되었습니다.");
+          location.href = `/event.html?id=${eventId}`;
+        } else {
+          alert("실패: " + JSON.stringify(result));
+        }
+      } catch (err) {
+        alert("서버 오류 발생");
+        console.error(err);
+      }
+    }
+
+    function formatTime(date, time) {
+      return `${date}T${time}:00`;
+    }
+
+    // 공통 폼 제출 처리
+    document.getElementById("form-drag").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const date = document.getElementById("datePicker").value;
+      const start = document.getElementById("dragStart").value;
+      const end = document.getElementById("dragEnd").value;
+      if (!start || !end) return alert("시간을 선택해주세요.");
+      submitSchedule({
+        startTime: formatTime(date, start),
+        endTime: formatTime(date, end)
+      });
+    });
+
+    document.getElementById("form-direct").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const date = document.getElementById("date").value;
+      const start = document.getElementById("startTime").value;
+      const end = document.getElementById("endTime").value;
+      if (!start || !end) return alert("시간을 선택해주세요.");
+      submitSchedule({
+        startTime: formatTime(date, start),
+        endTime: formatTime(date, end)
+      });
+    });
+
+    // 셀렉트박스 바뀔 때 드래그 반영
     startTimeSelect.addEventListener("change", updateGridFromDropdowns);
     endTimeSelect.addEventListener("change", updateGridFromDropdowns);
     document.getElementById("date").addEventListener("change", updateGridFromDropdowns);
+
+    function updateGridFromDropdowns() {
+      const startVal = startTimeSelect.value;
+      const endVal = endTimeSelect.value;
+      const startIdx = [...cells].findIndex(c => c.dataset.time === startVal);
+      const endIdx = [...cells].findIndex(c => c.dataset.time === endVal);
+
+      if (startIdx >= 0 && endIdx >= 0) {
+        cells.forEach(c => c.classList.remove("selected"));
+        const [from, to] = [startIdx, endIdx].sort((a, b) => a - b);
+        for (let i = from; i <= to; i++) {
+          cells[i].classList.add("selected");
+        }
+      }
+    }
   </script>
 </body>
 </html>

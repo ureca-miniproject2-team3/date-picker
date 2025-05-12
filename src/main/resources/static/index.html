@@ -18,59 +18,68 @@
     </div>
 
     <!-- 이벤트 목록 -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-      <c:forEach items="${eventList}" var="event">
-        <div onclick="location.href='/event/${event.id}'"
-             class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
-          ${event.title}
-        </div>
-      </c:forEach>
+    <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <!-- JavaScript에서 렌더링됩니다 -->
     </div>
 
-    <!-- 하단 버튼 -->
-    <div class="text-center">
-      <button onclick="location.href='/event/modify'"
-              class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">
-        이벤트 수정
-      </button>
-    </div>
+<!-- 하단 버튼 -->
+<div class="text-center">
+  <button onclick="location.href='create.html'"
+          class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">
+    이벤트 생성
+  </button>
+</div>
+
   </div>
 
-  <!-- 로그아웃 처리 -->
   <script>
-  	window.onload = function() {	    
-	    document.getElementById("logoutBtn").addEventListener("click", logout);
-	}
-  	
-	async function getCsrfToken(){
-	    let response = await fetch('/api/auth/csrf-token', { method: 'GET', credentials: 'same-origin' }); // 자격 증명
-	    let data = await response.json();
-	    
-	    return data.token;
-	}
+    window.onload = function () {
+      document.getElementById("logoutBtn").addEventListener("click", logout);
+      fetchEvents();
+    };
 
-	async function logout() {
-	    const csrfToken = await getCsrfToken();
-	    
-	    let urlParams = new URLSearchParams({
-	        _csrf: csrfToken
-	    });
-	    
-	    let response = await fetch("/logout", {
-	        method: "POST",
-	        body: urlParams,
-	        headers: {
-	            "Content-Type": "application/x-www-form-urlencoded"
-	        },
-	        credentials: "same-origin"
-	    });
-	    
-	    if (response.redirected) {
-	        window.location.href = response.url;
-	    } else {
-	        window.location.href = "/";
-	    }
-	}
+    async function fetchEvents() {
+      try {
+        const response = await fetch('/api/events');
+        const events = await response.json();
+
+        const eventList = document.getElementById("eventList");
+        eventList.innerHTML = events.map(event => `
+          <div onclick="location.href='/event.html?id=${event.id}'"
+               class="bg-white w-full aspect-square flex items-center justify-center text-center text-lg font-semibold rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
+            ${event.title}
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error("이벤트 목록 불러오기 실패:", err);
+        document.getElementById("eventList").innerHTML = "<p class='text-red-500'>이벤트를 불러올 수 없습니다.</p>";
+      }
+    }
+
+    async function getCsrfToken() {
+      let response = await fetch('/api/auth/csrf-token', { method: 'GET', credentials: 'same-origin' });
+      let data = await response.json();
+      return data.token;
+    }
+
+    async function logout() {
+      const csrfToken = await getCsrfToken();
+
+      let urlParams = new URLSearchParams({ _csrf: csrfToken });
+
+      let response = await fetch("/logout", {
+        method: "POST",
+        body: urlParams,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        credentials: "same-origin"
+      });
+
+      if (response.redirected) {
+        window.location.href = response.url;
+      } else {
+        window.location.href = "/";
+      }
+    }
   </script>
 </body>
 </html>
