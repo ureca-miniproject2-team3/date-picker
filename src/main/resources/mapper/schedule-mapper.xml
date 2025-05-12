@@ -27,4 +27,10 @@
 		FROM schedule
 		WHERE id = #{scheduleId}	
 	</select>
+	
+	<update id="updateSchedule" parameterType="com.mycom.myapp.schedules.dto.ScheduleDto">
+		UPDATE schedule
+		SET start_time = #{startTime}, end_time = #{endTime}
+		WHERE id = #{scheduleId}
+	</update>
 </mapper>

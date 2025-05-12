@@ -223,6 +223,90 @@ public class ScheduleServiceTest {
 		assertNull(result.getTimeSlots());
 		assertNull(result.getMaxCount());
 	}
+	
+	@Test
+	void updateScheduleTest_Success() {
+		ScheduleDto inputSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(1L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+		
+		ScheduleDto storedSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(1L)
+				.build();
+		
+		when(scheduleDao.detailSchedule(1L)).thenReturn(storedSchedule);
+		when(scheduleDao.updateSchedule(inputSchedule)).thenReturn(1);
+		
+		ScheduleResultDto result = scheduleService.updateSchedule(inputSchedule);
+		
+		assertEquals("success", result.getResult());
+	}
+	
+	@Test
+	void updateScheduleTest_Unauthorized() {
+		ScheduleDto inputSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(1L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+		
+		ScheduleDto storedSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(2L)
+				.build();
+		
+		when(scheduleDao.detailSchedule(1L)).thenReturn(storedSchedule);
+		
+		ScheduleResultDto result = scheduleService.updateSchedule(inputSchedule);
+		
+		assertEquals("forbidden", result.getResult());
+	}
+	
+	@Test
+	void updateScheduleTest_Fail() {
+		ScheduleDto inputSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(1L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+		
+		ScheduleDto storedSchedule = ScheduleDto.builder()
+				.scheduleId(2L)
+				.userId(1L)
+				.build();
+		
+		when(scheduleDao.detailSchedule(1L)).thenReturn(storedSchedule);
+		when(scheduleDao.updateSchedule(inputSchedule)).thenReturn(-1);
+		
+		ScheduleResultDto result = scheduleService.updateSchedule(inputSchedule);
+		
+		assertEquals("fail", result.getResult());
+	}
+	
+	@Test
+	void updateScheduleTest_DBFail() {
+		ScheduleDto inputSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(1L)
+				.startTime(LocalDateTime.of(2025, 5, 15, 13, 00, 00))
+				.endTime(LocalDateTime.of(2025, 5, 15, 15, 00, 00))
+				.build();
+		
+		ScheduleDto storedSchedule = ScheduleDto.builder()
+				.scheduleId(1L)
+				.userId(1L)
+				.build();
+		
+		when(scheduleDao.detailSchedule(1L)).thenThrow(new RuntimeException("DB Error"));
+		
+		ScheduleResultDto result = scheduleService.updateSchedule(inputSchedule);
+  }
 
 	@Test
 	void deleteScheduleTest_Success() {

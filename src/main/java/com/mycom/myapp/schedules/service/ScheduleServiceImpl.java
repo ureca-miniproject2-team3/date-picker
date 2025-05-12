@@ -1,20 +1,20 @@
 package com.mycom.myapp.schedules.service;
 
-import com.mycom.myapp.schedules.dto.TimeSlotDto;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+
 import org.springframework.stereotype.Service;
 
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import com.mycom.myapp.schedules.dto.ScheduleDto;
 import com.mycom.myapp.schedules.dto.ScheduleResultDto;
+import com.mycom.myapp.schedules.dto.TimeSlotDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -167,6 +167,31 @@ public class ScheduleServiceImpl implements ScheduleService {
 			scheduleResultDto.setResult("fail");
 		}
 
+		return scheduleResultDto;
+	}
+
+	@Override
+	public ScheduleResultDto updateSchedule(ScheduleDto scheduleDto) {
+		ScheduleResultDto scheduleResultDto = new ScheduleResultDto();
+		
+		try {
+			ScheduleDto findScheduleDto = scheduleDao.detailSchedule(scheduleDto.getScheduleId());
+			
+			// 스케줄 등록자와 수정자가 다른 경우 -> 불가
+			if(!Objects.equals(scheduleDto.getUserId(), findScheduleDto.getUserId())) {
+				scheduleResultDto.setResult("forbidden");
+				return scheduleResultDto;
+			}
+			
+			int ret = scheduleDao.updateSchedule(scheduleDto);
+			
+			if(ret == 1) scheduleResultDto.setResult("success");
+			else scheduleResultDto.setResult("fail");
+		} catch (Exception e) {
+			e.printStackTrace();
+			scheduleResultDto.setResult("fail");
+		}
+		
 		return scheduleResultDto;
 	}
 

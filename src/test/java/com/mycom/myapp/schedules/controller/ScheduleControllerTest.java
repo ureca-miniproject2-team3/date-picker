@@ -6,10 +6,10 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.mycom.myapp.schedules.dto.TimeSlotDto;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -196,6 +196,58 @@ public class ScheduleControllerTest {
 				.andExpect(status().isInternalServerError())
 				.andExpect(jsonPath("$.result").value("fail"));
 	}
+  
+	@Test
+	void updateSchedule_Success() throws Exception {
+		ScheduleResultDto resultDto = new ScheduleResultDto();
+		resultDto.setResult("success");
+
+		when(scheduleService.updateSchedule(any(ScheduleDto.class))).thenReturn(resultDto);
+
+		mockMvc.perform(put("/api/schedules/1")
+			    .with(csrf())
+			    .param("userId", "1")
+			    .param("startTime", "2025-05-15T13:00:00")
+			    .param("endTime", "2025-05-15T15:00:00"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.result").value("success"));
+
+	}
+
+	@Test
+	void updateSchedule_Fail() throws Exception {
+		ScheduleResultDto resultDto = new ScheduleResultDto();
+		resultDto.setResult("fail");
+
+		when(scheduleService.updateSchedule(any(ScheduleDto.class)))
+				.thenReturn(resultDto);
+
+		mockMvc.perform(put("/api/schedules/1")
+			    .with(csrf())
+			    .param("userId", "1")
+			    .param("startTime", "2025-05-15T13:00:00")
+			    .param("endTime", "2025-05-15T15:00:00"))
+				.andExpect(status().isInternalServerError())
+				.andExpect(jsonPath("$.result").value("fail"));
+
+	}
+	
+	@Test
+	void updateSchedule_Forbidden() throws Exception {
+		ScheduleResultDto resultDto = new ScheduleResultDto();
+		resultDto.setResult("forbidden");
+
+		when(scheduleService.updateSchedule(any(ScheduleDto.class)))
+				.thenReturn(resultDto);
+
+		mockMvc.perform(put("/api/schedules/1")
+			    .with(csrf())
+			    .param("userId", "1")
+			    .param("startTime", "2025-05-15T13:00:00")
+			    .param("endTime", "2025-05-15T15:00:00"))
+				.andExpect(status().isForbidden())
+				.andExpect(jsonPath("$.result").value("forbidden"));
+  }
 
 	@Test
 	void deleteSchedule_Success() throws Exception {
