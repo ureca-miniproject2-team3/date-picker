@@ -15,4 +15,6 @@ public interface ScheduleDao {
 	
 	ScheduleDto detailSchedule(Long scheduleId);
 	
+	int updateSchedule(ScheduleDto scheduleDto);
+	
 }
