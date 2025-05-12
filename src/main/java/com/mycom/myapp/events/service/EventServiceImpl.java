@@ -4,6 +4,8 @@ import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.schedules.dao.ScheduleDao;
+import com.mycom.myapp.schedules.dto.ScheduleDto;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -22,6 +24,7 @@ import org.springframework.transaction.interceptor.TransactionAspectSupport;
 public class EventServiceImpl implements EventService {
 
     private final EventDao eventDao;
+    private final ScheduleDao scheduleDao;
 
     @Override
     public EventResultDto listEvent(Long userId) {
@@ -126,10 +129,6 @@ public class EventServiceImpl implements EventService {
     public EventResultDto deleteEvent(Long eventId, Long userId) {
         EventResultDto result = new EventResultDto();
 
-        /*
-        스케줄 삭제 구현 X - 2025.05.09
-        이벤트 관련 테이블 데이터만 삭제 - event, event_date, user_event
-         */
         try {
             Long ownerId = eventDao.detailEvent(eventId).getOwnerId();
 
@@ -137,6 +136,14 @@ public class EventServiceImpl implements EventService {
                 result.setResult("forbidden");
 
             } else {
+                List<Long> scheduleIds = scheduleDao.listSchedule(eventId).stream()
+                        .map(ScheduleDto::getScheduleId)
+                        .toList();
+
+                for (Long scheduleId : scheduleIds) {
+                    scheduleDao.deleteSchedule(scheduleId);
+                }
+
                 eventDao.deleteUserEvent(eventId);
                 eventDao.deleteEventDate(eventId);
                 eventDao.deleteEvent(eventId);
