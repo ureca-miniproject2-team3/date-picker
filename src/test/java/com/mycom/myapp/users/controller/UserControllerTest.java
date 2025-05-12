@@ -19,7 +19,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mycom.myapp.users.dto.UserDto;
 import com.mycom.myapp.users.dto.UserResultDto;
 import com.mycom.myapp.users.service.UserService;

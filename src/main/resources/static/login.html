@@ -59,6 +59,8 @@
 	    
 	    console.log(data);
 	    
+	    sessionStorage.setItem("userId", data.userId);
+	    
 	    if (data.result == "success") {
 	        window.location.href = '/';
 	    } else {

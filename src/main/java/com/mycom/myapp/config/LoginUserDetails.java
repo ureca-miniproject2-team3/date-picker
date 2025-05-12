@@ -18,12 +18,16 @@ public class LoginUserDetails implements UserDetails {
 
 	private final String password;
 	
+	private final Long userId;
+	
 	private final Collection<? extends GrantedAuthority> authorities;
 	
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
 		return authorities;
 	}
+	
+	public Long getUserId() { return userId; }
 
 	@Override
 	public String getPassword() { return password; }
