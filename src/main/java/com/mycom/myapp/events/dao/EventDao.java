@@ -12,7 +12,8 @@ public interface EventDao {
 
     // 이벤트 리스트 조회
     List<EventSummaryDto> listEvent(@Param("userId") Long userId);
-
+    // 이벤트 유저 조회
+    List<String> findUserNamesByEventId(Long eventId);
     // 이벤트 상세 정보 조회
     EventDto detailEvent(@Param("eventId") Long eventId);
     List<Long> findUserIdsByEventId(@Param("eventId") Long eventId);

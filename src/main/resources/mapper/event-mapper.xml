@@ -12,6 +12,13 @@
         where u.user_id = #{userId}
           and u.event_id = e.id
     </select>
+    <!--사용자 참여 중 참여자 명 조회 (리스트)-->
+    <select id="findUserNamesByEventId" resultType="string">
+        SELECT u.name
+        FROM `user` u
+                 JOIN user_event ue ON u.id = ue.user_id
+        WHERE ue.event_id = #{eventId}
+    </select>
 
     <!--이벤트 상세 정보 조회-->
     <select id="detailEvent" resultType="com.mycom.myapp.events.dto.EventDto">
