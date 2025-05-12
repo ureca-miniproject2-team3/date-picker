@@ -47,8 +47,9 @@ public class ScheduleServiceImpl implements ScheduleService {
 
 		try {
 			ScheduleDto schedule = scheduleDao.detailSchedule(scheduleId);
-
-			if (!Objects.equals(schedule.getScheduleId(), userId)) {
+			
+			System.out.println(schedule.getUserId() + " " + userId);
+			if (!Objects.equals(schedule.getUserId(), userId)) {
 				scheduleResultDto.setResult("forbidden");
 
 			} else {
