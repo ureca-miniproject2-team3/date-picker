@@ -95,6 +95,7 @@ public class ScheduleController {
 	}
 	
 	@PutMapping("/schedules/{scheduleId}")
+	@Operation(summary = "스케줄 수정", description = "스케줄 ID 와 일치하는 스케줄을 수정합니다.")
 	public ResponseEntity<ScheduleResultDto> updateSchedule(
 			@PathVariable("scheduleId") Long scheduleId,
 			ScheduleDto scheduleDto) 
