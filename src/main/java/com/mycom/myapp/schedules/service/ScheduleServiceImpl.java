@@ -142,5 +142,30 @@ public class ScheduleServiceImpl implements ScheduleService {
 		return scheduleResultDto;
 	}
 
+	@Override
+	public ScheduleResultDto updateSchedule(ScheduleDto scheduleDto) {
+		ScheduleResultDto scheduleResultDto = new ScheduleResultDto();
+		
+		try {
+			ScheduleDto findScheduleDto = scheduleDao.detailSchedule(scheduleDto.getScheduleId());
+			
+			// 스케줄 등록자와 수정자가 다른 경우 -> 불가
+			if(scheduleDto.getUserId() != findScheduleDto.getUserId()) {
+				scheduleResultDto.setResult("unauthorized");
+				return scheduleResultDto;
+			}
+			
+			int ret = scheduleDao.updateSchedule(scheduleDto);
+			
+			if(ret == 1) scheduleResultDto.setResult("success");
+			else scheduleResultDto.setResult("fail");
+		} catch (Exception e) {
+			e.printStackTrace();
+			scheduleResultDto.setResult("fail");
+		}
+		
+		return scheduleResultDto;
+	}
+
 
 }

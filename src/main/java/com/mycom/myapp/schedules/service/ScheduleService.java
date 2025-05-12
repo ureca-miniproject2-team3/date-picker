@@ -12,4 +12,6 @@ public interface ScheduleService {
 	ScheduleResultDto detailSchedule(Long scheduleId);
 
 	ScheduleResultDto getMaxOverlapSlots(Long eventId);
+	
+	ScheduleResultDto updateSchedule(ScheduleDto scheduleDto);
 }
