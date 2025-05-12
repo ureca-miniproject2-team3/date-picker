@@ -32,12 +32,20 @@ public class EventServiceImpl implements EventService {
 
         try {
             List<EventSummaryDto> eventDtoList = eventDao.listEvent(userId);
+            for (EventSummaryDto summary : eventDtoList) {
+                Long eventId = summary.getEventId();
+
+                List<Long> userIds = eventDao.findUserIdsByEventId(eventId);
+                summary.setUserIds(userIds);
+
+                List<String> userNames = eventDao.findUserNamesByEventId(eventId);
+                summary.setUserNames(userNames);
+            }
 
             result.setResult("success");
             result.setEventDtoList(eventDtoList);
 
         } catch (Exception e) {
-
             return handleException("이벤트 리스트 조회", e);
         }
 
