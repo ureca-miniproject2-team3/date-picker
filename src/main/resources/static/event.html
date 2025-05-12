@@ -40,15 +40,17 @@
           <h1 class="text-3xl font-bold">${event.title}</h1>
           <button onclick="location.href='/events/invite?id=${event.eventId}'" class="bg-[#7c6dfa] text-white px-4 py-2 rounded-full text-sm">사용자 초대</button>
         </div>
-        <div><h2 class="text-lg font-semibold mb-2">참여자 ID</h2>
-             <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600">
-               ${event.userIds.map(id => `<li class="bg-[#f3f0ea] px-4 py-2 rounded-xl">사용자 ${id}</li>`).join('')}
-             </ul>
+        <div>
+          <h2 class="text-lg font-semibold mb-2">참여자 ID</h2>
+          <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-600">
+            ${event.userIds.map(id => `<li class="bg-[#f3f0ea] px-4 py-2 rounded-xl">사용자 ${id}</li>`).join('')}
+          </ul>
         </div>
-        <div><h2 class="text-lg font-semibold mb-2">이벤트 날짜</h2>
-             <ul class="flex flex-wrap gap-2 text-sm text-gray-600">
-               ${event.eventDates.map(d => `<li class="bg-[#fcf8f3] px-4 py-2 rounded-full">${d}</li>`).join('')}
-             </ul>
+        <div>
+          <h2 class="text-lg font-semibold mb-2">이벤트 날짜</h2>
+          <ul class="flex flex-wrap gap-2 text-sm text-gray-600">
+            ${event.eventDates.map(d => `<li class="bg-[#fcf8f3] px-4 py-2 rounded-full">${d}</li>`).join('')}
+          </ul>
         </div>
         <div class="flex justify-between items-center">
           <div class="space-x-2">
@@ -64,41 +66,50 @@
 
     async function deleteEvent(eventId) {
       const csrf = await getCsrfToken();
-      const res = await fetch('/api/events', {
+      const formData = new URLSearchParams();
+      formData.append("userId", userId);
+      formData.append("eventId", eventId);
+      formData.append("_csrf", csrf);
+
+      const res = await fetch("/api/events", {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId, eventId, _csrf: csrf })
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
       });
+
       const result = await res.json();
       if (result.result === "success") {
         alert("삭제되었습니다.");
         location.href = "/";
       } else {
-        alert("삭제 실패");
+        alert("삭제 실패: " + JSON.stringify(result));
       }
     }
 
     async function editEvent(eventId, title, dates) {
       const newDate = prompt("추가할 날짜를 입력하세요 (예: 2025-05-31)");
       if (!newDate) return;
+
       const csrf = await getCsrfToken();
-      const res = await fetch('/api/events', {
+      const formData = new URLSearchParams();
+      formData.append("userId", userId);
+      formData.append("eventId", eventId);
+      formData.append("title", title);
+      [...dates, newDate].forEach(d => formData.append("eventDates", d));
+      formData.append("_csrf", csrf);
+
+      const res = await fetch("/api/events", {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          eventId,
-          title,
-          eventDates: [...dates, newDate],
-          _csrf: csrf
-        })
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
       });
+
       const result = await res.json();
       if (result.result === "success") {
         alert("수정되었습니다.");
         renderEvent();
       } else {
-        alert("수정 실패");
+        alert("수정 실패: " + JSON.stringify(result));
       }
     }
 
