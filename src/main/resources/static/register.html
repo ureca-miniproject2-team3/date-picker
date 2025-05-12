@@ -1,75 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>Register</title>
+    <meta charset="UTF-8" />
+    <title>Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Register</h1>
-    
-    <div>
-        Name : <input type="text" name="name" id="name">
+<body class="bg-[#f8f1e7] min-h-screen flex items-center justify-center px-4">
+<div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl">
+    <h1 class="text-2xl font-bold text-center mb-6">회원가입</h1>
+
+    <div class="space-y-4">
+        <div>
+            <label for="name" class="block font-medium text-gray-700 mb-1">이름</label>
+            <input type="text" name="name" id="name"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa]" />
+        </div>
+
+        <div>
+            <label for="email" class="block font-medium text-gray-700 mb-1">이메일</label>
+            <input type="text" name="email" id="email"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa]" />
+        </div>
+
+        <div>
+            <label for="password" class="block font-medium text-gray-700 mb-1">비밀번호</label>
+            <input type="password" name="password" id="password"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa]" />
+        </div>
+
+        <input type="hidden" name="_csrf" value="" id="_csrf" />
+
+        <button id="btnRegister"
+                class="w-full bg-[#7c6dfa] text-white py-2 rounded font-semibold hover:bg-[#6b5de6] transition">
+            회원가입
+        </button>
     </div>
-    <div>
-        Email : <input type="text" name="email" id="email">
-    </div>
-    <div>
-        Password : <input type="password" name="password" id="password">
-    </div>
-    
-    <input type="hidden" name="_csrf" value="" id="_csrf">
-    
-    <button id="btnRegister">회원가입</button>
-    
+</div>
+
 <script>
-    window.onload = function(){
+    window.onload = function () {
         getCsrfToken();
-        
         document.querySelector("#btnRegister").onclick = register;
     }
-    
-    async function getCsrfToken(){
+
+    async function getCsrfToken() {
         let response = await fetch('/api/auth/csrf-token', { method: 'GET', credentials: 'same-origin' });
         let data = await response.json();
         document.querySelector('#_csrf').value = data.token;
     }
-    
-    async function register(){
-        // parameter, value
+
+    async function register() {
         let name = document.querySelector("#name").value;
         let email = document.querySelector("#email").value;
         let password = document.querySelector("#password").value;
         let _csrf = document.querySelector("#_csrf").value;
-        
-        let urlParams = new URLSearchParams({
-            name, email, password, _csrf
-        });
-        
-        // url
-        let url = "/api/users";
-        
-        // post, parameter
-        let fetchOptions = {
-            method: "POST",
-            body:urlParams
+
+        let urlParams = new URLSearchParams({ name, email, password, _csrf });
+        let response = await fetch("/api/users", { method: "POST", body: urlParams });
+        let data = await response.json();
+
+        console.log(data);
+
+        if (data.result == "success") {
+            alert("회원가입 되었습니다. 로그인 페이지로 이동합니다.");
+            window.location.href = "/login.html";
+        } else if (data.result == "exist") {
+            alert("이미 등록된 이메일입니다.");
+        } else if (data.result == "fail") {
+            alert("회원가입 과정에서 오류가 발생했습니다.");
         }
-        
-        let response = await fetch(url, fetchOptions);
-        let data = await response.json()
-        
-    	console.log(data);
-        
-        if( data.result == "success" ) {
-            // 회원가입 성공일 경우
-            alert("회원가입 되었습니다. 로그인 페이지로 이동합니다.")
-            window.location.href="/login.html"
-        }else if( data.result == "exist" ){
-            alert("이미 등록된 이메일입니다.")
-        }else if( data.result == "fail" ){
-            alert("회원가입 과정에서 오류가 발생했습니다.")
-        }
-        
     }
-</script> 
+</script>
 </body>
 </html>
