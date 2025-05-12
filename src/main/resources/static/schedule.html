@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Event 스케줄 등록</title>
+  <title>Event 스케줄</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     .time-cell {
@@ -21,7 +21,7 @@
 </head>
 <body class="min-h-screen bg-[#f8f1e7] p-10 text-gray-800">
   <div class="max-w-6xl mx-auto space-y-10">
-    <h1 class="text-3xl font-bold">Event 스케줄 등록</h1>
+    <h1 class="text-3xl font-bold">Event 스케줄</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
       <!-- 좌측: 시간표 드래그 선택 -->
@@ -47,66 +47,91 @@
       </div>
 
       <!-- 우측: 시간 직접 선택 -->
-      <div class="bg-white p-6 rounded-2xl shadow space-y-4">
-        <h2 class="text-xl font-semibold">시간 직접 선택</h2>
-        <form id="form-direct" class="space-y-4">
-          <div>
-            <label for="date" class="block font-medium mb-1">날짜</label>
-            <input type="date" id="date" name="date" required class="w-full border rounded px-3 py-2" />
-          </div>
+      <!-- 우측: 시간 직접 선택 -->
+	<div class="bg-white p-6 rounded-2xl shadow space-y-4 relative"> 
+	  <h2 class="text-xl font-semibold">시간 직접 선택</h2>
+	  <form id="form-direct" class="space-y-4 pb-20">
+	    <div>
+	      <label for="date" class="block font-medium mb-1">날짜</label>
+	      <input type="date" id="date" name="date" required class="w-full border rounded px-3 py-2" />
+	    </div>
+	
+	    <div>
+	      <label for="startTime" class="block font-medium mb-1">시작 시간</label>
+	      <select id="startTime" name="startTime" class="w-full border rounded px-3 py-2"></select>
+	    </div>
+	
+	    <div>
+	      <label for="endTime" class="block font-medium mb-1">종료 시간</label>
+	      <select id="endTime" name="endTime" class="w-full border rounded px-3 py-2"></select>
+	    </div>
+	
+	    <div class="pt-4">
+	      <button type="submit" class="bg-[#7c6dfa] text-white px-4 py-2 rounded hover:bg-[#6b5de6] transition">
+	        스케줄 저장
+	      </button>
+	    </div>
+	  </form>
+	
+	  <button id="deleteBtn" class="hidden absolute bottom-6 right-6 bg-red-500 text-white px-4 py-2 rounded">
+	    삭제
+	  </button>
+	</div>
+	</div>
+</div>
 
-          <div>
-            <label for="startTime" class="block font-medium mb-1">시작 시간</label>
-            <select id="startTime" name="startTime" class="w-full border rounded px-3 py-2"></select>
-          </div>
-
-          <div>
-            <label for="endTime" class="block font-medium mb-1">종료 시간</label>
-            <select id="endTime" name="endTime" class="w-full border rounded px-3 py-2"></select>
-          </div>
-
-          <div class="pt-4">
-            <button type="submit" class="bg-[#7c6dfa] text-white px-4 py-2 rounded hover:bg-[#6b5de6] transition">
-              스케줄 저장
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <<script>
-  const eventId = new URLSearchParams(location.search).get("eventId");
+ <script>
+  // URL에서 eventId 획득
+  const eventId = new URLSearchParams(location.search).get("eventId") || "";
+  const deleteBtn = document.getElementById("deleteBtn");
+  
+  getEventDates();
+  
+  // eventId가 없으면 오류 표시
+  // schedule.html/?eventId=123 -> 생성
+  if (!eventId) {
+    alert("이벤트 ID가 필요합니다. URL에 eventId 파라미터를 추가해주세요.");
+    location.href = "/events.html"; // 이벤트 목록 페이지로 리디렉션
+  }
+  
+  // 세션에서 userId 획득
   const userId = sessionStorage.getItem("userId");
 
+  // 로그인 체크
   if (!userId) {
     alert("로그인이 필요합니다.");
     location.href = "/login.html";
   }
 
+  // 타임그리드와 시간 선택 요소 참조
   const grid = document.getElementById("timeGrid");
   const startTimeSelect = document.getElementById("startTime");
   const endTimeSelect = document.getElementById("endTime");
 
+  // 30분 단위로 시간 배열 생성
   const times = [];
   for (let h = 0; h < 24; h++) {
     times.push(`${h.toString().padStart(2, '0')}:00`);
     times.push(`${h.toString().padStart(2, '0')}:30`);
   }
 
+  // 시간 셀과 드롭다운 옵션 생성
   times.forEach(t => {
+    // 타임그리드에 셀 추가
     const div = document.createElement("div");
     div.className = "time-cell";
     div.dataset.time = t;
     div.textContent = t;
     grid.appendChild(div);
 
+    // 드롭다운에 옵션 추가
     const opt1 = new Option(t, t);
     const opt2 = new Option(t, t);
     startTimeSelect.appendChild(opt1);
     endTimeSelect.appendChild(opt2);
   });
 
+  // 드래그 선택 기능 구현
   const cells = document.querySelectorAll(".time-cell");
   let isDragging = false;
   let startCell = null;
@@ -147,32 +172,116 @@
       }
     }
   });
+  
+  deleteBtn.addEventListener("click", async () => {
+	  const scheduleId = new URLSearchParams(location.search).get("scheduleId");
+	  if (!scheduleId) {
+	    alert("삭제할 스케줄 ID가 없습니다.");
+	    return;
+	  }
 
+	  const confirmDelete = confirm("정말 이 스케줄을 삭제하시겠습니까?");
+	  if (!confirmDelete) return;
+
+	  try {
+	    const csrf = await getCsrfToken();
+	    console.log("CSRF 토큰:", csrf);
+	    
+	    const url = `/api/schedules/${scheduleId}?userId=${userId}&_csrf=${csrf}`;
+	    
+	    const res = await fetch(url, {
+	      method: "DELETE",
+	      credentials: 'include', // 쿠키 포함
+	    });
+
+	    if (res.ok) {
+	      alert("스케줄이 삭제되었습니다.");
+	      location.href = `/event.html?id=${eventId}`;
+	    } else {
+	      const err = await res.text();
+	      alert("삭제 실패: " + err);
+	    }
+	  } catch (e) {
+	    console.error("삭제 중 오류:", e);
+	    alert("오류 발생: " + e.message);
+	  }
+	});
+
+  // CSRF 토큰 획득 함수
   async function getCsrfToken() {
     const res = await fetch('/api/auth/csrf-token', { credentials: 'same-origin' });
     const data = await res.json();
     return data.token;
   }
+  
+  async function getEventDates() {
+	  const res = await fetch("/api/events/" + eventId);
+	  const data = await res.json();
+	  
+	  const dates = data.eventDto.eventDates.map(d => d.slice(0, 10)); // "YYYY-MM-DD" 형식
 
-  async function submitSchedule(data) {
+	  const dateInput = document.getElementById("datePicker");
+      const dateInput2 = document.getElementById("date")
+      
+	  dateInput.addEventListener("input", () => {
+	    const selectedDate = dateInput.value;
+	    if (!dates.includes(selectedDate)) {
+	      alert("선택할 수 없는 날짜입니다.");
+	      dateInput.value = ""; // 리셋
+	    }
+	  });
+      
+	  dateInput2.addEventListener("input", () => {
+	    const selectedDate = dateInput2.value;
+	    if (!dates.includes(selectedDate)) {
+	      alert("선택할 수 없는 날짜입니다.");
+	      dateInput2.value = ""; // 리셋
+	    }
+	  });
+  }  
+
+  // 스케줄 제출 함수
+  async function submitSchedule(formData) {
     try {
+      if (!eventId) {
+        alert("이벤트 ID가 필요합니다.");
+        return;
+      }
+      
       const csrf = await getCsrfToken();
-
-      const res = await fetch("/api/schedules", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: new URLSearchParams({
-          userId,
-          eventId,
-          startTime: data.startTime,
-          endTime: data.endTime,
-          _csrf: csrf
-        })
+      
+      // 스케줄 데이터 준비
+      const scheduleData = new URLSearchParams({
+        userId: userId,
+        eventId: Number(eventId), // 숫자로 변환
+        startTime: formData.startTime,
+        endTime: formData.endTime,
+        _csrf: csrf
       });
+      
+      console.log("전송 데이터:", Object.fromEntries(scheduleData));
+      
+      let res = null;
+      
+      // 서버에 전송
+      if(!formData.scheduleId) {
+	      res = await fetch("/api/schedules", {
+	        method: "POST",
+	        headers: {
+	          'Content-Type': 'application/x-www-form-urlencoded'
+	        },
+	        body: scheduleData
+	      });
+      }
+      else {
+    	  res = await fetch("/api/schedules/" + formData.scheduleId, {
+    		 method: "PUT",
+    		 body: scheduleData
+    	  });
+      }
 
       const result = await res.json();
+      
       if (result.result === "success") {
         alert("스케줄이 저장되었습니다.");
         location.href = `/event.html?id=${eventId}`;
@@ -185,37 +294,60 @@
     }
   }
 
+  // 날짜와 시간을 ISO 형식으로 변환
   function formatTime(date, time) {
     return `${date}T${time}:00`;
   }
 
+  // 드래그 폼 제출 처리
   document.getElementById("form-drag").addEventListener("submit", function (e) {
     e.preventDefault();
     const date = document.getElementById("datePicker").value;
     const start = document.getElementById("dragStart").value;
     const end = document.getElementById("dragEnd").value;
+    
+    if (!date) return alert("날짜를 선택해주세요.");
     if (!start || !end) return alert("시간을 선택해주세요.");
+    
+    // 이미 URL에 scheduleId가 있는지 확인
+    const scheduleId = new URLSearchParams(location.search).get("scheduleId");
+    
     submitSchedule({
+      scheduleId: scheduleId, // 없으면 undefined
       startTime: formatTime(date, start),
       endTime: formatTime(date, end)
     });
   });
 
+  // 직접 입력 폼 제출 처리
   document.getElementById("form-direct").addEventListener("submit", function (e) {
     e.preventDefault();
     const date = document.getElementById("date").value;
     const start = document.getElementById("startTime").value;
     const end = document.getElementById("endTime").value;
+    
+    if (!date) return alert("날짜를 선택해주세요.");
     if (!start || !end) return alert("시간을 선택해주세요.");
+    
+    // 시작 시간이 종료 시간보다 늦은 경우 체크
+    if (start >= end) {
+      return alert("종료 시간은 시작 시간보다 늦어야 합니다.");
+    }
+    
+    // 이미 URL에 scheduleId가 있는지 확인
+    const scheduleId = new URLSearchParams(location.search).get("scheduleId");
+    
     submitSchedule({
+      scheduleId: scheduleId, // 없으면 undefined
       startTime: formatTime(date, start),
       endTime: formatTime(date, end)
     });
   });
 
+  // 드롭다운 선택시 그리드도 업데이트
   startTimeSelect.addEventListener("change", updateGridFromDropdowns);
   endTimeSelect.addEventListener("change", updateGridFromDropdowns);
-  document.getElementById("date").addEventListener("change", updateGridFromDropdowns);
+  document.getElementById("date").addEventListener("change", syncDateFields);
 
   function updateGridFromDropdowns() {
     const startVal = startTimeSelect.value;
@@ -229,8 +361,103 @@
       for (let i = from; i <= to; i++) {
         cells[i].classList.add("selected");
       }
+      
+      // 드래그 시작 및 종료 시간 값 설정
+      document.getElementById("dragStart").value = startVal;
+      document.getElementById("dragEnd").value = endVal;
     }
   }
+  
+  // 두 날짜 필드를 동기화하는 함수
+  function syncDateFields() {
+    const directDate = document.getElementById("date").value;
+    document.getElementById("datePicker").value = directDate;
+  }
+  
+  // 드래그 폼 날짜 변경시 직접 입력 폼 날짜도 동기화
+  document.getElementById("datePicker").addEventListener("change", function() {
+    document.getElementById("date").value = this.value;
+  });
+  
+  // 페이지 로드시 scheduleId가 있으면 기존 데이터 가져오기
+  // schedule.html/?eventId=123&scheduleId=456
+  async function loadExistingSchedule() {
+    const scheduleId = new URLSearchParams(location.search).get("scheduleId");
+    
+    if (scheduleId) {
+      try {
+        console.log("스케줄 ID 로드 시도:", scheduleId);
+        const res = await fetch(`/api/schedules/${scheduleId}`);
+        const data = await res.json();
+        console.log("로드된 스케줄 데이터:", data);
+        
+        if (data && data.scheduleDto.startTime && data.scheduleDto.endTime) {
+          // ISO 형식에서 날짜와 시간 분리
+          // ISO 문자열 예: "2025-05-12T14:30:00" 또는 "2025-05-12T14:30:00.000Z"
+          
+          // 날짜 부분 추출
+          const date = data.scheduleDto.startTime.split('T')[0];
+          
+          // 시간 부분 추출 (HH:MM 형식으로)
+          const startTime = data.scheduleDto.startTime.split('T')[1].substring(0, 5);
+          const endTime = data.scheduleDto.endTime.split('T')[1].substring(0, 5);
+          
+          console.log("파싱된 데이터:", {date, startTime, endTime});
+          
+          // 폼 필드에 값 설정
+          document.getElementById("datePicker").value = date;
+          document.getElementById("date").value = date;
+
+          // 드롭다운 옵션 선택
+          setSelectValue(startTimeSelect, startTime);
+          setSelectValue(endTimeSelect, endTime);
+          
+          // 드래그 입력 필드에도 값 설정
+          document.getElementById("dragStart").value = startTime;
+          document.getElementById("dragEnd").value = endTime;
+          
+          // 그리드 선택 상태 업데이트
+          updateGridFromTimes(startTime, endTime);
+          
+          const deleteBtn = document.getElementById("deleteBtn");
+          deleteBtn.classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error("기존 스케줄 로드 실패:", err);
+      }
+    } else {
+    	return;
+    }
+  }
+  
+  // 선택 요소에 값 설정 함수
+  function setSelectValue(select, value) {
+    for (let i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === value) {
+        select.selectedIndex = i;
+        return true;
+      }
+    }
+    console.warn(`드롭다운에서 '${value}' 값을 찾지 못했습니다.`);
+    return false;
+  }
+  
+  // 시간 값에 따라 그리드 선택 상태 업데이트
+  function updateGridFromTimes(startTime, endTime) {
+    const startIdx = [...cells].findIndex(c => c.dataset.time === startTime);
+    const endIdx = [...cells].findIndex(c => c.dataset.time === endTime);
+    
+    if (startIdx >= 0 && endIdx >= 0) {
+      cells.forEach(c => c.classList.remove("selected"));
+      const [from, to] = [startIdx, endIdx].sort((a, b) => a - b);
+      for (let i = from; i <= to; i++) {
+        cells[i].classList.add("selected");
+      }
+    }
+  }
+  
+  // 페이지 로드시 실행
+  loadExistingSchedule();
 </script>
 
 </body>
