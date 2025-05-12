@@ -62,7 +62,7 @@
         const result = await res.json();
         console.log("서버 응답:", result);
 
-        const events = result?.events;
+        const events = result?.eventDtoList;
 
         if (result.result === "success" && Array.isArray(events)) {
           if (events.length === 0) {
@@ -98,7 +98,7 @@
       const csrf = await getCsrfToken();
       const urlParams = new URLSearchParams({ _csrf: csrf });
 
-      const res = await fetch("/api/logout", {
+      const res = await fetch("/logout", {
         method: "POST",
         body: urlParams,
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
