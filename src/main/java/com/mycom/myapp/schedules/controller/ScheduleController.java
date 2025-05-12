@@ -1,9 +1,11 @@
 package com.mycom.myapp.schedules.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -69,6 +71,26 @@ public class ScheduleController {
 
 		if("success".equals(scheduleResultDto.getResult())) {
 			return ResponseEntity.ok(scheduleResultDto);
+		}
+		else {
+			return ResponseEntity.internalServerError().body(scheduleResultDto);
+		}
+	}
+	
+	@PutMapping("/schedules/{scheduleId}")
+	public ResponseEntity<ScheduleResultDto> updateSchedule(
+			@PathVariable("scheduleId") Long scheduleId,
+			ScheduleDto scheduleDto) 
+	{
+		scheduleDto.setScheduleId(scheduleId);
+		
+		ScheduleResultDto scheduleResultDto = scheduleService.updateSchedule(scheduleDto);
+		
+		if("success".equals(scheduleResultDto.getResult())) {
+			return ResponseEntity.ok(scheduleResultDto);
+		}
+		else if("forbidden".equals(scheduleResultDto.getResult())) {
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(scheduleResultDto);
 		}
 		else {
 			return ResponseEntity.internalServerError().body(scheduleResultDto);
