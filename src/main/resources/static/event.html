@@ -245,14 +245,18 @@
                 참여자 (${event.userIds.length}명)
               </h2>
               <div class="flex flex-wrap gap-2">
-                ${event.userIds.map(id => `
+                ${event.userIds.map(id => {
+                  const userName = userMap[id] || `사용자 ${id}`;
+                  const initial = userName.charAt(0);
+                  return `
                   <div class="bg-[#f3f0ea] px-3 py-1.5 rounded-xl text-sm flex items-center">
                     <span class="w-6 h-6 rounded-full bg-[#7c6dfa] text-white flex items-center justify-center text-xs mr-2">
-                      ${id}
+                      ${initial}
                     </span>
-                    ${userMap[id] || `사용자 ${id}`}
+                    ${userName}
                   </div>
-                `).join('')}
+                `;
+                }).join('')}
               </div>
             </div>
 
@@ -409,7 +413,7 @@
                                                                 </div>
                                                                 <div class="ml-4 flex items-center">
                                                                     <span class="w-6 h-6 rounded-full ${isCurrentUser ? 'bg-[#7c6dfa]' : 'bg-gray-200'} text-${isCurrentUser ? 'white' : 'gray-700'} flex items-center justify-center text-xs mr-2">
-                                                                        ${schedule.userId}
+                                                                        ${(userMap[schedule.userId] || `사용자 ${schedule.userId}`).charAt(0)}
                                                                     </span>
                                                                     <span class="font-medium">${userMap[schedule.userId] || `사용자 ${schedule.userId}`}</span>
                                                                     ${isCurrentUser ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full">나</span>' : ''}
@@ -792,9 +796,9 @@
           <div class="p-3 border-b hover:bg-gray-50 flex justify-between items-center">
             <div>
               <div class="font-medium">${user.email}</div>
-              <div class="text-sm text-gray-500">사용자 ID: ${user.userId}</div>
+              <div class="text-sm text-gray-500">이름: ${user.name}</div>
             </div>
-            <button onclick="inviteUser(${user.userId})"
+            <button onclick="inviteUser(${user.id})"
                     class="bg-[#7c6dfa] text-white px-3 py-1 rounded-lg text-sm">
               초대
             </button>
@@ -809,11 +813,16 @@
 
     async function inviteUser(invitedId) {
         try {
+            if (invitedId === undefined || invitedId === null) {
+                alert('초대할 사용자 ID가 유효하지 않습니다.');
+                return;
+            }
+
             const csrf = await getCsrfToken();
             const formData = new URLSearchParams();
             formData.append("inviterId", userId);
             formData.append("eventId", eventId);
-            formData.append("invitedIds", invitedId);
+            formData.append("invitedIds", invitedId); // Spring will parse this as a List element
             formData.append("_csrf", csrf);
 
             const res = await fetch("/api/events/invite", {
