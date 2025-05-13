@@ -5,6 +5,7 @@
     <title>이벤트 상세</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .time-slot {
             height: 60px;
@@ -147,18 +148,54 @@
     </div>
 </div>
 
+<!-- Schedule Edit Modal -->
+<div id="editScheduleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-lg">
+        <h2 class="text-xl font-bold mb-4">스케줄 수정</h2>
+
+        <div id="scheduleEditContent" class="space-y-4">
+            <div class="mb-2">
+                <div class="text-sm text-gray-500 mb-1">날짜</div>
+                <div id="scheduleDate" class="font-medium"></div>
+            </div>
+
+            <div id="timeGrid" class="border rounded h-[400px] overflow-y-scroll bg-gray-50 text-sm"></div>
+
+            <input type="hidden" id="scheduleId">
+            <input type="hidden" id="dragStart">
+            <input type="hidden" id="dragEnd">
+            <input type="hidden" id="originalDate">
+        </div>
+
+        <div class="flex justify-end space-x-2 mt-6">
+            <button onclick="closeEditScheduleModal()" class="px-4 py-2 bg-gray-200 rounded-lg">취소</button>
+            <button id="saveScheduleBtn" class="px-4 py-2 bg-[#7c6dfa] text-white rounded-lg">저장</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const eventId = new URLSearchParams(location.search).get("id");
     const userId = sessionStorage.getItem("userId");
 
     if (!userId) {
-        alert("로그인이 필요합니다.");
-        location.href = "/login.html";
-    }
-
-    if (!eventId) {
-        alert("이벤트 ID가 필요합니다.");
-        location.href = "/";
+        Swal.fire({
+            title: '로그인 필요',
+            text: '로그인이 필요합니다.',
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        }).then(() => {
+            location.href = "/login.html";
+        });
+    } else if (!eventId) {
+        Swal.fire({
+            title: '오류',
+            text: '이벤트 ID가 필요합니다.',
+            icon: 'error',
+            confirmButtonColor: '#7c6dfa'
+        }).then(() => {
+            location.href = "/";
+        });
     }
 
     async function getCsrfToken() {
@@ -224,6 +261,13 @@
 
             const container = document.getElementById("eventContainer");
             container.innerHTML = `
+          <div class="mb-4">
+            <a href="/index.html" class="text-[#7c6dfa] hover:text-[#6a5cd6] flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </a>
+          </div>
           <div class="flex justify-between items-center border-b pb-5">
             <h1 class="text-3xl font-bold">${event.title}</h1>
             ${userId == event.ownerId ? `
@@ -382,7 +426,7 @@
                         });
 
                         return `
-                            <div class="space-y-6">
+                            <div class="space-y-6 max-h-[300px] overflow-y-auto">
                                 ${sortedDates.map(dateStr => {
                                     const dateSchedules = schedulesByDate[dateStr];
 
@@ -403,10 +447,11 @@
                                                         });
                                                     };
 
-                                                    const isCurrentUser = schedule.userId === userId;
+                                                    const isCurrentUser = schedule.userId == userId;
 
                                                     return `
-                                                        <div class="px-4 py-3 flex items-center justify-between ${isCurrentUser ? 'bg-[#fafafa]' : ''}">
+                                                        <div class="px-4 py-3 flex items-center justify-between ${isCurrentUser ? 'bg-[#fafafa]' : ''} ${isCurrentUser ? 'cursor-pointer hover:bg-gray-100' : ''}" 
+                                                             ${isCurrentUser ? `onclick="editSchedule('${schedule.scheduleId}', '${schedule.startTime}', '${schedule.endTime}', '${schedule.userId}')"` : ''}>
                                                             <div class="flex items-center">
                                                                 <div class="w-10 text-center text-sm text-gray-500">
                                                                     ${formatTimeOnly(startTime)}
@@ -421,6 +466,7 @@
                                                             </div>
                                                             <div class="text-sm text-gray-500">
                                                                 ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
+                                                                ${isCurrentUser ? '<span class="ml-2 text-xs text-[#7c6dfa]"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></span>' : ''}
                                                             </div>
                                                         </div>
                                                     `;
@@ -566,7 +612,18 @@
     }
 
     async function deleteSchedule(scheduleId) {
-        if (!confirm('이 스케줄을 삭제하시겠습니까?')) return;
+        const result = await Swal.fire({
+            title: '스케줄 삭제',
+            text: '이 스케줄을 삭제하시겠습니까?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#7c6dfa',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const csrf = await getCsrfToken();
@@ -580,19 +637,45 @@
 
             const result = await res.json();
             if (result.result === 'success') {
-                alert('스케줄이 삭제되었습니다.');
+                Swal.fire({
+                    title: '삭제 완료',
+                    text: '스케줄이 삭제되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 await renderEvent();
             } else {
-                alert('스케줄 삭제에 실패했습니다.');
+                Swal.fire({
+                    title: '삭제 실패',
+                    text: '스케줄 삭제에 실패했습니다.',
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error deleting schedule:', error);
-            alert('스케줄 삭제 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '스케줄 삭제 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
     async function deleteEvent(eventId) {
-        if (!confirm('이 이벤트를 삭제하시겠습니까?')) return;
+        const result = await Swal.fire({
+            title: '이벤트 삭제',
+            text: '이 이벤트를 삭제하시겠습니까?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#7c6dfa',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const csrf = await getCsrfToken();
@@ -608,14 +691,30 @@
 
             const result = await res.json();
             if (result.result === "success") {
-                alert("삭제되었습니다.");
-                location.href = "/";
+                Swal.fire({
+                    title: '삭제 완료',
+                    text: '이벤트가 삭제되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                }).then(() => {
+                    location.href = "/";
+                });
             } else {
-                alert("삭제 실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '삭제 실패',
+                    text: "삭제 실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error deleting event:', error);
-            alert('이벤트 삭제 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '이벤트 삭제 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
@@ -731,7 +830,12 @@
     async function saveEditEvent() {
         const newTitle = document.getElementById('editEventTitle').value.trim();
         if (!newTitle) {
-            alert("제목을 입력해주세요.");
+            Swal.fire({
+                title: '입력 오류',
+                text: '제목을 입력해주세요.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
             return;
         }
 
@@ -755,15 +859,30 @@
 
             const result = await res.json();
             if (result.result === "success") {
-                alert("수정되었습니다.");
+                Swal.fire({
+                    title: '수정 완료',
+                    text: '이벤트가 수정되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 closeEditEventModal();
                 await renderEvent();
             } else {
-                alert("수정 실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '수정 실패',
+                    text: "수정 실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error editing event:', error);
-            alert('이벤트 수정 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '이벤트 수정 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
@@ -818,7 +937,12 @@
     async function inviteUser(invitedId) {
         try {
             if (invitedId === undefined || invitedId === null) {
-                alert('초대할 사용자 ID가 유효하지 않습니다.');
+                Swal.fire({
+                    title: '초대 오류',
+                    text: '초대할 사용자 ID가 유효하지 않습니다.',
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 return;
             }
 
@@ -837,15 +961,30 @@
 
             const result = await res.json();
             if (result.result === "success") {
-                alert("초대되었습니다.");
+                Swal.fire({
+                    title: '초대 완료',
+                    text: '사용자가 초대되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 closeInviteModal();
                 await renderEvent();
             } else {
-                alert("초대 실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '초대 실패',
+                    text: "초대 실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error inviting user:', error);
-            alert('사용자 초대 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '사용자 초대 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
@@ -869,6 +1008,253 @@
     });
 
     document.getElementById("saveEventBtn").addEventListener("click", saveEditEvent);
+    document.getElementById("saveScheduleBtn").addEventListener("click", saveEditSchedule);
+
+    // 스케줄 수정 관련 변수
+    let editingScheduleId = null;
+    let editingScheduleDate = null;
+    let isDragging = false;
+    let startCell = null;
+    let cells = [];
+
+    // 스케줄 수정 모달 열기
+    function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
+        // 현재 사용자와 스케줄 생성자가 다른 경우
+        if (userId != scheduleUserId) {
+            Swal.fire({
+                title: '권한 오류',
+                text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
+            return;
+        }
+
+        editingScheduleId = scheduleId;
+
+        // 날짜 추출 (YYYY-MM-DD 형식)
+        const date = new Date(startTime);
+        const formattedDate = date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+
+        // ISO 형식의 날짜 (YYYY-MM-DD)
+        const isoDate = startTime.split('T')[0];
+        editingScheduleDate = isoDate;
+
+        // 시간 추출 (HH:MM 형식)
+        const startTimeStr = startTime.split('T')[1].substring(0, 5);
+        const endTimeStr = endTime.split('T')[1].substring(0, 5);
+
+        // 날짜 표시
+        document.getElementById('scheduleDate').textContent = formattedDate;
+        document.getElementById('originalDate').value = isoDate;
+
+        // 타임그리드 생성
+        createTimeGrid();
+
+        // 기존 시간 선택
+        selectTimeRange(startTimeStr, endTimeStr);
+
+        // 모달 표시
+        document.getElementById('editScheduleModal').classList.remove('hidden');
+    }
+
+    // 타임그리드 생성
+    function createTimeGrid() {
+        const grid = document.getElementById("timeGrid");
+        grid.innerHTML = "";
+        cells = [];
+
+        // 30분 단위로 시간 배열 생성
+        const times = [];
+        for (let h = 0; h < 24; h++) {
+            times.push(`${h.toString().padStart(2, '0')}:00`);
+            times.push(`${h.toString().padStart(2, '0')}:30`);
+        }
+
+        // 시간 셀 생성
+        times.forEach(t => {
+            const div = document.createElement("div");
+            div.className = "time-cell";
+            div.dataset.time = t;
+            div.textContent = t;
+            div.style.height = "40px";
+            div.style.borderBottom = "1px solid #e2e8f0";
+            div.style.cursor = "pointer";
+            div.style.paddingLeft = "1rem";
+            div.style.display = "flex";
+            div.style.alignItems = "center";
+
+            grid.appendChild(div);
+            cells.push(div);
+        });
+
+        // 드래그 선택 기능 구현
+        cells.forEach(cell => {
+            cell.addEventListener("mousedown", () => {
+                isDragging = true;
+                startCell = cell;
+                cells.forEach(c => c.classList.remove("selected"));
+                cell.classList.add("selected");
+                cell.style.backgroundColor = "#a5a1e4";
+                cell.style.color = "white";
+            });
+
+            cell.addEventListener("mouseenter", () => {
+                if (isDragging && startCell) {
+                    let startIndex = cells.indexOf(startCell);
+                    let currentIndex = cells.indexOf(cell);
+
+                    cells.forEach(c => {
+                        c.classList.remove("selected");
+                        c.style.backgroundColor = "";
+                        c.style.color = "";
+                    });
+
+                    let [from, to] = [startIndex, currentIndex].sort((a, b) => a - b);
+                    for (let i = from; i <= to; i++) {
+                        cells[i].classList.add("selected");
+                        cells[i].style.backgroundColor = "#a5a1e4";
+                        cells[i].style.color = "white";
+                    }
+                }
+            });
+        });
+
+        document.addEventListener("mouseup", () => {
+            if (isDragging && startCell) {
+                isDragging = false;
+                const selected = document.querySelectorAll(".time-cell.selected");
+                if (selected.length > 0) {
+                    const start = selected[0].dataset.time;
+                    const end = selected[selected.length - 1].dataset.time;
+                    document.getElementById("dragStart").value = start;
+                    document.getElementById("dragEnd").value = end;
+                }
+            }
+        });
+    }
+
+    // 기존 시간 선택
+    function selectTimeRange(startTime, endTime) {
+        const startIndex = cells.findIndex(c => c.dataset.time === startTime);
+        const endIndex = cells.findIndex(c => c.dataset.time === endTime);
+
+        if (startIndex >= 0 && endIndex >= 0) {
+            cells.forEach(c => {
+                c.classList.remove("selected");
+                c.style.backgroundColor = "";
+                c.style.color = "";
+            });
+
+            const [from, to] = [startIndex, endIndex].sort((a, b) => a - b);
+            for (let i = from; i <= to; i++) {
+                cells[i].classList.add("selected");
+                cells[i].style.backgroundColor = "#a5a1e4";
+                cells[i].style.color = "white";
+            }
+
+            document.getElementById("dragStart").value = startTime;
+            document.getElementById("dragEnd").value = endTime;
+        }
+    }
+
+    // 스케줄 수정 모달 닫기
+    function closeEditScheduleModal() {
+        document.getElementById('editScheduleModal').classList.add('hidden');
+        editingScheduleId = null;
+        editingScheduleDate = null;
+    }
+
+    // 스케줄 수정 저장
+    async function saveEditSchedule() {
+        const scheduleId = editingScheduleId;
+        const originalDate = document.getElementById("originalDate").value;
+        const start = document.getElementById("dragStart").value;
+        const end = document.getElementById("dragEnd").value;
+
+        if (!start || !end) {
+            Swal.fire({
+                title: '입력 오류',
+                text: '시간을 선택해주세요.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
+            return;
+        }
+
+        // 시작 시간이 종료 시간보다 늦은 경우 체크
+        if (start >= end) {
+            Swal.fire({
+                title: '입력 오류',
+                text: '종료 시간은 시작 시간보다 늦어야 합니다.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
+            return;
+        }
+
+        try {
+            const csrf = await getCsrfToken();
+
+            // 스케줄 데이터 준비
+            const scheduleData = new URLSearchParams({
+                userId: userId,
+                eventId: Number(eventId),
+                startTime: `${originalDate}T${start}:00`,
+                endTime: `${originalDate}T${end}:00`,
+                _csrf: csrf
+            });
+
+            // 서버에 전송
+            const res = await fetch(`/api/schedules/${scheduleId}`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: scheduleData
+            });
+
+            const result = await res.json();
+
+            if (result.result === "success") {
+                Swal.fire({
+                    title: '수정 완료',
+                    text: '스케줄이 수정되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
+                closeEditScheduleModal();
+                await renderEvent();
+            } else if (result.result === "forbidden") {
+                Swal.fire({
+                    title: '권한 오류',
+                    text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
+                    icon: 'warning',
+                    confirmButtonColor: '#7c6dfa'
+                });
+            } else {
+                Swal.fire({
+                    title: '수정 실패',
+                    text: "실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
+            }
+        } catch (err) {
+            console.error(err);
+            Swal.fire({
+                title: '오류 발생',
+                text: '서버 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
+        }
+    }
 
     renderEvent();
 </script>
