@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>이벤트 생성</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     .selected { background-color: #7c6dfa !important; color: white !important; }
     .date-disabled { opacity: 0.3; cursor: not-allowed !important; pointer-events: none; }
@@ -82,8 +83,14 @@
   <script>
     const userId = sessionStorage.getItem("userId");
     if (!userId) {
-      alert("로그인이 필요합니다.");
-      window.location.href = "/login.html";
+      Swal.fire({
+        title: '로그인 필요',
+        text: '로그인이 필요합니다.',
+        icon: 'warning',
+        confirmButtonColor: '#7c6dfa'
+      }).then(() => {
+        window.location.href = "/login.html";
+      });
     }
 
     const selectedDates = new Set();
@@ -170,7 +177,12 @@
       const _csrf = await getCsrfToken();
 
       if (title === "" || eventDates.length === 0) {
-        alert("제목과 날짜를 모두 입력해주세요.");
+        Swal.fire({
+          title: '입력 오류',
+          text: '제목과 날짜를 모두 입력해주세요.',
+          icon: 'warning',
+          confirmButtonColor: '#7c6dfa'
+        });
         return;
       }
 
@@ -190,14 +202,30 @@
         const result = await response.json();
 
         if (result.result === "success") {
-          alert("이벤트가 성공적으로 생성되었습니다.");
-          window.location.href = "/";
+          Swal.fire({
+            title: '성공',
+            text: '이벤트가 성공적으로 생성되었습니다.',
+            icon: 'success',
+            confirmButtonColor: '#7c6dfa'
+          }).then(() => {
+            window.location.href = "/";
+          });
         } else {
-          alert("이벤트 생성 실패: " + JSON.stringify(result));
+          Swal.fire({
+            title: '실패',
+            text: '이벤트 생성 실패: ' + JSON.stringify(result),
+            icon: 'error',
+            confirmButtonColor: '#7c6dfa'
+          });
         }
       } catch (error) {
         console.error("오류 발생:", error);
-        alert("서버 오류");
+        Swal.fire({
+          title: '오류',
+          text: '서버 오류',
+          icon: 'error',
+          confirmButtonColor: '#7c6dfa'
+        });
       }
     });
 
