@@ -5,6 +5,7 @@
     <title>이벤트 상세</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .time-slot {
             height: 60px;
@@ -178,13 +179,23 @@
     const userId = sessionStorage.getItem("userId");
 
     if (!userId) {
-        alert("로그인이 필요합니다.");
-        location.href = "/login.html";
-    }
-
-    if (!eventId) {
-        alert("이벤트 ID가 필요합니다.");
-        location.href = "/";
+        Swal.fire({
+            title: '로그인 필요',
+            text: '로그인이 필요합니다.',
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        }).then(() => {
+            location.href = "/login.html";
+        });
+    } else if (!eventId) {
+        Swal.fire({
+            title: '오류',
+            text: '이벤트 ID가 필요합니다.',
+            icon: 'error',
+            confirmButtonColor: '#7c6dfa'
+        }).then(() => {
+            location.href = "/";
+        });
     }
 
     async function getCsrfToken() {
@@ -601,7 +612,18 @@
     }
 
     async function deleteSchedule(scheduleId) {
-        if (!confirm('이 스케줄을 삭제하시겠습니까?')) return;
+        const result = await Swal.fire({
+            title: '스케줄 삭제',
+            text: '이 스케줄을 삭제하시겠습니까?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#7c6dfa',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const csrf = await getCsrfToken();
@@ -615,19 +637,45 @@
 
             const result = await res.json();
             if (result.result === 'success') {
-                alert('스케줄이 삭제되었습니다.');
+                Swal.fire({
+                    title: '삭제 완료',
+                    text: '스케줄이 삭제되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 await renderEvent();
             } else {
-                alert('스케줄 삭제에 실패했습니다.');
+                Swal.fire({
+                    title: '삭제 실패',
+                    text: '스케줄 삭제에 실패했습니다.',
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error deleting schedule:', error);
-            alert('스케줄 삭제 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '스케줄 삭제 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
     async function deleteEvent(eventId) {
-        if (!confirm('이 이벤트를 삭제하시겠습니까?')) return;
+        const result = await Swal.fire({
+            title: '이벤트 삭제',
+            text: '이 이벤트를 삭제하시겠습니까?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#7c6dfa',
+            cancelButtonColor: '#d33',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        });
+
+        if (!result.isConfirmed) return;
 
         try {
             const csrf = await getCsrfToken();
@@ -643,14 +691,30 @@
 
             const result = await res.json();
             if (result.result === "success") {
-                alert("삭제되었습니다.");
-                location.href = "/";
+                Swal.fire({
+                    title: '삭제 완료',
+                    text: '이벤트가 삭제되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                }).then(() => {
+                    location.href = "/";
+                });
             } else {
-                alert("삭제 실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '삭제 실패',
+                    text: "삭제 실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error deleting event:', error);
-            alert('이벤트 삭제 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '이벤트 삭제 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
@@ -766,7 +830,12 @@
     async function saveEditEvent() {
         const newTitle = document.getElementById('editEventTitle').value.trim();
         if (!newTitle) {
-            alert("제목을 입력해주세요.");
+            Swal.fire({
+                title: '입력 오류',
+                text: '제목을 입력해주세요.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
             return;
         }
 
@@ -790,15 +859,30 @@
 
             const result = await res.json();
             if (result.result === "success") {
-                alert("수정되었습니다.");
+                Swal.fire({
+                    title: '수정 완료',
+                    text: '이벤트가 수정되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 closeEditEventModal();
                 await renderEvent();
             } else {
-                alert("수정 실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '수정 실패',
+                    text: "수정 실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error editing event:', error);
-            alert('이벤트 수정 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '이벤트 수정 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
@@ -853,7 +937,12 @@
     async function inviteUser(invitedId) {
         try {
             if (invitedId === undefined || invitedId === null) {
-                alert('초대할 사용자 ID가 유효하지 않습니다.');
+                Swal.fire({
+                    title: '초대 오류',
+                    text: '초대할 사용자 ID가 유효하지 않습니다.',
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 return;
             }
 
@@ -872,15 +961,30 @@
 
             const result = await res.json();
             if (result.result === "success") {
-                alert("초대되었습니다.");
+                Swal.fire({
+                    title: '초대 완료',
+                    text: '사용자가 초대되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 closeInviteModal();
                 await renderEvent();
             } else {
-                alert("초대 실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '초대 실패',
+                    text: "초대 실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (error) {
             console.error('Error inviting user:', error);
-            alert('사용자 초대 중 오류가 발생했습니다.');
+            Swal.fire({
+                title: '오류 발생',
+                text: '사용자 초대 중 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
@@ -917,7 +1021,12 @@
     function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
         // 현재 사용자와 스케줄 생성자가 다른 경우
         if (userId != scheduleUserId) {
-            alert("스케줄을 생성한 사용자만 수정할 수 있습니다.");
+            Swal.fire({
+                title: '권한 오류',
+                text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
             return;
         }
 
@@ -1069,13 +1178,23 @@
         const end = document.getElementById("dragEnd").value;
 
         if (!start || !end) {
-            alert("시간을 선택해주세요.");
+            Swal.fire({
+                title: '입력 오류',
+                text: '시간을 선택해주세요.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
             return;
         }
 
         // 시작 시간이 종료 시간보다 늦은 경우 체크
         if (start >= end) {
-            alert("종료 시간은 시작 시간보다 늦어야 합니다.");
+            Swal.fire({
+                title: '입력 오류',
+                text: '종료 시간은 시작 시간보다 늦어야 합니다.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
             return;
         }
 
@@ -1103,17 +1222,37 @@
             const result = await res.json();
 
             if (result.result === "success") {
-                alert("스케줄이 수정되었습니다.");
+                Swal.fire({
+                    title: '수정 완료',
+                    text: '스케줄이 수정되었습니다.',
+                    icon: 'success',
+                    confirmButtonColor: '#7c6dfa'
+                });
                 closeEditScheduleModal();
                 await renderEvent();
             } else if (result.result === "forbidden") {
-                alert("스케줄을 생성한 사용자만 수정할 수 있습니다.");
+                Swal.fire({
+                    title: '권한 오류',
+                    text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
+                    icon: 'warning',
+                    confirmButtonColor: '#7c6dfa'
+                });
             } else {
-                alert("실패: " + JSON.stringify(result));
+                Swal.fire({
+                    title: '수정 실패',
+                    text: "실패: " + JSON.stringify(result),
+                    icon: 'error',
+                    confirmButtonColor: '#7c6dfa'
+                });
             }
         } catch (err) {
-            alert("서버 오류 발생");
             console.error(err);
+            Swal.fire({
+                title: '오류 발생',
+                text: '서버 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
         }
     }
 
