@@ -389,7 +389,7 @@
                         });
 
                         return `
-                            <div class="space-y-6">
+                            <div class="space-y-6 max-h-[300px] overflow-y-auto">
                                 ${sortedDates.map(dateStr => {
                                     const dateSchedules = schedulesByDate[dateStr];
 
