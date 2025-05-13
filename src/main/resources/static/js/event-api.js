@@ -73,10 +73,7 @@ async function renderEvent() {
         // HTML 콘텐츠 렌더링
         renderEventHTML(event, schedules, timeSlots, maxCount);
 
-        // 시간대 차트가 있으면 렌더링
-        if (timeSlots.length > 0) {
-            renderTimeSlotChart(timeSlots, maxCount);
-        }
+        // 시간대 차트 렌더링 제거 (요구사항에 따라)
     } catch (error) {
         console.error('이벤트 렌더링 오류:', error);
         document.getElementById("eventContainer").innerHTML = `
