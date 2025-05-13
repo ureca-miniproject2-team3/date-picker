@@ -14,7 +14,7 @@
             align-items: center;
         }
         .time-cell.selected {
-            background-color: #a5a1e4;
+            background-color: #3b82f6;
             color: white;
         }
         .date-disabled {
@@ -22,41 +22,62 @@
             pointer-events: none;
         }
         .selected-date {
-            background-color: #7c6dfa;
-            color: white;
+            background-color: #3b82f6 !important;
+            color: white !important;
             border-radius: 9999px;
         }
     </style>
 </head>
 <body class="min-h-screen bg-[#f8f1e7] p-10 text-gray-800">
 <div class="max-w-4xl mx-auto">
-    <h1 class="text-2xl font-bold mb-6">Event 스케줄 등록</h1>
+    <h1 id="scheduleTitle" class="text-2xl font-bold mb-6">스케줄 등록</h1>
 
-    <div class="bg-white p-6 rounded-2xl shadow space-y-4">
-        <div class="mb-4">
-            <label class="block font-medium mb-2">날짜 선택</label>
+    <div class="bg-white p-6 rounded-2xl shadow space-y-6">
+        <div>
+            <label class="block font-medium mb-2">이벤트 날짜 목록</label>
+            <div id="eventDateButtons" class="flex flex-wrap gap-2"></div>
+        </div>
+
+        <button id="calendarToggleBtn" class="text-sm text-blue-600 underline mb-2">
+            달력에서 선택
+        </button>
+
+        <div id="calendarWrapper" class="hidden transition-all duration-300">
             <div class="bg-[#fcf8f3] rounded-2xl p-4 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
-                    <button id="prevMonth" type="button">&#9664;</button>
+                    <button id="prevMonth" type="button" class="text-xl px-2">&#9664;</button>
                     <div id="calendar-title" class="font-semibold"></div>
-                    <button id="nextMonth" type="button">&#9654;</button>
+                    <button id="nextMonth" type="button" class="text-xl px-2">&#9654;</button>
                 </div>
                 <div class="grid grid-cols-7 text-center text-sm font-medium text-gray-500 mb-2">
-                    <div class="text-red-400">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div class="text-blue-400">토</div>
+                    <div class="text-red-400">일</div><div>월</div><div>화</div><div>수</div>
+                    <div>목</div><div>금</div><div class="text-blue-400">토</div>
                 </div>
                 <div id="calendar" class="grid grid-cols-7 gap-1 text-center text-gray-700"></div>
             </div>
-            <input type="hidden" id="selectedDate" name="date" />
         </div>
 
-        <div class="mb-4">
-            <label class="block font-medium mb-1">시간 선택 (드래그)</label>
+        <input type="hidden" id="selectedDate" name="date" />
+        <input type="hidden" id="_csrf" name="_csrf" />
+
+        <div>
+            <label class="block font-medium mb-1">시간 선택</label>
+            <div class="flex items-center gap-4 mb-2">
+                <div>
+                    <label class="text-sm text-gray-600">시작</label>
+                    <select id="dropdownStartTime" class="border rounded p-1 text-sm"></select>
+                </div>
+                <div>
+                    <label class="text-sm text-gray-600">종료</label>
+                    <select id="dropdownEndTime" class="border rounded p-1 text-sm"></select>
+                </div>
+            </div>
             <div id="timeGrid" class="border rounded h-[300px] overflow-y-scroll bg-gray-50 text-sm"></div>
             <input type="hidden" id="dragStart" name="startTime" />
             <input type="hidden" id="dragEnd" name="endTime" />
         </div>
 
-        <button id="saveBtn" class="bg-[#7c6dfa] text-white px-4 py-2 rounded hover:bg-[#6b5de6] transition w-full">
+        <button id="saveBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition w-full">
             스케줄 저장
         </button>
     </div>
@@ -65,54 +86,107 @@
 <script>
     const selectedDateInput = document.getElementById("selectedDate");
     const calendar = document.getElementById("calendar");
-    const today = new Date();
-    let currentYear = today.getFullYear();
-    let currentMonth = today.getMonth() + 1;
+    const calendarWrapper = document.getElementById("calendarWrapper");
+    const timeGrid = document.getElementById("timeGrid");
+    const dragStartInput = document.getElementById("dragStart");
+    const dragEndInput = document.getElementById("dragEnd");
+    const csrfInput = document.getElementById("_csrf");
+    const dropdownStart = document.getElementById("dropdownStartTime");
+    const dropdownEnd = document.getElementById("dropdownEndTime");
+
+    let currentYear, currentMonth;
     let validDates = [];
+    let selectedDate = null;
+    let isDragging = false;
+    let startCell = null;
 
     const urlParams = new URLSearchParams(location.search);
-    const eventId = urlParams.get("eventId"); // ✅ eventId 정확히 가져오기
+    const eventId = urlParams.get("eventId");
 
     if (!eventId) {
-        alert("잘못된 접근입니다. eventId가 없습니다.");
+        alert("eventId가 없습니다.");
         throw new Error("eventId가 없습니다.");
     }
 
-    async function fetchEventDates(eventId) {
+    async function fetchCsrfToken() {
+        const res = await fetch("/api/auth/csrf-token", { credentials: "same-origin" });
+        const data = await res.json();
+        csrfInput.value = data.token;
+    }
+
+    async function fetchEventData(eventId) {
         const res = await fetch(`/api/events/${eventId}`);
         if (!res.ok) throw new Error(`이벤트 정보 로드 실패: ${res.status}`);
         const { eventDto } = await res.json();
-        return Array.isArray(eventDto?.eventDates) ? eventDto.eventDates : [];
+        return eventDto;
+    }
+
+    function setInitialMonthFromEventDates(dates) {
+        if (!dates || dates.length === 0) return;
+        const sorted = [...dates].sort((a, b) => new Date(a) - new Date(b));
+        const nearest = new Date(sorted[0]);
+        currentYear = nearest.getFullYear();
+        currentMonth = nearest.getMonth() + 1;
+    }
+
+    function updateSelectedDate(dateStr) {
+        document.querySelectorAll(".selected-date").forEach(el => el.classList.remove("selected-date"));
+        document.querySelectorAll(".event-date-btn").forEach(b => b.classList.remove("bg-blue-500", "text-white"));
+        const calendarBtn = document.querySelector(`#calendar button[data-date='${dateStr}']`);
+        if (calendarBtn) calendarBtn.classList.add("selected-date");
+        const match = document.querySelector(`.event-date-btn[data-date='${dateStr}']`);
+        if (match) match.classList.add("bg-blue-500", "text-white");
+        selectedDateInput.value = dateStr;
+        selectedDate = dateStr;
+    }
+
+    function clearSelectedDate() {
+        document.querySelectorAll(".selected-date").forEach(el => el.classList.remove("selected-date"));
+        document.querySelectorAll(".event-date-btn").forEach(b => b.classList.remove("bg-blue-500", "text-white"));
+        selectedDateInput.value = "";
+        selectedDate = null;
+    }
+
+    function toggleDateSelection(dateStr) {
+        if (selectedDate === dateStr) {
+            clearSelectedDate();
+        } else {
+            updateSelectedDate(dateStr);
+        }
+    }
+
+    function renderEventDateButtons(dates) {
+        const container = document.getElementById("eventDateButtons");
+        container.innerHTML = "";
+        dates.forEach(dateStr => {
+            const btn = document.createElement("button");
+            btn.className = "event-date-btn px-3 py-1 rounded-full border text-sm bg-white hover:bg-blue-100 transition";
+            btn.dataset.date = dateStr;
+            btn.textContent = dateStr;
+            btn.addEventListener("click", () => toggleDateSelection(dateStr));
+            container.appendChild(btn);
+        });
     }
 
     const generateCalendar = (year, month) => {
         calendar.innerHTML = "";
         document.getElementById("calendar-title").textContent = `${year}.${String(month).padStart(2, "0")}`;
-
         const firstDay = new Date(year, month - 1, 1);
         const lastDay = new Date(year, month, 0);
         const startDay = firstDay.getDay();
         const totalDays = lastDay.getDate();
-
         for (let i = 0; i < startDay; i++) calendar.appendChild(document.createElement("div"));
-
         for (let d = 1; d <= totalDays; d++) {
             const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
             const btn = document.createElement("button");
             btn.textContent = d;
-            btn.className = "py-1 hover:bg-[#e5dbff] transition";
+            btn.className = "py-1 hover:bg-blue-100 transition";
             btn.dataset.date = dateStr;
-
             if (!validDates.includes(dateStr)) {
                 btn.classList.add("date-disabled");
             } else {
-                btn.addEventListener("click", () => {
-                    document.querySelectorAll("#calendar button").forEach(el => el.classList.remove("selected-date"));
-                    btn.classList.add("selected-date");
-                    selectedDateInput.value = dateStr;
-                });
+                btn.addEventListener("click", () => toggleDateSelection(dateStr));
             }
-
             calendar.appendChild(btn);
         }
     };
@@ -135,8 +209,11 @@
         generateCalendar(currentYear, currentMonth);
     });
 
-    // 시간 셀 구성
-    const timeGrid = document.getElementById("timeGrid");
+    document.getElementById("calendarToggleBtn").addEventListener("click", () => {
+        calendarWrapper.classList.toggle("hidden");
+    });
+
+    // 시간 셀 생성
     const times = [];
     for (let h = 0; h < 24; h++) {
         times.push(`${String(h).padStart(2, "0")}:00`);
@@ -150,8 +227,36 @@
         timeGrid.appendChild(div);
     });
 
-    let isDragging = false;
-    let startCell = null;
+    function fillDropdown(select, times) {
+        times.forEach(t => {
+            const option = document.createElement("option");
+            option.value = t;
+            option.textContent = t;
+            select.appendChild(option);
+        });
+    }
+    fillDropdown(dropdownStart, times);
+    fillDropdown(dropdownEnd, times);
+
+    dropdownStart.addEventListener("change", syncDropdownToDrag);
+    dropdownEnd.addEventListener("change", syncDropdownToDrag);
+
+    function syncDropdownToDrag() {
+        let start = dropdownStart.value;
+        let end = dropdownEnd.value;
+        const cells = [...document.querySelectorAll(".time-cell")];
+        const startIdx = cells.findIndex(c => c.dataset.time === start);
+        const endIdx = cells.findIndex(c => c.dataset.time === end);
+
+        if (startIdx < 0 || endIdx < 0 || startIdx >= endIdx) return;
+
+        cells.forEach((cell, i) => {
+            cell.classList.toggle("selected", i >= startIdx && i <= endIdx);
+        });
+
+        dragStartInput.value = start;
+        dragEndInput.value = end;
+    }
 
     timeGrid.addEventListener("mousedown", e => {
         if (!e.target.classList.contains("time-cell")) return;
@@ -177,31 +282,73 @@
             isDragging = false;
             const selected = document.querySelectorAll(".time-cell.selected");
             if (selected.length) {
-                document.getElementById("dragStart").value = selected[0].dataset.time;
-                document.getElementById("dragEnd").value = selected[selected.length - 1].dataset.time;
+                const start = selected[0].dataset.time;
+                const end = selected[selected.length - 1].dataset.time;
+                dragStartInput.value = start;
+                dragEndInput.value = end;
+                dropdownStart.value = start;
+                dropdownEnd.value = end;
             }
         }
     });
 
-    document.getElementById("saveBtn").addEventListener("click", () => {
+    document.getElementById("saveBtn").addEventListener("click", async () => {
         const date = selectedDateInput.value;
-        const start = document.getElementById("dragStart").value;
-        const end = document.getElementById("dragEnd").value;
+        const start = dragStartInput.value;
+        const end = dragEndInput.value;
+        const userId = sessionStorage.getItem("userId");
+        const csrfToken = csrfInput.value;
+
         if (!date || !start || !end) {
             alert("날짜 및 시간을 모두 선택해주세요.");
-        } else {
-            alert(`저장할 날짜: ${date}, 시간: ${start} ~ ${end}`);
+            return;
+        }
+
+        if (start >= end) {
+            alert("시작 시간은 종료 시간보다 빨라야 합니다.");
+            return;
+        }
+
+        const startTime = `${date}T${start}`;
+        const endTime = `${date}T${end}`;
+
+        const formBody = new URLSearchParams({
+            userId,
+            eventId,
+            startTime,
+            endTime,
+            _csrf: csrfToken
+        });
+
+        try {
+            const res = await fetch("/api/schedules", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formBody,
+                credentials: "same-origin"
+            });
+
+            if (!res.ok) throw new Error(`저장 실패: ${res.status}`);
+            const result = await res.json();
+            alert("스케줄이 성공적으로 저장되었습니다!");
+            history.back();
+        } catch (err) {
+            console.error(err);
+            alert("스케줄 저장 중 오류가 발생했습니다.");
         }
     });
 
-    // ✨ 핵심: 이벤트 날짜 불러오고 캘린더 생성
-    fetchEventDates(eventId)
-        .then(dates => {
-            validDates = dates;
+    fetchCsrfToken();
+    fetchEventData(eventId)
+        .then(eventDto => {
+            document.getElementById("scheduleTitle").textContent = `${eventDto.title}의 스케줄`;
+            validDates = eventDto.eventDates || [];
+            renderEventDateButtons(validDates);
+            setInitialMonthFromEventDates(validDates);
             generateCalendar(currentYear, currentMonth);
         })
         .catch(err => {
-            alert("이벤트 날짜 정보를 불러오지 못했습니다.");
+            alert("이벤트 정보 로드 실패");
             console.error(err);
         });
 </script>
