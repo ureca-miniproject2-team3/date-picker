@@ -167,9 +167,12 @@
             <input type="hidden" id="originalDate">
         </div>
 
-        <div class="flex justify-end space-x-2 mt-6">
-            <button onclick="closeEditScheduleModal()" class="px-4 py-2 bg-gray-200 rounded-lg">취소</button>
-            <button id="saveScheduleBtn" class="px-4 py-2 bg-[#7c6dfa] text-white rounded-lg">저장</button>
+        <div class="flex justify-between mt-6">
+            <button onclick="deleteSchedule(editingScheduleId)" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg">삭제</button>
+            <div class="flex space-x-2">
+                <button onclick="closeEditScheduleModal()" class="px-4 py-2 bg-gray-200 rounded-lg">취소</button>
+                <button id="saveScheduleBtn" class="px-4 py-2 bg-[#7c6dfa] text-white rounded-lg">저장</button>
+            </div>
         </div>
     </div>
 </div>
@@ -627,11 +630,12 @@
 
         try {
             const csrf = await getCsrfToken();
+
             const res = await fetch(`/api/schedules/${scheduleId}?userId=${userId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
-                    'X-CSRF-TOKEN': csrf
+                    'X-XSRF-TOKEN': csrf
                 }
             });
 
@@ -643,6 +647,7 @@
                     icon: 'success',
                     confirmButtonColor: '#7c6dfa'
                 });
+                closeEditScheduleModal();
                 await renderEvent();
             } else {
                 Swal.fire({
