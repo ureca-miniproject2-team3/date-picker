@@ -147,6 +147,32 @@
     </div>
 </div>
 
+<!-- Schedule Edit Modal -->
+<div id="editScheduleModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-lg">
+        <h2 class="text-xl font-bold mb-4">스케줄 수정</h2>
+
+        <div id="scheduleEditContent" class="space-y-4">
+            <div class="mb-2">
+                <div class="text-sm text-gray-500 mb-1">날짜</div>
+                <div id="scheduleDate" class="font-medium"></div>
+            </div>
+
+            <div id="timeGrid" class="border rounded h-[400px] overflow-y-scroll bg-gray-50 text-sm"></div>
+
+            <input type="hidden" id="scheduleId">
+            <input type="hidden" id="dragStart">
+            <input type="hidden" id="dragEnd">
+            <input type="hidden" id="originalDate">
+        </div>
+
+        <div class="flex justify-end space-x-2 mt-6">
+            <button onclick="closeEditScheduleModal()" class="px-4 py-2 bg-gray-200 rounded-lg">취소</button>
+            <button id="saveScheduleBtn" class="px-4 py-2 bg-[#7c6dfa] text-white rounded-lg">저장</button>
+        </div>
+    </div>
+</div>
+
 <script>
     const eventId = new URLSearchParams(location.search).get("id");
     const userId = sessionStorage.getItem("userId");
@@ -410,10 +436,11 @@
                                                         });
                                                     };
 
-                                                    const isCurrentUser = schedule.userId === userId;
+                                                    const isCurrentUser = schedule.userId == userId;
 
                                                     return `
-                                                        <div class="px-4 py-3 flex items-center justify-between ${isCurrentUser ? 'bg-[#fafafa]' : ''}">
+                                                        <div class="px-4 py-3 flex items-center justify-between ${isCurrentUser ? 'bg-[#fafafa]' : ''} ${isCurrentUser ? 'cursor-pointer hover:bg-gray-100' : ''}" 
+                                                             ${isCurrentUser ? `onclick="editSchedule('${schedule.scheduleId}', '${schedule.startTime}', '${schedule.endTime}', '${schedule.userId}')"` : ''}>
                                                             <div class="flex items-center">
                                                                 <div class="w-10 text-center text-sm text-gray-500">
                                                                     ${formatTimeOnly(startTime)}
@@ -428,6 +455,7 @@
                                                             </div>
                                                             <div class="text-sm text-gray-500">
                                                                 ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
+                                                                ${isCurrentUser ? '<span class="ml-2 text-xs text-[#7c6dfa]"><svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg></span>' : ''}
                                                             </div>
                                                         </div>
                                                     `;
@@ -876,6 +904,218 @@
     });
 
     document.getElementById("saveEventBtn").addEventListener("click", saveEditEvent);
+    document.getElementById("saveScheduleBtn").addEventListener("click", saveEditSchedule);
+
+    // 스케줄 수정 관련 변수
+    let editingScheduleId = null;
+    let editingScheduleDate = null;
+    let isDragging = false;
+    let startCell = null;
+    let cells = [];
+
+    // 스케줄 수정 모달 열기
+    function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
+        // 현재 사용자와 스케줄 생성자가 다른 경우
+        if (userId != scheduleUserId) {
+            alert("스케줄을 생성한 사용자만 수정할 수 있습니다.");
+            return;
+        }
+
+        editingScheduleId = scheduleId;
+
+        // 날짜 추출 (YYYY-MM-DD 형식)
+        const date = new Date(startTime);
+        const formattedDate = date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        });
+
+        // ISO 형식의 날짜 (YYYY-MM-DD)
+        const isoDate = startTime.split('T')[0];
+        editingScheduleDate = isoDate;
+
+        // 시간 추출 (HH:MM 형식)
+        const startTimeStr = startTime.split('T')[1].substring(0, 5);
+        const endTimeStr = endTime.split('T')[1].substring(0, 5);
+
+        // 날짜 표시
+        document.getElementById('scheduleDate').textContent = formattedDate;
+        document.getElementById('originalDate').value = isoDate;
+
+        // 타임그리드 생성
+        createTimeGrid();
+
+        // 기존 시간 선택
+        selectTimeRange(startTimeStr, endTimeStr);
+
+        // 모달 표시
+        document.getElementById('editScheduleModal').classList.remove('hidden');
+    }
+
+    // 타임그리드 생성
+    function createTimeGrid() {
+        const grid = document.getElementById("timeGrid");
+        grid.innerHTML = "";
+        cells = [];
+
+        // 30분 단위로 시간 배열 생성
+        const times = [];
+        for (let h = 0; h < 24; h++) {
+            times.push(`${h.toString().padStart(2, '0')}:00`);
+            times.push(`${h.toString().padStart(2, '0')}:30`);
+        }
+
+        // 시간 셀 생성
+        times.forEach(t => {
+            const div = document.createElement("div");
+            div.className = "time-cell";
+            div.dataset.time = t;
+            div.textContent = t;
+            div.style.height = "40px";
+            div.style.borderBottom = "1px solid #e2e8f0";
+            div.style.cursor = "pointer";
+            div.style.paddingLeft = "1rem";
+            div.style.display = "flex";
+            div.style.alignItems = "center";
+
+            grid.appendChild(div);
+            cells.push(div);
+        });
+
+        // 드래그 선택 기능 구현
+        cells.forEach(cell => {
+            cell.addEventListener("mousedown", () => {
+                isDragging = true;
+                startCell = cell;
+                cells.forEach(c => c.classList.remove("selected"));
+                cell.classList.add("selected");
+                cell.style.backgroundColor = "#a5a1e4";
+                cell.style.color = "white";
+            });
+
+            cell.addEventListener("mouseenter", () => {
+                if (isDragging && startCell) {
+                    let startIndex = cells.indexOf(startCell);
+                    let currentIndex = cells.indexOf(cell);
+
+                    cells.forEach(c => {
+                        c.classList.remove("selected");
+                        c.style.backgroundColor = "";
+                        c.style.color = "";
+                    });
+
+                    let [from, to] = [startIndex, currentIndex].sort((a, b) => a - b);
+                    for (let i = from; i <= to; i++) {
+                        cells[i].classList.add("selected");
+                        cells[i].style.backgroundColor = "#a5a1e4";
+                        cells[i].style.color = "white";
+                    }
+                }
+            });
+        });
+
+        document.addEventListener("mouseup", () => {
+            if (isDragging && startCell) {
+                isDragging = false;
+                const selected = document.querySelectorAll(".time-cell.selected");
+                if (selected.length > 0) {
+                    const start = selected[0].dataset.time;
+                    const end = selected[selected.length - 1].dataset.time;
+                    document.getElementById("dragStart").value = start;
+                    document.getElementById("dragEnd").value = end;
+                }
+            }
+        });
+    }
+
+    // 기존 시간 선택
+    function selectTimeRange(startTime, endTime) {
+        const startIndex = cells.findIndex(c => c.dataset.time === startTime);
+        const endIndex = cells.findIndex(c => c.dataset.time === endTime);
+
+        if (startIndex >= 0 && endIndex >= 0) {
+            cells.forEach(c => {
+                c.classList.remove("selected");
+                c.style.backgroundColor = "";
+                c.style.color = "";
+            });
+
+            const [from, to] = [startIndex, endIndex].sort((a, b) => a - b);
+            for (let i = from; i <= to; i++) {
+                cells[i].classList.add("selected");
+                cells[i].style.backgroundColor = "#a5a1e4";
+                cells[i].style.color = "white";
+            }
+
+            document.getElementById("dragStart").value = startTime;
+            document.getElementById("dragEnd").value = endTime;
+        }
+    }
+
+    // 스케줄 수정 모달 닫기
+    function closeEditScheduleModal() {
+        document.getElementById('editScheduleModal').classList.add('hidden');
+        editingScheduleId = null;
+        editingScheduleDate = null;
+    }
+
+    // 스케줄 수정 저장
+    async function saveEditSchedule() {
+        const scheduleId = editingScheduleId;
+        const originalDate = document.getElementById("originalDate").value;
+        const start = document.getElementById("dragStart").value;
+        const end = document.getElementById("dragEnd").value;
+
+        if (!start || !end) {
+            alert("시간을 선택해주세요.");
+            return;
+        }
+
+        // 시작 시간이 종료 시간보다 늦은 경우 체크
+        if (start >= end) {
+            alert("종료 시간은 시작 시간보다 늦어야 합니다.");
+            return;
+        }
+
+        try {
+            const csrf = await getCsrfToken();
+
+            // 스케줄 데이터 준비
+            const scheduleData = new URLSearchParams({
+                userId: userId,
+                eventId: Number(eventId),
+                startTime: `${originalDate}T${start}:00`,
+                endTime: `${originalDate}T${end}:00`,
+                _csrf: csrf
+            });
+
+            // 서버에 전송
+            const res = await fetch(`/api/schedules/${scheduleId}`, {
+                method: "PUT",
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: scheduleData
+            });
+
+            const result = await res.json();
+
+            if (result.result === "success") {
+                alert("스케줄이 수정되었습니다.");
+                closeEditScheduleModal();
+                await renderEvent();
+            } else if (result.result === "forbidden") {
+                alert("스케줄을 생성한 사용자만 수정할 수 있습니다.");
+            } else {
+                alert("실패: " + JSON.stringify(result));
+            }
+        } catch (err) {
+            alert("서버 오류 발생");
+            console.error(err);
+        }
+    }
 
     renderEvent();
 </script>
