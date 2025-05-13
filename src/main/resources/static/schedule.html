@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Event 스케줄 등록</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         .time-cell {
             height: 40px;
@@ -104,7 +105,11 @@
     const eventId = urlParams.get("eventId");
 
     if (!eventId) {
-        alert("eventId가 없습니다.");
+        Swal.fire({
+            icon: 'error',
+            title: '오류',
+            text: 'eventId가 없습니다.'
+        });
         throw new Error("eventId가 없습니다.");
     }
 
@@ -300,12 +305,20 @@
         const csrfToken = csrfInput.value;
 
         if (!date || !start || !end) {
-            alert("날짜 및 시간을 모두 선택해주세요.");
+            Swal.fire({
+                icon: 'warning',
+                title: '입력 확인',
+                text: '날짜 및 시간을 모두 선택해주세요.'
+            });
             return;
         }
 
         if (start >= end) {
-            alert("시작 시간은 종료 시간보다 빨라야 합니다.");
+            Swal.fire({
+                icon: 'warning',
+                title: '시간 오류',
+                text: '시작 시간은 종료 시간보다 빨라야 합니다.'
+            });
             return;
         }
 
@@ -330,11 +343,20 @@
 
             if (!res.ok) throw new Error(`저장 실패: ${res.status}`);
             const result = await res.json();
-            alert("스케줄이 성공적으로 저장되었습니다!");
-            history.back();
+            Swal.fire({
+                icon: 'success',
+                title: '저장 완료',
+                text: '스케줄이 성공적으로 저장되었습니다!'
+            }).then(() => {
+                history.back();
+            });
         } catch (err) {
             console.error(err);
-            alert("스케줄 저장 중 오류가 발생했습니다.");
+            Swal.fire({
+                icon: 'error',
+                title: '저장 오류',
+                text: '스케줄 저장 중 오류가 발생했습니다.'
+            });
         }
     });
 
@@ -348,7 +370,11 @@
             generateCalendar(currentYear, currentMonth);
         })
         .catch(err => {
-            alert("이벤트 정보 로드 실패");
+            Swal.fire({
+                icon: 'error',
+                title: '로드 오류',
+                text: '이벤트 정보 로드 실패'
+            });
             console.error(err);
         });
 </script>
