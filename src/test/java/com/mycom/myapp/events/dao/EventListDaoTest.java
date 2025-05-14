@@ -74,7 +74,7 @@ public class EventListDaoTest {
                 foundEvent1 = true;
             } else if (event.getEventId() == 200L && "테스트 이벤트2".equals(event.getTitle())
                     && event.getStatus() == EventStatus.UNCHECKED
-                    && event.getTimeline().getTimelineId() == null) {
+                    && event.getTimeline() == null) {
                 foundEvent2 = true;
             }
         }
