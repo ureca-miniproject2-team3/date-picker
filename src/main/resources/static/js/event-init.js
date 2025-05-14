@@ -2,7 +2,7 @@
 
 // 전역 변수
 const eventId = new URLSearchParams(location.search).get("id");
-const userId = sessionStorage.getItem("userId");
+const userId = Number(sessionStorage.getItem("userId"));
 
 // 로그인 및 이벤트 ID 확인
 document.addEventListener('DOMContentLoaded', async function () {
