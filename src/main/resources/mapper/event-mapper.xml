@@ -34,6 +34,7 @@
 	    left join timeline t on t.event_id = e.id
 	    where u.user_id = #{userId}
 	</select>
+
     <!--사용자 참여 중 참여자 명 조회 (리스트)-->
     <select id="findUserNamesByEventId" resultType="string">
         SELECT u.name
@@ -135,31 +136,56 @@
         from user_event
         where event_id = #{eventId}
     </delete>
-    
+
     <!--timeline 삭제-->
 	<delete id="deleteTimeline">
 		delete
 		from timeline
 		where event_id = #{eventId}
 	</delete>
-	
+
     <!--이벤트에 참여 중인 유저 id 리스트-->
     <select id="getParticipantsByEventId">
         select user_id as userId
         from user_event
         where event_id = #{eventId}
     </select>
-    
+
     <!--확정된 이벤트 Status 변경-->
     <update id="checkEvent">
     	update event
     	set status='CHECKED'
     	where id = #{eventId}
     </update>
-    
+
     <!--확정된 이벤트 타임라인 추가-->
     <insert id="insertTimeline" useGeneratedKeys="true" keyProperty="timelineId" parameterType="com.mycom.myapp.events.dto.TimelineDto">
     	insert into timeline(event_id, start_time, end_time)
     	values (#{eventId}, #{startTime}, #{endTime})
     </insert>
+
+    <!--이벤트 상태 수정-->
+    <update id="completedCheckedEvents">
+        update event as e
+        set e.status = 'COMPLETED'
+        where e.status = 'CHECKED'
+          and id in (
+            select ed.event_id
+            from event_date as ed
+            group by ed.event_id
+            having max(ed.event_date) &lt; curdate()
+        )
+    </update>
+
+    <update id="expiredUncheckedEvents">
+        update event as e
+        set e.status = 'EXPIRED'
+        where e.status = 'UNCHECKED'
+          and e.id in (
+            select ed.event_id
+            from event_date as ed
+            group by ed.event_id
+            having max(ed.event_date) &lt; curdate()
+        )
+    </update>
 </mapper>

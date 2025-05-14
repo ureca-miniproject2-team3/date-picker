@@ -18,12 +18,30 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
             </a>
         </div>
         <div class="flex justify-between items-center border-b pb-5">
-            <h1 class="text-3xl font-bold">${event.title}</h1>
-            ${userId == event.ownerId ? `
+            <div class="flex items-center">
+                <h1 class="text-3xl font-bold">${event.title}</h1>
+                ${event.status ? `
+                <span class="ml-3 px-3 py-1 text-sm rounded-full ${
+                    event.status === 'CHECKED' ? 'bg-green-100 text-green-800' : 
+                    event.status === 'UNCHECKED' ? 'bg-yellow-100 text-yellow-800' : 
+                    event.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' : 
+                    event.status === 'EXPIRED' ? 'bg-gray-100 text-gray-800' : ''
+                }">
+                    ${
+                        event.status === 'CHECKED' ? '확정' : 
+                        event.status === 'UNCHECKED' ? '미확정' : 
+                        event.status === 'COMPLETED' ? '완료' : 
+                        event.status === 'EXPIRED' ? '만료' : ''
+                    }
+                </span>
+                ` : ''}
+            </div>
+            ${userId === event.ownerId ? `
             <div class="flex space-x-2">
                 <button onclick="editEvent('${event.eventId}', '${event.title}', ${event.eventId})"
                         data-dates='${JSON.stringify(event.eventDates)}'
-                        class="bg-yellow-400 hover:bg-yellow-300 text-white px-4 py-2 rounded-full text-sm flex items-center">
+                        ${event.status !== 'UNCHECKED' ? 'disabled' : ''}
+                        class="${event.status === 'UNCHECKED' ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-full text-sm flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
@@ -36,7 +54,9 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                     </svg>
                     <span class="leading-normal">이벤트 삭제</span>
                 </button>
-                <button onclick="showInviteModal()" class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-4 py-2 rounded-full text-sm flex items-center">
+                <button onclick="showInviteModal()" 
+                        ${event.status !== 'UNCHECKED' ? 'disabled' : ''}
+                        class="${event.status === 'UNCHECKED' ? 'bg-[#7c6dfa] hover:bg-[#6a5cd6]' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-full text-sm flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -102,7 +122,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 가장 많이 가능한 시간
-                <span class="text-[#7c6dfa] font-bold ml-1">(최대 ${maxCount}명)</span>
+                <span class="text-[#7c6dfa] font-bold ml-1">(${maxCount}명)</span>
             </h2>
 
             ${timeSlots.length > 0
@@ -130,13 +150,16 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const isBestTime = slot.userIds.length === maxCount;
 
                         return `
-                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden" style="height: ${isBestTime ? '76px' : '60px'}">
+                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
+                                 style="height: ${isBestTime ? '76px' : '60px'}"
+                                 ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
                                 <div class="time-slot-bg" style="width: ${percentage}%"></div>
                                 <div class="time-slot-content">
                                     <div>
                                         <div class="${isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
                                             ${formatDateWithDay(startTime)} ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
                                             ${isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
+                                            ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap leading-relaxed">
                                             ${slot.userIds.map(uid => `
@@ -423,7 +446,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                                                                     hour: '2-digit',
                                                                     minute: '2-digit'
                                                                 });
-                                                                const isCurrentUser = s.userId == userId;
+                                                                const isCurrentUser = s.userId === userId;
                                                                 return `<div class="flex justify-between items-center" style="width: 100%; line-height: 1.1; margin: 0; padding: 1px 0;">
                                                                     <div class="flex items-center min-w-0 mr-3">
                                                                         <span class="font-medium text-gray-800" style="display: inline-block; word-break: keep-all; white-space: nowrap;">${userName}</span>
@@ -444,11 +467,11 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
 
                             <!-- 기존 리스트 뷰 (접을 수 있게) -->
                             <div class="mt-2">
-                                <button id="toggleListViewBtn" class="text-[#7c6dfa] hover:underline text-sm flex items-center">
+                                <button id="toggleListViewBtn" class="text-[#7c6dfa] hover:underline text-base flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
-                                    스케줄 수정하기
+                                    <span class="text-base" style="font-weight: bold">스케줄 수정하기</span>
                                 </button>
                                 <div id="scheduleListView" class="hidden mt-2 space-y-6 max-h-[300px] overflow-y-auto">
                                     ${sortedDates.map(dateStr => {
@@ -471,7 +494,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                                                             });
                                                         };
 
-                                                        const isCurrentUser = schedule.userId == userId;
+                                                        const isCurrentUser = schedule.userId === userId;
 
                                                         return `
                                                             <div class="px-4 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-2 ${isCurrentUser ? 'bg-[#fafafa]' : ''} ${isCurrentUser ? 'cursor-pointer hover:bg-gray-100' : ''}" 
@@ -513,7 +536,8 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
         <div class="mt-8">
             <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
                 <button onclick="location.href='/schedule.html?eventId=${event.eventId}'"
-                        class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-5 py-2.5 rounded-full flex items-center shadow-md transition duration-200 ease-in-out hover:shadow-lg">
+                        ${event.status !== 'UNCHECKED' ? 'disabled' : ''}
+                        class="${event.status === 'UNCHECKED' ? 'bg-[#7c6dfa] hover:bg-[#6a5cd6]' : 'bg-gray-400 cursor-not-allowed'} text-white px-5 py-2.5 rounded-full flex items-center shadow-md transition duration-200 ease-in-out hover:shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
@@ -533,8 +557,8 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
 
                 // 버튼 텍스트 변경
                 this.innerHTML = isHidden
-                    ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg> 스케줄 수정하기'
-                    : '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg> 숨기기';
+                    ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg> <span class="text-base" style="font-weight: bold">숨기기</span>'
+                    : '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg> <span class="text-base" style="font-weight: bold">스케줄 수정하기</span>';
             });
         }
     }, 0);

@@ -24,6 +24,19 @@ let cells = [];
  * 초대 모달 표시
  */
 function showInviteModal() {
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+        let errorMessage = '미확정 상태의 이벤트만 사용자를 초대할 수 있습니다.';
+
+        Swal.fire({
+            title: '상태 오류',
+            text: errorMessage,
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        });
+        return;
+    }
+
     document.getElementById('inviteModal').classList.remove('hidden');
     document.getElementById('searchEmail').focus();
     document.getElementById('searchEmail').addEventListener('input', searchUsers);
@@ -44,6 +57,19 @@ function closeInviteModal() {
  * @param {string} eventIdForDates - 날짜를 위한 이벤트 ID
  */
 function editEvent(eventId, currentTitle, eventIdForDates) {
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+        let errorMessage = '미확정 상태의 이벤트만 수정할 수 있습니다.';
+
+        Swal.fire({
+            title: '상태 오류',
+            text: errorMessage,
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        });
+        return;
+    }
+
     // 모달 상태 초기화
     editEventId = eventId;
     existingDates = new Set();
@@ -152,7 +178,7 @@ function generateEditCalendar(year, month) {
  */
 function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
     // 현재 사용자가 스케줄 생성자인지 확인
-    if (userId != scheduleUserId) {
+    if (userId !== scheduleUserId) {
         Swal.fire({
             title: '권한 오류',
             text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
@@ -308,6 +334,86 @@ function closeEditScheduleModal() {
     document.getElementById('editScheduleModal').classList.add('hidden');
     editingScheduleId = null;
     editingScheduleDate = null;
+}
+
+/**
+ * 이벤트 확정 모달 열기
+ * @param {string} startTime - 시작 시간
+ * @param {string} endTime - 종료 시간
+ */
+function showConfirmEventModal(startTime, endTime) {
+    // 이벤트 생성자만 확정할 수 있는지 확인
+    if (!currentEvent || userId !== currentEvent.ownerId) {
+        Swal.fire({
+            title: '권한 오류',
+            text: '이벤트 확정 권한이 없습니다.',
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        });
+        return;
+    }
+
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent.status !== 'UNCHECKED') {
+        let errorMessage = '';
+
+        if (currentEvent.status === 'CHECKED') {
+            errorMessage = '이미 확정된 이벤트입니다.';
+        } else if (currentEvent.status === 'COMPLETED') {
+            errorMessage = '완료된 이벤트입니다.';
+        } else if (currentEvent.status === 'EXPIRED') {
+            errorMessage = '만료된 이벤트입니다.';
+        } else {
+            errorMessage = '미확정 상태의 이벤트만 확정할 수 있습니다.';
+        }
+
+        Swal.fire({
+            title: '상태 오류',
+            text: errorMessage,
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        });
+        return;
+    }
+
+    // 시간 정보 저장
+    document.getElementById('confirmEventStartTime').value = startTime;
+    document.getElementById('confirmEventEndTime').value = endTime;
+
+    // 시간 정보 표시
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
+
+    const formatDate = (date) => {
+        return date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'short'
+        });
+    };
+
+    const formatTime = (date) => {
+        return date.toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    document.getElementById('confirmEventTime').innerHTML = `
+        <div>${formatDate(startDate)}</div>
+        <div class="text-lg font-bold mt-1">${formatTime(startDate)} ~ ${formatTime(endDate)}</div>
+    `;
+
+    // 모달 표시
+    document.getElementById('confirmEventModal').classList.remove('hidden');
+}
+
+/**
+ * 이벤트 확정 모달 닫기
+ */
+function closeConfirmEventModal() {
+    document.getElementById('confirmEventModal').classList.add('hidden');
 }
 
 // 문서가 로드될 때 이벤트 핸들러 초기화

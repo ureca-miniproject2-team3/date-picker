@@ -177,6 +177,23 @@
     </div>
 </div>
 
+<!-- 이벤트 확정 Modal -->
+<div id="confirmEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-xl p-6 w-full max-w-md">
+        <h2 class="text-xl font-bold mb-4">이벤트 확정</h2>
+        <div class="mb-4">
+            <p class="text-gray-700">선택한 시간으로 일정을 확정하시겠습니까?</p>
+            <div id="confirmEventTime" class="mt-2 font-medium text-[#7c6dfa]"></div>
+            <input type="hidden" id="confirmEventStartTime">
+            <input type="hidden" id="confirmEventEndTime">
+        </div>
+        <div class="flex justify-end space-x-2">
+            <button onclick="closeConfirmEventModal()" class="px-4 py-2 bg-gray-200 rounded-lg">취소</button>
+            <button onclick="confirmEvent()" class="px-4 py-2 bg-[#7c6dfa] text-white rounded-lg">확정</button>
+        </div>
+    </div>
+</div>
+
 <!-- JavaScript Files -->
 <script src="js/event-api.js"></script>
 <script src="js/event-ui.js"></script>
