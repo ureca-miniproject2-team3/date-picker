@@ -24,8 +24,8 @@ let cells = [];
  * 초대 모달 표시
  */
 function showInviteModal() {
-    // 이벤트 상태가 미확정(unchecked)인지 확인
-    if (currentEvent && currentEvent.status !== 'unchecked') {
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
         Swal.fire({
             title: '상태 오류',
             text: '미확정 상태의 이벤트만 사용자를 초대할 수 있습니다.',
@@ -55,8 +55,8 @@ function closeInviteModal() {
  * @param {string} eventIdForDates - 날짜를 위한 이벤트 ID
  */
 function editEvent(eventId, currentTitle, eventIdForDates) {
-    // 이벤트 상태가 미확정(unchecked)인지 확인
-    if (currentEvent && currentEvent.status !== 'unchecked') {
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
         Swal.fire({
             title: '상태 오류',
             text: '확정되지 않은 이벤트만 수정할 수 있습니다.',
@@ -349,8 +349,8 @@ function showConfirmEventModal(startTime, endTime) {
         return;
     }
 
-    // 이벤트 상태가 미확정(unchecked)인지 확인
-    if (currentEvent.status === 'checked') {
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent.status === 'CHECKED') {
         Swal.fire({
             title: '상태 오류',
             text: '이미 확정된 이벤트입니다.',
@@ -360,7 +360,7 @@ function showConfirmEventModal(startTime, endTime) {
         return;
     }
 
-    if (currentEvent.status === 'completed') {
+    if (currentEvent.status === 'COMPLETED') {
         Swal.fire({
             title: '상태 오류',
             text: '완료된 이벤트입니다.',
@@ -370,7 +370,7 @@ function showConfirmEventModal(startTime, endTime) {
         return;
     }
 
-    if (currentEvent.status !== 'expired') {
+    if (currentEvent.status !== 'EXPIRED') {
         Swal.fire({
             title: '상태 오류',
             text: '만료된 이벤트입니다.',

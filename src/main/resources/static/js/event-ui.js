@@ -22,23 +22,23 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                 <h1 class="text-3xl font-bold">${event.title}</h1>
                 ${event.status ? `
                 <span class="ml-3 px-3 py-1 text-sm rounded-full ${
-                    event.status === 'checked' ? 'bg-green-100 text-green-800' : 
-                    event.status === 'unchecked' ? 'bg-yellow-100 text-yellow-800' : 
-                    event.status === 'completed' ? 'bg-blue-100 text-blue-800' : 
-                    event.status === 'expired' ? 'bg-gray-100 text-gray-800' : ''
+                    event.status === 'CHECKED' ? 'bg-green-100 text-green-800' : 
+                    event.status === 'UNCHECKED' ? 'bg-yellow-100 text-yellow-800' : 
+                    event.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' : 
+                    event.status === 'EXPIRED' ? 'bg-gray-100 text-gray-800' : ''
                 }">
                     ${
-                        event.status === 'checked' ? '확정' : 
-                        event.status === 'unchecked' ? '미확정' : 
-                        event.status === 'completed' ? '완료' : 
-                        event.status === 'expired' ? '만료' : ''
+                        event.status === 'CHECKED' ? '확정' : 
+                        event.status === 'UNCHECKED' ? '미확정' : 
+                        event.status === 'COMPLETED' ? '완료' : 
+                        event.status === 'EXPIRED' ? '만료' : ''
                     }
                 </span>
                 ` : ''}
             </div>
             ${userId === event.ownerId ? `
             <div class="flex space-x-2">
-                ${event.status === 'unchecked' ? `
+                ${event.status === 'UNCHECKED' ? `
                 <button onclick="editEvent('${event.eventId}', '${event.title}', ${event.eventId})"
                         data-dates='${JSON.stringify(event.eventDates)}'
                         class="bg-yellow-400 hover:bg-yellow-300 text-white px-4 py-2 rounded-full text-sm flex items-center">
@@ -63,7 +63,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                     </svg>
                     <span class="leading-normal">이벤트 삭제</span>
                 </button>
-                ${event.status === 'unchecked' ? `
+                ${event.status === 'UNCHECKED' ? `
                 <button onclick="showInviteModal()" class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-4 py-2 rounded-full text-sm flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -166,16 +166,16 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const isBestTime = slot.userIds.length === maxCount;
 
                         return `
-                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'unchecked' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
+                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
                                  style="height: ${isBestTime ? '76px' : '60px'}"
-                                 ${isBestTime && userId === event.ownerId && event.status === 'unchecked' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
+                                 ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
                                 <div class="time-slot-bg" style="width: ${percentage}%"></div>
                                 <div class="time-slot-content">
                                     <div>
                                         <div class="${isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
                                             ${formatDateWithDay(startTime)} ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
                                             ${isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
-                                            ${isBestTime && userId === event.ownerId && event.status === 'unchecked' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
+                                            ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap leading-relaxed">
                                             ${slot.userIds.map(uid => `
@@ -551,7 +551,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
 
         <div class="mt-8">
             <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
-                ${event.status === 'unchecked' ? `
+                ${event.status === 'UNCHECKED' ? `
                 <button onclick="location.href='/schedule.html?eventId=${event.eventId}'"
                         class="bg-[#7c6dfa] hover:bg-[#6a5cd6] text-white px-5 py-2.5 rounded-full flex items-center shadow-md transition duration-200 ease-in-out hover:shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
