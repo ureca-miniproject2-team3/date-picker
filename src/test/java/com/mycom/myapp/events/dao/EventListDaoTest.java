@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.events.dto.type.EventStatus;
+
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,9 +59,11 @@ public class EventListDaoTest {
         boolean foundEvent2 = false;
 
         for (EventSummaryDto event : events) {
-            if (event.getEventId() == 100L && "테스트 이벤트1".equals(event.getTitle())) {
+            if (event.getEventId() == 100L && "테스트 이벤트1".equals(event.getTitle())
+            		&& event.getStatus() == EventStatus.UNCHECKED) {
                 foundEvent1 = true;
-            } else if (event.getEventId() == 200L && "테스트 이벤트2".equals(event.getTitle())) {
+            } else if (event.getEventId() == 200L && "테스트 이벤트2".equals(event.getTitle())
+            		&& event.getStatus() == EventStatus.UNCHECKED) {
                 foundEvent2 = true;
             }
         }
