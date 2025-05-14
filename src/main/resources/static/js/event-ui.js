@@ -130,13 +130,16 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const isBestTime = slot.userIds.length === maxCount;
 
                         return `
-                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden" style="height: ${isBestTime ? '76px' : '60px'}">
+                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId == event.ownerId ? 'cursor-pointer hover:bg-gray-50' : ''}" 
+                                 style="height: ${isBestTime ? '76px' : '60px'}"
+                                 ${isBestTime && userId == event.ownerId ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
                                 <div class="time-slot-bg" style="width: ${percentage}%"></div>
                                 <div class="time-slot-content">
                                     <div>
                                         <div class="${isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
                                             ${formatDateWithDay(startTime)} ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
                                             ${isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
+                                            ${isBestTime && userId == event.ownerId ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap leading-relaxed">
                                             ${slot.userIds.map(uid => `

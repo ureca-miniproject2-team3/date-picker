@@ -310,6 +310,63 @@ function closeEditScheduleModal() {
     editingScheduleDate = null;
 }
 
+/**
+ * 이벤트 확정 모달 열기
+ * @param {string} startTime - 시작 시간
+ * @param {string} endTime - 종료 시간
+ */
+function showConfirmEventModal(startTime, endTime) {
+    // 이벤트 생성자만 확정할 수 있는지 확인
+    if (!currentEvent || userId != currentEvent.ownerId) {
+        Swal.fire({
+            title: '권한 오류',
+            text: '이벤트 생성자만 이벤트를 확정할 수 있습니다.',
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        });
+        return;
+    }
+
+    // 시간 정보 저장
+    document.getElementById('confirmEventStartTime').value = startTime;
+    document.getElementById('confirmEventEndTime').value = endTime;
+
+    // 시간 정보 표시
+    const startDate = new Date(startTime);
+    const endDate = new Date(endTime);
+
+    const formatDate = (date) => {
+        return date.toLocaleDateString('ko-KR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'short'
+        });
+    };
+
+    const formatTime = (date) => {
+        return date.toLocaleTimeString('ko-KR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    };
+
+    document.getElementById('confirmEventTime').innerHTML = `
+        <div>${formatDate(startDate)}</div>
+        <div class="text-lg font-bold mt-1">${formatTime(startDate)} ~ ${formatTime(endDate)}</div>
+    `;
+
+    // 모달 표시
+    document.getElementById('confirmEventModal').classList.remove('hidden');
+}
+
+/**
+ * 이벤트 확정 모달 닫기
+ */
+function closeConfirmEventModal() {
+    document.getElementById('confirmEventModal').classList.add('hidden');
+}
+
 // 문서가 로드될 때 이벤트 핸들러 초기화
 document.addEventListener('DOMContentLoaded', function() {
     // 이벤트 편집 모달 탐색
