@@ -36,91 +36,25 @@ public class LoggingAspect {
     // Join Point
     @After("getPointcut()")
     public void logGetMapping(JoinPoint joinPoint) {
-        Authentication auth = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            return;
-        }
-
-        String username;
-        Long userId = null;
-
-        Object principal = auth.getPrincipal();
-
-        if (principal instanceof LoginUserDetails) {
-            LoginUserDetails user = (LoginUserDetails) principal;
-            username = user.getUsername();
-            userId = user.getUserId();
-
-        } else {
-            username = auth.getName(); // 기본 UserDetails or 다른 Principal 로 처리
-        }
-
-        String methodName = joinPoint.getSignature().getName();
-
-        log.info("[GET] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", userId, username, methodName);
+        logHttpMethod(joinPoint, "GET");
     }
 
     @After("putPointcut()")
     public void logPutMapping(JoinPoint joinPoint) {
-        Authentication auth = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            return;
-        }
-
-        String username;
-        Long userId = null;
-
-        Object principal = auth.getPrincipal();
-
-        if (principal instanceof LoginUserDetails user) {
-            username = user.getUsername();
-            userId = user.getUserId();
-
-        } else {
-            username = auth.getName();
-        }
-
-        String methodName = joinPoint.getSignature().getName();
-
-        log.info("[PUT] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", userId, username, methodName);
+        logHttpMethod(joinPoint, "PUT");
     }
 
     @After("postPointcut()")
     public void logPostMapping(JoinPoint joinPoint) {
-        Authentication auth = SecurityContextHolder
-                .getContext()
-                .getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
-            return;
-        }
-
-        String username;
-        Long userId = null;
-
-        Object principal = auth.getPrincipal();
-
-        if (principal instanceof LoginUserDetails user) {
-            username = user.getUsername();
-            userId = user.getUserId();
-
-        } else {
-            username = auth.getName();
-        }
-
-        String methodName = joinPoint.getSignature().getName();
-
-        log.info("[POST] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", userId, username, methodName);
+        logHttpMethod(joinPoint, "POST");
     }
 
     @After("deletePointcut()")
     public void logDeleteMapping(JoinPoint joinPoint) {
+        logHttpMethod(joinPoint, "DELETE");
+    }
+
+    private void logHttpMethod(JoinPoint joinPoint, String httpMethod) {
         Authentication auth = SecurityContextHolder
                 .getContext()
                 .getAuthentication();
@@ -137,13 +71,12 @@ public class LoggingAspect {
         if (principal instanceof LoginUserDetails user) {
             username = user.getUsername();
             userId = user.getUserId();
-
         } else {
             username = auth.getName();
         }
 
         String methodName = joinPoint.getSignature().getName();
 
-        log.info("[DELETE] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", userId, username, methodName);
+        log.info("[{}] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", httpMethod, userId, username, methodName);
     }
 }
