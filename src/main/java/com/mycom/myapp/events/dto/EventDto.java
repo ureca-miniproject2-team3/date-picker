@@ -22,4 +22,5 @@ public class EventDto {
     private List<LocalDate> eventDates; // 이벤트 날짜 리스트
     private List<Long> userIds; // 이벤트에 참여 중인 사용자 리스트
     private EventStatus status;
+    private TimelineDto timeline;
 }
