@@ -11,7 +11,8 @@
 	    <result property="title" column="title"/>
 	    <result property="status" column="status" javaType="com.mycom.myapp.events.dto.type.EventStatus" />
 	
-	    <association property="timeline" javaType="com.mycom.myapp.events.dto.TimelineDto">
+	    <association property="timeline" javaType="com.mycom.myapp.events.dto.TimelineDto"
+	    		notNullColumn="timeline_id">
 	        <id property="timelineId" column="timeline_id"/>
 	        <result property="eventId" column="event_id"/>
 	        <result property="startTime" column="start_time"/>
