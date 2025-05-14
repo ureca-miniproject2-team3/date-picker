@@ -1,22 +1,24 @@
 package com.mycom.myapp.events.service;
 
-import com.mycom.myapp.events.dao.EventDao;
-import com.mycom.myapp.events.dto.EventDto;
-import com.mycom.myapp.events.dto.EventResultDto;
-import com.mycom.myapp.events.dto.EventSummaryDto;
-import com.mycom.myapp.schedules.dao.ScheduleDao;
-import com.mycom.myapp.schedules.dto.ScheduleDto;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataAccessException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.NoTransactionException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+import com.mycom.myapp.events.dao.EventDao;
+import com.mycom.myapp.events.dto.EventDto;
+import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.events.dto.TimelineDto;
+import com.mycom.myapp.schedules.dao.ScheduleDao;
+import com.mycom.myapp.schedules.dto.ScheduleDto;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
@@ -154,6 +156,7 @@ public class EventServiceImpl implements EventService {
 
                 eventDao.deleteUserEvent(eventId);
                 eventDao.deleteEventDate(eventId);
+                eventDao.deleteTimeline(eventId);
                 eventDao.deleteEvent(eventId);
 
                 result.setResult("success");
@@ -198,6 +201,32 @@ public class EventServiceImpl implements EventService {
 
         return result;
     }
+    
+
+	@Override
+	@Transactional
+	public EventResultDto checkEvent(Long userId, TimelineDto timelineDto) {
+		EventResultDto result = new EventResultDto();
+		
+		try {
+			Long ownerId = eventDao.detailEvent(timelineDto.getEventId()).getOwnerId();
+			
+			if(!Objects.equals(userId, ownerId)) {
+				result.setResult("forbidden");
+			}
+			else {
+				eventDao.checkEvent(timelineDto.getEventId());
+				
+				eventDao.insertTimeline(timelineDto);
+				
+				result.setResult("success");
+			}
+		} catch (Exception e) {
+			return handleException("이벤트 확정", e);
+		}
+		
+		return result;
+	}
 
     private EventResultDto handleException(String operation, Exception e) {
         log.warn("{} 중 예외 발생: {}", operation, e.getMessage());

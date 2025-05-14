@@ -3,6 +3,8 @@ package com.mycom.myapp.events.dao;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import com.mycom.myapp.events.dto.EventDto;
+import com.mycom.myapp.events.dto.type.EventStatus;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +57,7 @@ public class EventDetailDaoTest {
         assertThat(dto.getEventId()).isEqualTo(eventId);
         assertThat(dto.getTitle()).isEqualTo("테스트 이벤트");
         assertThat(dto.getOwnerId()).isEqualTo(userId);
+        assertThat(dto.getStatus()).isEqualTo(EventStatus.UNCHECKED);
 
         // 참여자 리스트 검증
         List<Long> userIds = dto.getUserIds();

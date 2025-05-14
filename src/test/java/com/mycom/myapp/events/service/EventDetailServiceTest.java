@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.events.dto.type.EventStatus;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -44,6 +45,7 @@ public class EventDetailServiceTest {
                 .title("테스트 이벤트")
                 .ownerId(ownerId)
                 .eventDates(dates)
+                .status(EventStatus.COMPLETED)
                 .build();
 
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);

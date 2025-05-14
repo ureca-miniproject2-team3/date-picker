@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.events.dto.type.EventStatus;
 import com.mycom.myapp.events.service.EventService;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +39,8 @@ public class EventListControllerTest {
         EventSummaryDto event1 = new EventSummaryDto();
         event1.setEventId(1L);
         event1.setTitle("테스트 이벤트1");
+        event1.setStatus(EventStatus.EXPIRED);
+        
         eventList.add(event1);
         
         resultDto.setEventDtoList(eventList);

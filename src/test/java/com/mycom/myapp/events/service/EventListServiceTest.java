@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.events.dto.type.EventStatus;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +39,13 @@ public class EventListServiceTest {
         EventSummaryDto event1 = new EventSummaryDto();
         event1.setEventId(1L);
         event1.setTitle("테스트 이벤트1");
+        event1.setStatus(EventStatus.UNCHECKED);
 
         EventSummaryDto event2 = new EventSummaryDto();
         event2.setEventId(2L);
         event2.setTitle("테스트 이벤트2");
-
+        event2.setStatus(EventStatus.CHECKED);
+        
         eventList.add(event1);
         eventList.add(event2);
 

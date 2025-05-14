@@ -61,6 +61,7 @@ public class EventDeleteServiceTest {
         verify(scheduleDao, never()).deleteSchedule(anyLong());
         verify(eventDao, never()).deleteUserEvent(anyLong());
         verify(eventDao, never()).deleteEventDate(anyLong());
+        verify(eventDao, never()).deleteTimeline(anyLong());
         verify(eventDao, never()).deleteEvent(anyLong());
     }
 
@@ -108,6 +109,7 @@ public class EventDeleteServiceTest {
         verify(scheduleDao).deleteSchedule(102L);
         verify(eventDao).deleteUserEvent(eventId);
         verify(eventDao).deleteEventDate(eventId);
+        verify(eventDao).deleteTimeline(eventId);
         verify(eventDao).deleteEvent(eventId);
 
         assertEquals("success", result.getResult());
@@ -151,6 +153,7 @@ public class EventDeleteServiceTest {
         verify(scheduleDao).deleteSchedule(101L);
         verify(eventDao).deleteUserEvent(eventId);
         verify(eventDao, never()).deleteEventDate(anyLong());
+        verify(eventDao, never()).deleteTimeline(anyLong());
         verify(eventDao, never()).deleteEvent(anyLong());
     }
 
@@ -192,6 +195,49 @@ public class EventDeleteServiceTest {
         verify(scheduleDao).deleteSchedule(101L);
         verify(eventDao).deleteUserEvent(eventId);
         verify(eventDao).deleteEventDate(eventId);
+        verify(eventDao, never()).deleteTimeline(eventId);
+        verify(eventDao, never()).deleteEvent(anyLong());
+    }
+    
+    @Test
+    void deleteTimeline_도중_예외_발생() {
+        // given
+        Long eventId = 1L;
+        Long userId = 1L;
+
+        EventDto mockEventDto = EventDto.builder()
+                .eventId(eventId)
+                .title("테스트 이벤트")
+                .ownerId(userId)
+                .build();
+
+        // 이벤트에 연관된 스케줄 목록 생성
+        List<ScheduleDto> schedules = new ArrayList<>();
+        ScheduleDto schedule1 = ScheduleDto.builder()
+                .scheduleId(101L)
+                .eventId(eventId)
+                .userId(userId)
+                .build();
+        schedules.add(schedule1);
+
+        when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
+        when(scheduleDao.listSchedule(eventId)).thenReturn(schedules);
+
+        doThrow(new RuntimeException("deleteEventDate error"))
+            .when(eventDao).deleteTimeline(eventId);
+
+        // when
+        EventResultDto result = eventService.deleteEvent(eventId, userId);
+
+        // then
+        assertEquals("fail", result.getResult());
+
+        verify(eventDao).detailEvent(eventId);
+        verify(scheduleDao).listSchedule(eventId);
+        verify(scheduleDao).deleteSchedule(101L);
+        verify(eventDao).deleteUserEvent(eventId);
+        verify(eventDao).deleteEventDate(eventId);
+        verify(eventDao).deleteTimeline(eventId);
         verify(eventDao, never()).deleteEvent(anyLong());
     }
 
@@ -282,6 +328,7 @@ public class EventDeleteServiceTest {
         verify(scheduleDao, never()).deleteSchedule(102L);
         verify(eventDao, never()).deleteUserEvent(anyLong());
         verify(eventDao, never()).deleteEventDate(anyLong());
+        verify(eventDao, never()).deleteTimeline(anyLong());
         verify(eventDao, never()).deleteEvent(anyLong());
     }
 }

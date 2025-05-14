@@ -1,13 +1,8 @@
 package com.mycom.myapp.events.controller;
 
-import com.mycom.myapp.events.dto.EventDto;
-import com.mycom.myapp.events.dto.EventResultDto;
-import com.mycom.myapp.events.service.EventService;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import java.util.Map;
-import lombok.RequiredArgsConstructor;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,10 +10,18 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.mycom.myapp.events.dto.EventDto;
+import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.events.dto.TimelineDto;
+import com.mycom.myapp.events.service.EventService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
@@ -75,6 +78,13 @@ public class EventController {
     public ResponseEntity<EventResultDto> inviteUserToEvent(@RequestParam("inviterId") Long inviterId,@RequestParam("eventId") Long eventId,@RequestParam("invitedIds") List<Long> invitedIds) {
 
         return createResponse(eventService.inviteUserToEvent(inviterId, eventId, invitedIds));
+    }
+    
+    @PutMapping("/events/check")
+    @Operation(summary = "이벤트 확정", description = "이벤트를 확정(CHECKED) 상태로 바꾸고, 확정된 타임라인을 저장합니다.")
+    public ResponseEntity<EventResultDto> checkEvent(@RequestParam("userId") Long userId, TimelineDto timelineDto) {
+    	
+    	return createResponse(eventService.checkEvent(userId, timelineDto));
     }
 
     private ResponseEntity<EventResultDto> createResponse(EventResultDto result) {
