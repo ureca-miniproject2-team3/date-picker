@@ -156,6 +156,7 @@ public class EventServiceImpl implements EventService {
 
                 eventDao.deleteUserEvent(eventId);
                 eventDao.deleteEventDate(eventId);
+                eventDao.deleteTimeline(eventId);
                 eventDao.deleteEvent(eventId);
 
                 result.setResult("success");
