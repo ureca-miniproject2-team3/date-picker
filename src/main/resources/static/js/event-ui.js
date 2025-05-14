@@ -149,16 +149,21 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const percentage = (slot.userIds.length / maxCount) * 100;
                         const isBestTime = slot.userIds.length === maxCount;
 
+                        // 확정된 시간인지 확인
+                        const isConfirmedTime = event.status === 'CHECKED' && event.timeline && 
+                            new Date(event.timeline.startTime).getTime() === new Date(slot.start).getTime() && 
+                            new Date(event.timeline.endTime).getTime() === new Date(slot.end).getTime();
+
                         return `
-                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
-                                 style="height: ${isBestTime ? '76px' : '60px'}"
+                            <div class="time-slot ${isConfirmedTime ? 'border-2 border-green-500 shadow-md' : isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
+                                 style="height: ${isBestTime || isConfirmedTime ? '76px' : '60px'}"
                                  ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
                                 <div class="time-slot-bg" style="width: ${percentage}%"></div>
                                 <div class="time-slot-content">
                                     <div>
-                                        <div class="${isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
+                                        <div class="${isConfirmedTime ? 'font-bold text-green-500 text-base leading-normal' : isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
                                             ${formatDateWithDay(startTime)} ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
-                                            ${isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
+                                            ${isConfirmedTime ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정됨</span>' : isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
                                             ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap leading-relaxed">
@@ -167,7 +172,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                                             `).join('')}
                                         </div>
                                     </div>
-                                    <div class="user-count text-lg font-bold ${isBestTime ? 'text-[#7c6dfa]' : 'text-gray-600'}">
+                                    <div class="user-count text-lg font-bold ${isConfirmedTime ? 'text-green-500' : isBestTime ? 'text-[#7c6dfa]' : 'text-gray-600'}">
                                         ${slot.userIds.length}명
                                     </div>
                                 </div>
