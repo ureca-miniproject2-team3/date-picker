@@ -36,7 +36,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                 </span>
                 ` : ''}
             </div>
-            ${userId == event.ownerId ? `
+            ${userId === event.ownerId ? `
             <div class="flex space-x-2">
                 ${event.status === 'unchecked' ? `
                 <button onclick="editEvent('${event.eventId}', '${event.title}', ${event.eventId})"
@@ -166,16 +166,16 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const isBestTime = slot.userIds.length === maxCount;
 
                         return `
-                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId == event.ownerId && event.status === 'unchecked' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
+                            <div class="time-slot ${isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'unchecked' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
                                  style="height: ${isBestTime ? '76px' : '60px'}"
-                                 ${isBestTime && userId == event.ownerId && event.status === 'unchecked' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
+                                 ${isBestTime && userId === event.ownerId && event.status === 'unchecked' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
                                 <div class="time-slot-bg" style="width: ${percentage}%"></div>
                                 <div class="time-slot-content">
                                     <div>
                                         <div class="${isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
                                             ${formatDateWithDay(startTime)} ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
                                             ${isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
-                                            ${isBestTime && userId == event.ownerId && event.status === 'unchecked' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
+                                            ${isBestTime && userId === event.ownerId && event.status === 'unchecked' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap leading-relaxed">
                                             ${slot.userIds.map(uid => `
@@ -462,7 +462,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                                                                     hour: '2-digit',
                                                                     minute: '2-digit'
                                                                 });
-                                                                const isCurrentUser = s.userId == userId;
+                                                                const isCurrentUser = s.userId === userId;
                                                                 return `<div class="flex justify-between items-center" style="width: 100%; line-height: 1.1; margin: 0; padding: 1px 0;">
                                                                     <div class="flex items-center min-w-0 mr-3">
                                                                         <span class="font-medium text-gray-800" style="display: inline-block; word-break: keep-all; white-space: nowrap;">${userName}</span>
@@ -510,7 +510,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                                                             });
                                                         };
 
-                                                        const isCurrentUser = schedule.userId == userId;
+                                                        const isCurrentUser = schedule.userId === userId;
 
                                                         return `
                                                             <div class="px-4 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-2 ${isCurrentUser ? 'bg-[#fafafa]' : ''} ${isCurrentUser ? 'cursor-pointer hover:bg-gray-100' : ''}" 

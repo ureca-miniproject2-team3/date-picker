@@ -174,7 +174,7 @@ function generateEditCalendar(year, month) {
  */
 function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
     // 현재 사용자가 스케줄 생성자인지 확인
-    if (userId != scheduleUserId) {
+    if (userId !== scheduleUserId) {
         Swal.fire({
             title: '권한 오류',
             text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
@@ -339,7 +339,7 @@ function closeEditScheduleModal() {
  */
 function showConfirmEventModal(startTime, endTime) {
     // 이벤트 생성자만 확정할 수 있는지 확인
-    if (!currentEvent || userId != currentEvent.ownerId) {
+    if (!currentEvent || userId !== currentEvent.ownerId) {
         Swal.fire({
             title: '권한 오류',
             text: '이벤트 확정 권한이 없습니다.',

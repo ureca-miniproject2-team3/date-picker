@@ -465,7 +465,7 @@ async function saveEditSchedule() {
 async function confirmEvent() {
     try {
         // 이벤트 생성자만 확정할 수 있는지 확인
-        if (!currentEvent || userId != currentEvent.ownerId) {
+        if (!currentEvent || userId !== currentEvent.ownerId) {
             Swal.fire({
                 title: '권한 오류',
                 text: '이벤트 생성자만 이벤트를 확정할 수 있습니다.',
