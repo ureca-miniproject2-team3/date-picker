@@ -178,14 +178,11 @@
     </update>
 
     <update id="expiredUncheckedEvents">
-        update event as e
+        update event as e, timeline as t
         set e.status = 'EXPIRED'
         where e.status = 'UNCHECKED'
-          and e.id in (
-            select ed.event_id
-            from event_date as ed
-            group by ed.event_id
-            having max(ed.event_date) &lt; curdate()
-        )
+          and e.id = t.event_id
+          and t.end_time &lt; NOW()
     </update>
+
 </mapper>
