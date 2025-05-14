@@ -149,8 +149,8 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const percentage = (slot.userIds.length / maxCount) * 100;
                         const isBestTime = slot.userIds.length === maxCount;
 
-                        // 확정된 시간인지 확인
-                        const isConfirmedTime = event.status === 'CHECKED' && event.timeline && 
+                        // 확정된 시간인지 확인 (완료된 이벤트에서도 확정된 일정 표시)
+                        const isConfirmedTime = (event.status === 'CHECKED' || event.status === 'COMPLETED') && event.timeline && 
                             new Date(event.timeline.startTime).getTime() === new Date(slot.start).getTime() && 
                             new Date(event.timeline.endTime).getTime() === new Date(slot.end).getTime();
 
