@@ -5,13 +5,36 @@
 
 <mapper namespace="com.mycom.myapp.events.dao.EventDao">
 
-    <!--사용자 참여 중 이벤트 조회 (리스트)-->
-    <select id="listEvent" resultType="com.mycom.myapp.events.dto.EventSummaryDto">
-        select e.id as eventId, e.title
-        from event e, user_event u
-        where u.user_id = #{userId}
-          and u.event_id = e.id
-    </select>
+	<!-- EventSummaryDto용 ResultMap 정의 -->
+	<resultMap id="eventSummaryMap" type="com.mycom.myapp.events.dto.EventSummaryDto">
+	    <id property="eventId" column="event_id"/>
+	    <result property="title" column="title"/>
+	    <result property="status" column="status" javaType="com.mycom.myapp.events.dto.type.EventStatus" />
+	
+	    <association property="timeline" javaType="com.mycom.myapp.events.dto.TimelineDto"
+	    		notNullColumn="timeline_id">
+	        <id property="timelineId" column="timeline_id"/>
+	        <result property="eventId" column="event_id"/>
+	        <result property="startTime" column="start_time"/>
+	        <result property="endTime" column="end_time"/>
+	    </association>
+	</resultMap>
+	
+	<!--사용자 참여 중 이벤트 조회 (리스트)-->
+	<select id="listEvent" resultMap="eventSummaryMap">
+	    select
+	        e.id as event_id, 
+	        e.title, 
+	        e.status, 
+	        t.id as timeline_id, 
+	        t.start_time, 
+	        t.end_time
+	    from event e 
+	    join user_event u on u.event_id = e.id
+	    left join timeline t on t.event_id = e.id
+	    where u.user_id = #{userId}
+	</select>
+
     <!--사용자 참여 중 참여자 명 조회 (리스트)-->
     <select id="findUserNamesByEventId" resultType="string">
         SELECT u.name
@@ -20,13 +43,33 @@
         WHERE ue.event_id = #{eventId}
     </select>
 
+    <!-- EventDto용 ResultMap 정의 -->
+	<resultMap id="eventDetailMap" type="com.mycom.myapp.events.dto.EventDto">
+	    <id property="eventId" column="event_id"/>
+	    <result property="title" column="title"/>
+	    <result property="ownerId" column="owner_id"/>
+	    <result property="status" column="status"/>
+	    
+	    <association property="timeline" javaType="com.mycom.myapp.events.dto.TimelineDto">
+	        <id property="timelineId" column="timeline_id"/>
+	        <result property="eventId" column="event_id"/>
+	        <result property="startTime" column="start_time"/>
+	        <result property="endTime" column="end_time"/>
+	    </association>
+	</resultMap>
+	
     <!--이벤트 상세 정보 조회-->
-    <select id="detailEvent" resultType="com.mycom.myapp.events.dto.EventDto">
+    <select id="detailEvent" resultMap="eventDetailMap">
         select
-            e.id as eventId,
-            e.title as title,
-            e.owner_id as ownerId
+            e.id as event_id,
+            e.title,
+            e.owner_id,
+            e.status,
+            t.id as timeline_id,
+            t.start_time,
+            t.end_time
         from event e
+        left join timeline t on t.event_id = e.id
         where e.id = #{eventId}
     </select>
 
