@@ -17,12 +17,12 @@
             font-size: 14px;
             position: relative;
             overflow: hidden;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
         }
 
         .time-slot:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 4px rgba(0, 0, 0, 0.08);
         }
 
         .time-slot-bg {
@@ -180,7 +180,6 @@
 <!-- JavaScript Files -->
 <script src="js/event-api.js"></script>
 <script src="js/event-ui.js"></script>
-<script src="js/event-ui-charts.js"></script>
 <script src="js/event-handlers.js"></script>
 <script src="js/event-init.js"></script>
 </body>
