@@ -4,16 +4,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.mycom.myapp.events.dto.EventSummaryDto;
-import com.mycom.myapp.events.dto.type.EventStatus;
-
+import java.time.LocalDateTime;
 import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.mycom.myapp.events.dto.EventSummaryDto;
+import com.mycom.myapp.events.dto.type.EventStatus;
 
 @SpringBootTest
 @Transactional
@@ -35,12 +37,17 @@ public class EventListDaoTest {
         jdbcTemplate.update("DELETE FROM event");
 
         // 이벤트 데이터 추가
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (?, ?)", 100L, "테스트 이벤트1");
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (?, ?)", 200L, "테스트 이벤트2");
+        jdbcTemplate.update("INSERT INTO event (id, title, status) VALUES (?, ?, ?)", 100L, "테스트 이벤트1", "CHECKED");
+        jdbcTemplate.update("INSERT INTO event (id, title, status) VALUES (?, ?, ?)", 200L, "테스트 이벤트2", "UNCHECKED");
 
         // 사용자-이벤트 매핑 데이터 추가 (기존 사용자 ID 사용)
         jdbcTemplate.update("INSERT INTO user_event (id, user_id, event_id) VALUES (?, ?, ?)", 100L, 1L, 100L);
         jdbcTemplate.update("INSERT INTO user_event (id, user_id, event_id) VALUES (?, ?, ?)", 200L, 1L, 200L);
+        
+        // 타임라인 추가
+        jdbcTemplate.update("INSERT INTO timeline (id, event_id, start_time, end_time) VALUES (?, ?, ?, ?)", 100L, 100L,
+        		java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 5, 1, 13, 00, 00)),
+				java.sql.Timestamp.valueOf(LocalDateTime.of(2025, 5, 1, 16, 00, 00)));
     }
 
     @Test
@@ -61,10 +68,13 @@ public class EventListDaoTest {
 
         for (EventSummaryDto event : events) {
             if (event.getEventId() == 100L && "테스트 이벤트1".equals(event.getTitle())
-            		&& event.getStatus() == EventStatus.UNCHECKED) {
+                    && event.getStatus() == EventStatus.CHECKED
+                    && event.getTimeline().getStartTime().equals(LocalDateTime.of(2025, 5, 1, 13, 0, 0))
+                    && event.getTimeline().getEndTime().equals(LocalDateTime.of(2025, 5, 1, 16, 0, 0))) {
                 foundEvent1 = true;
             } else if (event.getEventId() == 200L && "테스트 이벤트2".equals(event.getTitle())
-            		&& event.getStatus() == EventStatus.UNCHECKED) {
+                    && event.getStatus() == EventStatus.UNCHECKED
+                    && event.getTimeline().getTimelineId() == null) {
                 foundEvent2 = true;
             }
         }
