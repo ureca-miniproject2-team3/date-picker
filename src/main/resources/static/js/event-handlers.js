@@ -26,9 +26,11 @@ let cells = [];
 function showInviteModal() {
     // 이벤트 상태가 미확정(UNCHECKED)인지 확인
     if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+        let errorMessage = '미확정 상태의 이벤트만 사용자를 초대할 수 있습니다.';
+
         Swal.fire({
             title: '상태 오류',
-            text: '미확정 상태의 이벤트만 사용자를 초대할 수 있습니다.',
+            text: errorMessage,
             icon: 'warning',
             confirmButtonColor: '#7c6dfa'
         });
@@ -57,9 +59,11 @@ function closeInviteModal() {
 function editEvent(eventId, currentTitle, eventIdForDates) {
     // 이벤트 상태가 미확정(UNCHECKED)인지 확인
     if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+        let errorMessage = '미확정 상태의 이벤트만 수정할 수 있습니다.';
+
         Swal.fire({
             title: '상태 오류',
-            text: '확정되지 않은 이벤트만 수정할 수 있습니다.',
+            text: errorMessage,
             icon: 'warning',
             confirmButtonColor: '#7c6dfa'
         });
@@ -350,30 +354,22 @@ function showConfirmEventModal(startTime, endTime) {
     }
 
     // 이벤트 상태가 미확정(UNCHECKED)인지 확인
-    if (currentEvent.status === 'CHECKED') {
-        Swal.fire({
-            title: '상태 오류',
-            text: '이미 확정된 이벤트입니다.',
-            icon: 'warning',
-            confirmButtonColor: '#7c6dfa'
-        });
-        return;
-    }
+    if (currentEvent.status !== 'UNCHECKED') {
+        let errorMessage = '';
 
-    if (currentEvent.status === 'COMPLETED') {
-        Swal.fire({
-            title: '상태 오류',
-            text: '완료된 이벤트입니다.',
-            icon: 'warning',
-            confirmButtonColor: '#7c6dfa'
-        });
-        return;
-    }
+        if (currentEvent.status === 'CHECKED') {
+            errorMessage = '이미 확정된 이벤트입니다.';
+        } else if (currentEvent.status === 'COMPLETED') {
+            errorMessage = '완료된 이벤트입니다.';
+        } else if (currentEvent.status === 'EXPIRED') {
+            errorMessage = '만료된 이벤트입니다.';
+        } else {
+            errorMessage = '미확정 상태의 이벤트만 확정할 수 있습니다.';
+        }
 
-    if (currentEvent.status !== 'EXPIRED') {
         Swal.fire({
             title: '상태 오류',
-            text: '만료된 이벤트입니다.',
+            text: errorMessage,
             icon: 'warning',
             confirmButtonColor: '#7c6dfa'
         });
