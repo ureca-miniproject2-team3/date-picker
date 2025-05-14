@@ -88,7 +88,7 @@ public class EventController {
     }
 
     @PutMapping("/events/status")
-    @Operation(summary = "이벤트 상태 일괄 업데이트", description = "날짜가 지난 이벤트에 대해 롹정 -> 완료, 미확정 -> 만료로 이벤트 상태를 수정합니다.")
+    @Operation(summary = "이벤트 상태 일괄 업데이트", description = "날짜가 지난 이벤트에 대해 확정 -> 완료, 미확정 -> 만료로 이벤트 상태를 수정합니다.")
     public ResponseEntity<EventResultDto> updateEventStatus() {
 
         return createResponse(eventService.updateEventStatus());
