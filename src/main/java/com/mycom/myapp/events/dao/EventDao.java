@@ -34,7 +34,8 @@ public interface EventDao {
     void deleteEvent(@Param("eventId") Long eventId);
     void deleteEventDate(@Param("eventId") Long eventId);
     void deleteUserEvent(@Param("eventId") Long eventId);
-
+    void deleteTimeline(@Param("eventId") Long eventId);
+    
     // 이벤트 초대
     List<Long> getParticipantsByEventId(@Param("eventId") Long eventId);
     

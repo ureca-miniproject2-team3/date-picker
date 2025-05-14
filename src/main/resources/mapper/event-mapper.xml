@@ -94,7 +94,14 @@
         from user_event
         where event_id = #{eventId}
     </delete>
-
+    
+    <!--timeline 삭제-->
+	<delete id="deleteTimeline">
+		delete
+		from timeline
+		where event_id = #{eventId}
+	</delete>
+	
     <!--이벤트에 참여 중인 유저 id 리스트-->
     <select id="getParticipantsByEventId">
         select user_id as userId
