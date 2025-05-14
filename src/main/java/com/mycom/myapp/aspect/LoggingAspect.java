@@ -37,7 +37,7 @@ public class LoggingAspect {
     private void loginPointcut() {
     }
 
-    @Pointcut("execution(* org.springframework.security.web.authentication.logout.LogoutFilter.doFilter(..))")
+    @Pointcut("execution(* org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler.logout(..))")
     private void logoutPointcut() {
     }
 
