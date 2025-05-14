@@ -8,9 +8,9 @@
 <body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
 <div class="max-w-5xl mx-auto space-y-8">
   <!-- 상단바: 유저 정보 + 로그인/로귴아웃 -->
-  <div class="flex justify-between items-center">
-    <div class="text-sm text-gray-600" id="userInfo"></div>
-    <div class="flex gap-2">
+  <div class="flex justify-end items-center">
+    <div class="flex gap-2 items-center">
+      <div class="text-sm text-gray-600" id="userInfo"></div>
       <button id="loginBtn"
               onclick="location.href='login.html'"
               class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">
@@ -24,7 +24,25 @@
   </div>
 
   <!-- 이벤트 목록 -->
-  <div id="eventList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+  <div class="space-y-6">
+    <!-- 탭 메뉴 -->
+    <div class="flex gap-2 border-b border-gray-200">
+      <button class="px-4 py-2 text-[#7c6dfa] border-b-2 border-[#7c6dfa] font-medium" data-tab="upcoming">
+        다가오는 이벤트
+      </button>
+      <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="completed">
+        완료된 이벤트
+      </button>
+      <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="expired">
+        만료된 이벤트
+      </button>
+    </div>
+
+    <!-- 이벤트 목록 컨테이너 -->
+    <div id="upcomingEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+    <div id="completedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
+    <div id="expiredEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
+  </div>
 
   <!-- 이벤트 생성 버튼 -->
   <div class="text-center">
@@ -45,6 +63,33 @@
       showCurrentUser(userId);
       document.getElementById("logoutBtn").addEventListener("click", logout);
     }
+
+    // 탭 클릭 이벤트 리스너 추가
+    document.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        // 모든 탭의 스타일 초기화
+        document.querySelectorAll('[data-tab]').forEach(t => {
+          t.classList.remove('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
+          t.classList.add('text-gray-500');
+        });
+        
+        // 클릭된 탭 스타일 적용
+        e.target.classList.remove('text-gray-500');
+        e.target.classList.add('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
+        
+        // 모든 이벤트 컨테이너 숨기기
+        document.getElementById('upcomingEvents').classList.add('hidden');
+        document.getElementById('completedEvents').classList.add('hidden');
+        document.getElementById('expiredEvents').classList.add('hidden');
+        
+        // 선택된 탭의 이벤트 컨테이너 보이기
+        const selectedTab = e.target.getAttribute('data-tab');
+        document.getElementById(selectedTab + 'Events').classList.remove('hidden');
+        
+        // TODO: 여기에 탭별 이벤트 목록을 불러오는 로직 추가
+        fetchEvents();
+      });
+    });
 
     fetchEvents();
   };
@@ -92,7 +137,7 @@
   }
 
   async function fetchEvents() {
-    const list = document.getElementById("eventList");
+    const list = document.getElementById("upcomingEvents");
     const userId = sessionStorage.getItem("userId");
 
     if (!userId) {
