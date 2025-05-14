@@ -19,7 +19,7 @@
                  JOIN user_event ue ON u.id = ue.user_id
         WHERE ue.event_id = #{eventId}
     </select>
-    <!--확정 OR 완료된 이벤트에 대해 확정된 시간 조회-->
+    <!--이벤트 확정 시간 조회-->
     <select id="findTimelineByEventId" resultType="com.mycom.myapp.events.dto.TimelineDto">
     	select id as timelineId, event_id as eventId, start_time as startTime, end_time as endTime
     	from timeline
