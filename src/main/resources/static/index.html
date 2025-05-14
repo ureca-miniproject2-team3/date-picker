@@ -27,19 +27,23 @@
   <div class="space-y-6">
     <!-- 탭 메뉴 -->
     <div class="flex gap-2 border-b border-gray-200">
-      <button class="px-4 py-2 text-[#7c6dfa] border-b-2 border-[#7c6dfa] font-medium" data-tab="upcoming">
-        다가오는 이벤트
+      <button class="px-4 py-2 text-[#7c6dfa] border-b-2 border-[#7c6dfa] font-medium" data-tab="unchecked">
+        미확정 일정
+      </button>
+      <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="checked">
+        확정된 일정
       </button>
       <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="completed">
-        완료된 이벤트
+        완료된 일정
       </button>
       <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="expired">
-        만료된 이벤트
+        만료된 일정
       </button>
     </div>
 
     <!-- 이벤트 목록 컨테이너 -->
-    <div id="upcomingEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+    <div id="uncheckedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
+    <div id="checkedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
     <div id="completedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
     <div id="expiredEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
   </div>
@@ -54,7 +58,7 @@
 </div>
 
 <script>
-  window.onload = () => {
+  window.onload = async () => {
     const userId = sessionStorage.getItem("userId");
     document.getElementById("loginBtn").style.display = userId ? "none" : "inline-block";
     document.getElementById("logoutBtn").style.display = userId ? "inline-block" : "none";
@@ -78,7 +82,8 @@
         e.target.classList.add('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
         
         // 모든 이벤트 컨테이너 숨기기
-        document.getElementById('upcomingEvents').classList.add('hidden');
+        document.getElementById('uncheckedEvents').classList.add('hidden');
+        document.getElementById('checkedEvents').classList.add('hidden');
         document.getElementById('completedEvents').classList.add('hidden');
         document.getElementById('expiredEvents').classList.add('hidden');
         
@@ -86,7 +91,6 @@
         const selectedTab = e.target.getAttribute('data-tab');
         document.getElementById(selectedTab + 'Events').classList.remove('hidden');
         
-        // TODO: 여기에 탭별 이벤트 목록을 불러오는 로직 추가
         fetchEvents();
       });
     });
@@ -137,15 +141,22 @@
   }
 
   async function fetchEvents() {
-    const list = document.getElementById("upcomingEvents");
     const userId = sessionStorage.getItem("userId");
+    const uncheckedList = document.getElementById("uncheckedEvents");
+    const checkedList = document.getElementById("checkedEvents");
+    const completedList = document.getElementById("completedEvents");
+    const expiredList = document.getElementById("expiredEvents");
 
     if (!userId) {
-      list.innerHTML = `
+      const loginMessage = `
         <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full">
           <p class="text-lg font-semibold mb-2">로그인이 필요합니다</p>
           <p class="text-sm text-gray-500">이벤트 목록을 보려면 로그인 해주세요.</p>
         </div>`;
+      uncheckedList.innerHTML = loginMessage;
+      checkedList.innerHTML = loginMessage;
+      completedList.innerHTML = loginMessage;
+      expiredList.innerHTML = loginMessage;
       return;
     }
 
@@ -160,43 +171,111 @@
 
       if (result.result === "success" && Array.isArray(events)) {
         if (events.length === 0) {
-          list.innerHTML = `
+          const emptyMessage = `
             <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
               등록된 이벤트가 없습니다.
             </div>`;
+          uncheckedList.innerHTML = emptyMessage;
+          checkedList.innerHTML = emptyMessage;
+          completedList.innerHTML = emptyMessage;
+          expiredList.innerHTML = emptyMessage;
         } else {
-          const eventHtmls = await Promise.all(events.map(async (e) => {
-            const memberCount = e.userIds?.length ?? 0;
-            const memberNames = e.userNames?.join(', ') ?? '';
-            const overlapTime = await fetchOverlap(e.eventId);
+          // 이벤트를 상태별로 분류
+          const uncheckedEvents = events.filter(e => e.status === "UNCHECKED");
+          const checkedEvents = events.filter(e => e.status === "CHECKED")
+            .sort((a, b) => {
+              if (!a.timeline || !b.timeline) return 0;
+              return new Date(a.timeline.startTime) - new Date(b.timeline.startTime);
+            });
+          const completedEvents = events.filter(e => e.status === "COMPLETED");
+          const expiredEvents = events.filter(e => e.status === "EXPIRED");
 
-            return `
-              <div onclick="location.href='event.html?id=${e.eventId}'"
-                   class="relative bg-white w-full aspect-square flex flex-col items-center justify-center text-center rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition px-4 py-6">
-                <div class="absolute top-2 right-3 text-xs text-gray-600">👥 ${memberCount}명</div>
-                <div class="text-lg font-semibold mb-1">${e.title}</div>
-                <div class="text-sm text-gray-500">${memberNames}</div>
-                ${overlapTime ? `<div class="text-sm text-indigo-600 mt-2">🕓 ${overlapTime}</div>` : ''}
-              </div>`;
-          }));
-
-          list.innerHTML = eventHtmls.join('');
+          // 각 상태별 이벤트 렌더링
+          renderEventList(uncheckedList, uncheckedEvents);
+          renderEventList(checkedList, checkedEvents);
+          renderEventList(completedList, completedEvents);
+          renderEventList(expiredList, expiredEvents);
         }
       } else {
-        list.innerHTML = `
+        const errorMessage = `
           <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
-            <p class="text-lg font-semibold">API 응답 오류</p>
-            <pre class="text-sm mt-2 whitespace-pre-wrap">${JSON.stringify(result, null, 2)}</pre>
+            <p class="text-lg font-semibold">이벤트 목록을 불러오는데 실패했습니다.</p>
           </div>`;
+        uncheckedList.innerHTML = errorMessage;
+        checkedList.innerHTML = errorMessage;
+        completedList.innerHTML = errorMessage;
+        expiredList.innerHTML = errorMessage;
       }
     } catch (err) {
-      list.innerHTML = `
+      const errorMessage = `
         <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
           <p class="text-lg font-semibold">예외 발생</p>
           <pre class="text-sm mt-2">${err.message}</pre>
         </div>`;
+      uncheckedList.innerHTML = errorMessage;
+      checkedList.innerHTML = errorMessage;
+      completedList.innerHTML = errorMessage;
+      expiredList.innerHTML = errorMessage;
       console.error("예외:", err);
     }
+  }
+
+  async function renderEventList(container, events) {
+    if (events.length === 0) {
+      container.innerHTML = `
+        <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
+          등록된 이벤트가 없습니다.
+        </div>`;
+      return;
+    }
+
+    const eventHtmls = await Promise.all(events.map(async (e) => {
+      const memberCount = e.userIds?.length ?? 0;
+      const memberNames = e.userNames?.join(', ') ?? '';
+      const overlapTime = e.status !== "CHECKED" && e.status !== "COMPLETED" ? await fetchOverlap(e.eventId) : null;
+      
+      // 상태에 따른 스타일 적용
+      let statusClass, statusText, statusColor;
+      switch(e.status) {
+        case "CHECKED":
+          statusClass = "bg-green-50";
+          statusText = "확정";
+          statusColor = "text-green-600";
+          break;
+        case "COMPLETED":
+          statusClass = "bg-blue-50";
+          statusText = "완료";
+          statusColor = "text-blue-600";
+          break;
+        default:
+          statusClass = "bg-white";
+          statusText = "미확정";
+          statusColor = "text-gray-600";
+      }
+
+      // 타임라인 정보가 있는 경우 표시
+      const timelineInfo = e.timeline ? (() => {
+        const startDate = new Date(e.timeline.startTime);
+        const endDate = new Date(e.timeline.endTime);
+        const dateStr = `${startDate.getFullYear()}.${String(startDate.getMonth() + 1).padStart(2, '0')}.${String(startDate.getDate()).padStart(2, '0')}`;
+        const startTime = `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+        const endTime = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+        return `<div class="text-sm text-indigo-600 mt-2">🕓 ${dateStr} ${startTime} ~ ${endTime}</div>`;
+      })() : '';
+
+      return `
+        <div onclick="location.href='event.html?id=${e.eventId}'"
+           class="relative ${statusClass} w-full aspect-square flex flex-col items-center justify-center text-center rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition px-4 py-6">
+          <div class="absolute top-2 right-3 text-xs ${statusColor}">${statusText}</div>
+          <div class="absolute top-2 left-3 text-xs text-gray-600">👥 ${memberCount}명</div>
+          <div class="text-lg font-semibold mb-1">${e.title}</div>
+          <div class="text-sm text-gray-500">${memberNames}</div>
+          ${timelineInfo}
+          ${overlapTime ? `<div class="text-sm text-indigo-600 mt-2">🕓 ${overlapTime}</div>` : ''}
+        </div>`;
+    }));
+
+    container.innerHTML = eventHtmls.join('');
   }
 
   async function logout() {
