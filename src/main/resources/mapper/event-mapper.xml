@@ -166,23 +166,22 @@
 
     <!--이벤트 상태 수정-->
     <update id="completedCheckedEvents">
-        update event as e
+        update event as e, timeline as t
         set e.status = 'COMPLETED'
         where e.status = 'CHECKED'
-          and id in (
+          and e.id = t.event_id
+          and t.end_time &lt; NOW()
+    </update>
+
+    <update id="expiredUncheckedEvents">
+        update event as e
+        set e.status = 'EXPIRED'
+        where e.status = 'UNCHECKED'
+          and e.id in (
             select ed.event_id
             from event_date as ed
             group by ed.event_id
             having max(ed.event_date) &lt; curdate()
         )
     </update>
-
-    <update id="expiredUncheckedEvents">
-        update event as e, timeline as t
-        set e.status = 'EXPIRED'
-        where e.status = 'UNCHECKED'
-          and e.id = t.event_id
-          and t.end_time &lt; NOW()
-    </update>
-
 </mapper>
