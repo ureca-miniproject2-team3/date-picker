@@ -8,11 +8,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Aspect
@@ -68,31 +65,18 @@ public class LoggingAspect {
     @After("loginPointcut()")
     public void logLoginSuccess(JoinPoint joinPoint) {
         Object[] args = joinPoint.getArgs();
-        if (args.length >= 3 && args[2] instanceof Authentication) {
-            Authentication authentication = (Authentication) args[2];
+        if (args.length >= 3 && args[2] instanceof Authentication authentication) {
             logLoginEvent(authentication, "로그인 성공");
         }
     }
 
     @After("logoutPointcut()")
     public void logLogout(JoinPoint joinPoint) {
-        // Get the current authentication before it's cleared by the logout process
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
         if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
-            String username;
-            Long userId = null;
-
-            Object principal = auth.getPrincipal();
-
-            if (principal instanceof LoginUserDetails user) {
-                username = user.getUsername();
-                userId = user.getUserId();
-            } else {
-                username = auth.getName();
-            }
-
-            log.info("[인증] 사용자 [ id={} / {} ] 이 [ 로그아웃 ] 했습니다.", userId, username);
+            UserInfo userInfo = extractUserInfo(auth);
+            log.info("[인증] 사용자 [ id={} / {} ] 이 [ 로그아웃 ] 했습니다.", userInfo.userId(), userInfo.username());
         }
     }
 
@@ -105,21 +89,11 @@ public class LoggingAspect {
             return;
         }
 
-        String username;
-        Long userId = null;
-
-        Object principal = auth.getPrincipal();
-
-        if (principal instanceof LoginUserDetails user) {
-            username = user.getUsername();
-            userId = user.getUserId();
-        } else {
-            username = auth.getName();
-        }
-
+        UserInfo userInfo = extractUserInfo(auth);
         String methodName = joinPoint.getSignature().getName();
 
-        log.info("[{}] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", httpMethod, userId, username, methodName);
+        log.info("[{}] 사용자 [ id={} / {} ] 이 [ {} ] 을 실행했습니다.", 
+                httpMethod, userInfo.userId(), userInfo.username(), methodName);
     }
 
     private void logLoginEvent(Authentication auth, String eventType) {
@@ -127,6 +101,14 @@ public class LoggingAspect {
             return;
         }
 
+        UserInfo userInfo = extractUserInfo(auth);
+        log.info("[인증] 사용자 [ id={} / {} ] 이 [ {} ] 했습니다.", 
+                userInfo.userId(), userInfo.username(), eventType);
+    }
+
+    private record UserInfo(String username, Long userId) {}
+
+    private UserInfo extractUserInfo(Authentication auth) {
         String username;
         Long userId = null;
 
@@ -139,6 +121,6 @@ public class LoggingAspect {
             username = auth.getName();
         }
 
-        log.info("[인증] 사용자 [ id={} / {} ] 이 [ {} ] 했습니다.", userId, username, eventType);
+        return new UserInfo(username, userId);
     }
 }
