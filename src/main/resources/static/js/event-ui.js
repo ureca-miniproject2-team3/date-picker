@@ -102,7 +102,7 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 가장 많이 가능한 시간
-                <span class="text-[#7c6dfa] font-bold ml-1">(최대 ${maxCount}명)</span>
+                <span class="text-[#7c6dfa] font-bold ml-1">(${maxCount}명)</span>
             </h2>
 
             ${timeSlots.length > 0
@@ -444,11 +444,11 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
 
                             <!-- 기존 리스트 뷰 (접을 수 있게) -->
                             <div class="mt-2">
-                                <button id="toggleListViewBtn" class="text-[#7c6dfa] hover:underline text-sm flex items-center">
+                                <button id="toggleListViewBtn" class="text-[#7c6dfa] hover:underline text-base flex items-center">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
-                                    스케줄 수정하기
+                                    <span class="text-base" style="font-weight: bold">스케줄 수정하기</span>
                                 </button>
                                 <div id="scheduleListView" class="hidden mt-2 space-y-6 max-h-[300px] overflow-y-auto">
                                     ${sortedDates.map(dateStr => {
@@ -533,8 +533,8 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
 
                 // 버튼 텍스트 변경
                 this.innerHTML = isHidden
-                    ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg> 스케줄 수정하기'
-                    : '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg> 숨기기';
+                    ? '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg> <span class="text-base" style="font-weight: bold">숨기기</span>'
+                    : '<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg> <span class="text-base" style="font-weight: bold">스케줄 수정하기</span>';
             });
         }
     }, 0);
