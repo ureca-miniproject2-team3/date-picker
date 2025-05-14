@@ -7,7 +7,7 @@
 
     <!--사용자 참여 중 이벤트 조회 (리스트)-->
     <select id="listEvent" resultType="com.mycom.myapp.events.dto.EventSummaryDto">
-        select e.id as eventId, e.title
+        select e.id as eventId, e.title, e.status
         from event e, user_event u
         where u.user_id = #{userId}
           and u.event_id = e.id
@@ -25,7 +25,8 @@
         select
             e.id as eventId,
             e.title as title,
-            e.owner_id as ownerId
+            e.owner_id as ownerId,
+            e.status as status
         from event e
         where e.id = #{eventId}
     </select>
