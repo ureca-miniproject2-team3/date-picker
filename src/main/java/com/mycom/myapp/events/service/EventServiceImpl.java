@@ -236,6 +236,8 @@ public class EventServiceImpl implements EventService {
             eventDao.completedCheckedEvents();
             eventDao.expiredUncheckedEvents();
 
+            result.setResult("success");
+
         } catch (Exception e) {
 
             return handleException("이벤트 상태 수정", e);
