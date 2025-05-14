@@ -2,7 +2,9 @@ package com.mycom.myapp.events.dao;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,9 +27,14 @@ public class EventStatusDaoTest {
         // given
         // 1. 확정(CHECKED) 상태의 이벤트 생성
         jdbcTemplate.update("INSERT INTO event (id, title, owner_id, status) VALUES (1, '지난 확정 이벤트', 1, 'CHECKED')");
-        // 2. 이벤트에 과거 날짜 추가
-        LocalDate pastDate = LocalDate.now().minusDays(1);
-        jdbcTemplate.update("INSERT INTO event_date (event_id, event_date) VALUES (1, ?)", pastDate);
+        // 2. 이전 날짜의 타임라인 생성 (확정 스케줄)
+        LocalDateTime startTime = LocalDateTime.of(2025, 5, 13, 14, 0); // 예시 시간
+        LocalDateTime endTime = LocalDateTime.of(2025, 5, 13, 16, 0);
+        jdbcTemplate.update(
+                "INSERT INTO timeline (event_id, start_time, end_time) VALUES (?, ?, ?)",
+                1,
+                Timestamp.valueOf(startTime),
+                Timestamp.valueOf(endTime));
 
         // when
         eventDao.completedCheckedEvents();
