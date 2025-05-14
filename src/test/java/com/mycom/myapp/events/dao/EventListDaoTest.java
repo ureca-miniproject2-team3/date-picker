@@ -31,6 +31,7 @@ public class EventListDaoTest {
         jdbcTemplate.update("DELETE FROM schedule");
         jdbcTemplate.update("DELETE FROM user_event");
         jdbcTemplate.update("DELETE FROM event_date");
+        jdbcTemplate.update("DELETE FROM timeline");
         jdbcTemplate.update("DELETE FROM event");
 
         // 이벤트 데이터 추가
