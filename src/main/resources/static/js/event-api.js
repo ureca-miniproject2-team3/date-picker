@@ -494,6 +494,7 @@ async function confirmEvent() {
         // 이벤트 확정 데이터 준비
         const formData = new URLSearchParams({
             userId: userId,
+            eventId: eventId,
             startTime: startTime,
             endTime: endTime,
             _csrf: csrf
