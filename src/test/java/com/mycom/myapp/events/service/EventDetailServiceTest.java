@@ -11,9 +11,11 @@ import static org.mockito.Mockito.when;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.events.dto.TimelineDto;
 import com.mycom.myapp.events.dto.type.EventStatus;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +41,12 @@ public class EventDetailServiceTest {
         LocalDate d1 = LocalDate.of(2025, 5, 1);
         LocalDate d2 = LocalDate.of(2025, 5, 2);
         List<LocalDate> dates = Arrays.asList(d1, d2);
+        TimelineDto timeline = TimelineDto.builder()
+        		.timelineId(100L)
+        		.eventId(2L)
+        		.startTime(LocalDateTime.of(2025, 5, 1, 13, 00, 00))
+        		.endTime(LocalDateTime.of(2025, 5, 1, 16, 00, 00))
+        		.build();
 
         EventDto mockEventDto = EventDto.builder()
                 .eventId(eventId)
@@ -46,6 +54,7 @@ public class EventDetailServiceTest {
                 .ownerId(ownerId)
                 .eventDates(dates)
                 .status(EventStatus.COMPLETED)
+                .timeline(timeline)
                 .build();
 
         when(eventDao.detailEvent(eventId)).thenReturn(mockEventDto);
