@@ -1,14 +1,12 @@
 package com.mycom.myapp.events.dao;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
-
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
 import com.mycom.myapp.events.dto.TimelineDto;
+import java.time.LocalDate;
+import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface EventDao {
@@ -35,12 +33,16 @@ public interface EventDao {
     void deleteEventDate(@Param("eventId") Long eventId);
     void deleteUserEvent(@Param("eventId") Long eventId);
     void deleteTimeline(@Param("eventId") Long eventId);
-    
+
     // 이벤트 초대
     List<Long> getParticipantsByEventId(@Param("eventId") Long eventId);
-    
+
+    // 이벤트 상태 수정
+    void completedCheckedEvents(); // 확정 -> 완료
+    void expiredUncheckedEvents(); // 미확정 -> 만료
+
     // 이벤트 확정
     void checkEvent(@Param("eventId") Long eventId);
     void insertTimeline(TimelineDto timelineDto);
-    
+
 }

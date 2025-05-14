@@ -228,6 +228,24 @@ public class EventServiceImpl implements EventService {
 		return result;
 	}
 
+    @Override
+    public EventResultDto updateEventStatus() {
+        EventResultDto result = new EventResultDto();
+
+        try {
+            eventDao.completedCheckedEvents();
+            eventDao.expiredUncheckedEvents();
+
+            result.setResult("success");
+
+        } catch (Exception e) {
+
+            return handleException("이벤트 상태 수정", e);
+        }
+
+        return result;
+    }
+
     private EventResultDto handleException(String operation, Exception e) {
         log.warn("{} 중 예외 발생: {}", operation, e.getMessage());
 

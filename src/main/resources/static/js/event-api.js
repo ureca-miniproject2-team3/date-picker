@@ -457,3 +457,83 @@ async function saveEditSchedule() {
         });
     }
 }
+
+/**
+ * 이벤트 확정
+ * 선택된 시간으로 이벤트를 확정합니다.
+ */
+async function confirmEvent() {
+    try {
+        // 이벤트 생성자만 확정할 수 있는지 확인
+        if (!currentEvent || userId !== currentEvent.ownerId) {
+            Swal.fire({
+                title: '권한 오류',
+                text: '이벤트 생성자만 이벤트를 확정할 수 있습니다.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
+            return;
+        }
+
+        const csrf = await getCsrfToken();
+
+        // 확정할 시간 데이터 가져오기
+        const startTime = document.getElementById('confirmEventStartTime').value;
+        const endTime = document.getElementById('confirmEventEndTime').value;
+
+        if (!startTime || !endTime) {
+            Swal.fire({
+                title: '데이터 오류',
+                text: '확정할 시간 정보가 없습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
+            return;
+        }
+
+        // 이벤트 확정 데이터 준비
+        const formData = new URLSearchParams({
+            userId: userId,
+            startTime: startTime,
+            endTime: endTime,
+            _csrf: csrf
+        });
+
+        // 서버로 전송
+        const res = await fetch('/api/events/check', {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData
+        });
+
+        const result = await res.json();
+
+        if (result.result === "success") {
+            Swal.fire({
+                title: '확정 완료',
+                text: '이벤트가 확정되었습니다.',
+                icon: 'success',
+                confirmButtonColor: '#7c6dfa'
+            });
+            closeConfirmEventModal();
+            await renderEvent();
+        } else {
+            Swal.fire({
+                title: '확정 실패',
+                text: "실패: " + JSON.stringify(result),
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
+        }
+    } catch (err) {
+        console.error('이벤트 확정 오류:', err);
+        Swal.fire({
+            title: '오류 발생',
+            text: '이벤트 확정 중 오류가 발생했습니다.',
+            icon: 'error',
+            confirmButtonColor: '#7c6dfa'
+        });
+    }
+}
