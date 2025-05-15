@@ -243,9 +243,14 @@
           statusColor = "text-green-600";
           break;
         case "COMPLETED":
-          statusClass = "bg-blue-50";
+          statusClass = "bg-emerald-50/70";
           statusText = "완료";
-          statusColor = "text-blue-600";
+          statusColor = "text-emerald-600";
+          break;
+        case "EXPIRED":
+          statusClass = "bg-red-50/70";
+          statusText = "만료";
+          statusColor = "text-red-600";
           break;
         default:
           statusClass = "bg-white";
