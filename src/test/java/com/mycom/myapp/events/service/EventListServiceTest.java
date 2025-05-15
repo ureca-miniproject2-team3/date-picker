@@ -19,19 +19,22 @@ import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
 import com.mycom.myapp.events.dto.TimelineDto;
 import com.mycom.myapp.events.dto.type.EventStatus;
+import com.mycom.myapp.notifications.service.AlertService;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 
 public class EventListServiceTest {
 
     private EventDao eventDao;
     private ScheduleDao scheduleDao;
+    private AlertService alertService;
     private EventServiceImpl eventService;
 
     @BeforeEach
     void setUp() {
         eventDao = mock(EventDao.class);
         scheduleDao = mock(ScheduleDao.class);
-        eventService = new EventServiceImpl(eventDao, scheduleDao);
+        alertService = mock(AlertService.class);
+        eventService = new EventServiceImpl(eventDao, scheduleDao, alertService);
     }
 
     @Test
@@ -39,7 +42,7 @@ public class EventListServiceTest {
         // given
         Long userId = 1L;
         List<EventSummaryDto> eventList = new ArrayList<>();
-        
+
         TimelineDto timeline = TimelineDto.builder()
         		.timelineId(100L)
         		.eventId(2L)
@@ -57,7 +60,7 @@ public class EventListServiceTest {
         event2.setTitle("테스트 이벤트2");
         event2.setStatus(EventStatus.CHECKED);
         event2.setTimeline(timeline);
-        
+
         eventList.add(event1);
         eventList.add(event2);
 
