@@ -28,7 +28,7 @@ public class SecurityConfig {
 		                        "/v3/api-docs/**", // swagger
 		                        "/swagger-ui/**",
 		                        "/swagger-ui.html",
-										"/js/**"
+										"/js/index.js"
 //		                        ,"/api/**" // Postman API 테스트용
 						)
 						.permitAll();
