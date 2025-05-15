@@ -18,28 +18,22 @@ public class LoggingAspect {
 
     // Pointcut
     @Pointcut("@annotation(org.springframework.web.bind.annotation.GetMapping)")
-    private void getPointcut() {
-    }
+    private void getPointcut() {}
 
     @Pointcut("@annotation(org.springframework.web.bind.annotation.PutMapping)")
-    private void putPointcut() {
-    }
+    private void putPointcut() {}
 
     @Pointcut("@annotation(org.springframework.web.bind.annotation.PostMapping)")
-    private void postPointcut() {
-    }
+    private void postPointcut() {}
 
     @Pointcut("@annotation(org.springframework.web.bind.annotation.DeleteMapping)")
-    private void deletePointcut() {
-    }
+    private void deletePointcut() {}
 
     @Pointcut("execution(* com.mycom.myapp.config.LoginAuthenticationSuccessHandler.onAuthenticationSuccess(..))")
-    private void loginPointcut() {
-    }
+    private void loginPointcut() {}
 
     @Pointcut("execution(* org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler.logout(..))")
-    private void logoutPointcut() {
-    }
+    private void logoutPointcut() {}
 
     // Join Point
     @After("getPointcut()")
