@@ -8,7 +8,51 @@ window.onload = async () => {
     showCurrentUser(userId);
     document.getElementById("logoutBtn").addEventListener("click", logout);
 
+    // WebSocket 연결 설정
+    const socket = new SockJS("/ws");
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, () => {
+      console.log("WebSocket 연결 성공");
+
+      // 사용자별 알림 구독
+      stompClient.subscribe("/topic/user/" + userId, async (message) => {
+        const data = JSON.parse(message.body);
+        alertify.message("🔔 [" + data.title + "] 이벤트에 초대되었습니다!", "success", 5);
+
+        // 서버에 수신 처리 (URL-encoded 형식으로)
+        try {
+          const csrfToken = await getCsrfToken();
+          const formData = new URLSearchParams();
+          formData.append('userId', userId);
+          formData.append('eventId', data.eventId);
+          formData.append('_csrf', csrfToken);
+
+          const response = await fetch("/api/notifications/received", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: formData,
+            credentials: "same-origin"
+          });
+
+          if (response.ok) {
+            console.log("알림 수신 처리 완료");
+            // 이벤트 목록 새로고침
+            fetchEvents();
+          } else {
+            console.error("알림 수신 처리 실패:", response.status);
+          }
+        } catch (error) {
+          console.error("알림 수신 처리 중 오류 발생:", error);
+        }
+      });
+    }, (error) => {
+      console.error("WebSocket 연결 실패:", error);
+    });
+
+    // 이벤트 상태 업데이트
     try {
+      console.log('이벤트 상태 업데이트 요청 시작...');
       const csrfToken = await getCsrfToken();
       const formData = new URLSearchParams();
       formData.append('_csrf', csrfToken);
@@ -16,11 +60,16 @@ window.onload = async () => {
       const res = await fetch('/api/events/status', {
         method: 'PUT',
         credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
         body: formData
       });
+      console.log('상태 업데이트 응답 상태:', res.status);
 
       const result = await res.json();
+      console.log('상태 업데이트 응답:', result);
+
       if (result.result === 'success') {
         console.log('이벤트 상태 업데이트 성공');
       } else {
@@ -31,21 +80,26 @@ window.onload = async () => {
     }
   }
 
+  // 탭 클릭 이벤트 리스너 추가
   document.querySelectorAll('[data-tab]').forEach(tab => {
     tab.addEventListener('click', (e) => {
+      // 모든 탭의 스타일 초기화
       document.querySelectorAll('[data-tab]').forEach(t => {
         t.classList.remove('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
         t.classList.add('text-gray-500');
       });
 
+      // 클릭된 탭 스타일 적용
       e.target.classList.remove('text-gray-500');
       e.target.classList.add('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
 
+      // 모든 이벤트 컨테이너 숨기기
       document.getElementById('uncheckedEvents').classList.add('hidden');
       document.getElementById('checkedEvents').classList.add('hidden');
       document.getElementById('completedEvents').classList.add('hidden');
       document.getElementById('expiredEvents').classList.add('hidden');
 
+      // 선택된 탭의 이벤트 컨테이너 보이기
       const selectedTab = e.target.getAttribute('data-tab');
       document.getElementById(selectedTab + 'Events').classList.remove('hidden');
 
@@ -76,7 +130,9 @@ async function getCsrfToken() {
 
 async function fetchOverlap(eventId) {
   try {
-    const res = await fetch(`/api/schedules/overlap/${eventId}`, { credentials: 'same-origin' });
+    const res = await fetch(`/api/schedules/overlap/${eventId}`, {
+      credentials: 'same-origin'
+    });
     const data = await res.json();
 
     if (data.result === 'success' && Array.isArray(data.timeSlots) && data.timeSlots.length > 0) {
@@ -105,10 +161,10 @@ async function fetchEvents() {
 
   if (!userId) {
     const loginMessage = `
-      <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full">
-        <p class="text-lg font-semibold mb-2">로그인이 필요합니다</p>
-        <p class="text-sm text-gray-500">이벤트 목록을 보려면 로그인 해주세요.</p>
-      </div>`;
+        <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full">
+          <p class="text-lg font-semibold mb-2">로그인이 필요합니다</p>
+          <p class="text-sm text-gray-500">이벤트 목록을 보려면 로그인 해주세요.</p>
+        </div>`;
     uncheckedList.innerHTML = loginMessage;
     checkedList.innerHTML = loginMessage;
     completedList.innerHTML = loginMessage;
@@ -128,14 +184,15 @@ async function fetchEvents() {
     if (result.result === "success" && Array.isArray(events)) {
       if (events.length === 0) {
         const emptyMessage = `
-          <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
-            등록된 이벤트가 없습니다.
-          </div>`;
+            <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
+              등록된 이벤트가 없습니다.
+            </div>`;
         uncheckedList.innerHTML = emptyMessage;
         checkedList.innerHTML = emptyMessage;
         completedList.innerHTML = emptyMessage;
         expiredList.innerHTML = emptyMessage;
       } else {
+        // 이벤트를 상태별로 분류
         const uncheckedEvents = events.filter(e => e.status === "UNCHECKED");
         const checkedEvents = events.filter(e => e.status === "CHECKED")
             .sort((a, b) => {
@@ -145,6 +202,7 @@ async function fetchEvents() {
         const completedEvents = events.filter(e => e.status === "COMPLETED");
         const expiredEvents = events.filter(e => e.status === "EXPIRED");
 
+        // 각 상태별 이벤트 렌더링
         renderEventList(uncheckedList, uncheckedEvents);
         renderEventList(checkedList, checkedEvents);
         renderEventList(completedList, completedEvents);
@@ -152,9 +210,9 @@ async function fetchEvents() {
       }
     } else {
       const errorMessage = `
-        <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
-          <p class="text-lg font-semibold">이벤트 목록을 불러오는데 실패했습니다.</p>
-        </div>`;
+          <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
+            <p class="text-lg font-semibold">이벤트 목록을 불러오는데 실패했습니다.</p>
+          </div>`;
       uncheckedList.innerHTML = errorMessage;
       checkedList.innerHTML = errorMessage;
       completedList.innerHTML = errorMessage;
@@ -162,10 +220,10 @@ async function fetchEvents() {
     }
   } catch (err) {
     const errorMessage = `
-      <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
-        <p class="text-lg font-semibold">예외 발생</p>
-        <pre class="text-sm mt-2">${err.message}</pre>
-      </div>`;
+        <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
+          <p class="text-lg font-semibold">예외 발생</p>
+          <pre class="text-sm mt-2">${err.message}</pre>
+        </div>`;
     uncheckedList.innerHTML = errorMessage;
     checkedList.innerHTML = errorMessage;
     completedList.innerHTML = errorMessage;
@@ -177,9 +235,9 @@ async function fetchEvents() {
 async function renderEventList(container, events) {
   if (events.length === 0) {
     container.innerHTML = `
-      <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
-        등록된 이벤트가 없습니다.
-      </div>`;
+        <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
+          등록된 이벤트가 없습니다.
+        </div>`;
     return;
   }
 
@@ -188,6 +246,7 @@ async function renderEventList(container, events) {
     const memberNames = e.userNames?.join(', ') ?? '';
     const overlapTime = e.status !== "CHECKED" && e.status !== "COMPLETED" ? await fetchOverlap(e.eventId) : null;
 
+    // 상태에 따른 스타일 적용
     let statusClass, statusText, statusColor;
     switch(e.status) {
       case "CHECKED":
@@ -211,6 +270,7 @@ async function renderEventList(container, events) {
         statusColor = "text-gray-600";
     }
 
+    // 타임라인 정보가 있는 경우 표시
     const timelineInfo = e.timeline ? (() => {
       const startDate = new Date(e.timeline.startTime);
       const endDate = new Date(e.timeline.endTime);
@@ -221,22 +281,22 @@ async function renderEventList(container, events) {
     })() : '';
 
     return `
-      <div onclick="location.href='event.html?id=${e.eventId}'"
-         class="relative ${statusClass} w-full h-36 flex flex-col p-6 rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
-        <div class="flex justify-between items-start mb-4">
-          <div class="text-xl font-semibold">${e.title}</div>
-          <div class="flex items-center gap-3">
-            <div class="text-xs text-gray-600">👥 ${memberCount}명</div>
-            <div class="text-xs ${statusColor}">${statusText}</div>
+        <div onclick="location.href='event.html?id=${e.eventId}'"
+           class="relative ${statusClass} w-full h-36 flex flex-col p-6 rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
+          <div class="flex justify-between items-start mb-4">
+            <div class="text-xl font-semibold">${e.title}</div>
+            <div class="flex items-center gap-3">
+              <div class="text-xs text-gray-600">👥 ${memberCount}명</div>
+              <div class="text-xs ${statusColor}">${statusText}</div>
+            </div>
           </div>
-        </div>
-        <div class="flex-1"></div>
-        <div class="space-y-2">
-          <div class="text-sm text-gray-500">${memberNames}</div>
-          ${timelineInfo}
-          ${overlapTime ? `<div class="text-sm text-indigo-600">🕓 ${overlapTime}</div>` : ''}
-        </div>
-      </div>`;
+          <div class="flex-1"></div>
+          <div class="space-y-2">
+            <div class="text-sm text-gray-500">${memberNames}</div>
+            ${timelineInfo}
+            ${overlapTime ? `<div class="text-sm text-indigo-600">🕓 ${overlapTime}</div>` : ''}
+          </div>
+        </div>`;
   }));
 
   container.innerHTML = eventHtmls.join('');
@@ -256,80 +316,3 @@ async function logout() {
   sessionStorage.clear();
   window.location.href = res.redirected ? res.url : "/";
 }
-
-// DOM이 로드된 후 실행
-document.addEventListener('DOMContentLoaded', () => {
-  // 탭 버튼들
-  const tabButtons = document.querySelectorAll('[data-tab]');
-  // 이벤트 컨테이너들
-  const eventContainers = {
-    unchecked: document.getElementById('uncheckedEvents'),
-    checked: document.getElementById('checkedEvents'),
-    completed: document.getElementById('completedEvents'),
-    expired: document.getElementById('expiredEvents')
-  };
-
-  // 탭 전환 함수
-  function switchTab(tabName) {
-    // 모든 탭 버튼 스타일 초기화
-    tabButtons.forEach(button => {
-      button.classList.remove('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
-      button.classList.add('text-gray-500');
-    });
-
-    // 선택된 탭 버튼 스타일 적용
-    const selectedButton = document.querySelector(`[data-tab="${tabName}"]`);
-    selectedButton.classList.remove('text-gray-500');
-    selectedButton.classList.add('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
-
-    // 모든 이벤트 컨테이너 숨기기
-    Object.values(eventContainers).forEach(container => {
-      container.classList.add('hidden');
-    });
-
-    // 선택된 이벤트 컨테이너 표시
-    eventContainers[tabName].classList.remove('hidden');
-  }
-
-  // 탭 버튼 클릭 이벤트 리스너 등록
-  tabButtons.forEach(button => {
-    button.addEventListener('click', () => {
-      const tabName = button.getAttribute('data-tab');
-      switchTab(tabName);
-    });
-  });
-
-  // 초기 탭 설정 (미확정 일정)
-  switchTab('unchecked');
-
-  // 로그인 상태 확인 및 UI 업데이트
-  function updateLoginUI() {
-    const userInfo = localStorage.getItem('userInfo');
-    const loginBtn = document.getElementById('loginBtn');
-    const myPageBtn = document.getElementById('myPageBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const userInfoDiv = document.getElementById('userInfo');
-
-    if (userInfo) {
-      const user = JSON.parse(userInfo);
-      userInfoDiv.textContent = `${user.name}님 환영합니다`;
-      loginBtn.classList.add('hidden');
-      myPageBtn.classList.remove('hidden');
-      logoutBtn.classList.remove('hidden');
-    } else {
-      userInfoDiv.textContent = '';
-      loginBtn.classList.remove('hidden');
-      myPageBtn.classList.add('hidden');
-      logoutBtn.classList.add('hidden');
-    }
-  }
-
-  // 로그아웃 기능
-  document.getElementById('logoutBtn').addEventListener('click', () => {
-    localStorage.removeItem('userInfo');
-    updateLoginUI();
-  });
-
-  // 초기 로그인 상태 확인
-  updateLoginUI();
-});

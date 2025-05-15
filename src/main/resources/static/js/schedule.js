@@ -151,6 +151,68 @@ function fillDropdown(select, times) {
 fillDropdown(dropdownStart, times);
 fillDropdown(dropdownEnd, times);
 
+function connectWebSocket() {
+    const socket = new SockJS('/ws');
+    stompClient = Stomp.over(socket);
+    
+    stompClient.connect({}, function(frame) {
+        console.log('Connected: ' + frame);
+        
+        // 개인 알림 구독
+        const userId = sessionStorage.getItem('userId');
+        if (userId) {
+            stompClient.subscribe(`/user/${userId}/queue/notifications`, function(notification) {
+                const message = JSON.parse(notification.body);
+                handleNotification(message);
+            });
+        }
+        
+        // 이벤트 관련 알림 구독
+        if (eventId) {
+            stompClient.subscribe(`/topic/events/${eventId}`, function(notification) {
+                const message = JSON.parse(notification.body);
+                handleEventNotification(message);
+            });
+        }
+    }, function(error) {
+        console.error('WebSocket 연결 실패:', error);
+        setTimeout(connectWebSocket, 5000); // 5초 후 재연결 시도
+    });
+}
+
+function handleNotification(message) {
+    // 알림 메시지 처리
+    alertify.notify(message.content, message.type || 'info', 5, function() {
+        console.log('알림이 닫혔습니다');
+    });
+    
+    // 필요한 경우 페이지 새로고침 또는 데이터 업데이트
+    if (message.type === 'refresh') {
+        location.reload();
+    }
+}
+
+function handleEventNotification(message) {
+    // 이벤트 관련 알림 처리
+    switch (message.type) {
+        case 'SCHEDULE_ADDED':
+            alertify.success('새로운 스케줄이 추가되었습니다');
+            // 스케줄 목록 새로고침
+            loadExistingSchedules();
+            break;
+        case 'SCHEDULE_UPDATED':
+            alertify.info('스케줄이 수정되었습니다');
+            loadExistingSchedules();
+            break;
+        case 'SCHEDULE_DELETED':
+            alertify.warning('스케줄이 삭제되었습니다');
+            loadExistingSchedules();
+            break;
+        default:
+            alertify.notify(message.content, message.type || 'info', 5);
+    }
+}
+
 // 초기화
 (async () => {
     await fetchCsrfToken();
@@ -160,4 +222,14 @@ fillDropdown(dropdownEnd, times);
     setInitialMonthFromEventDates(validDates);
     generateCalendar(currentYear, currentMonth);
     renderEventDateButtons(validDates);
-})(); 
+    
+    // WebSocket 연결
+    connectWebSocket();
+})();
+
+// 페이지 언로드 시 WebSocket 연결 해제
+window.addEventListener('beforeunload', function() {
+    if (stompClient) {
+        stompClient.disconnect();
+    }
+}); 
