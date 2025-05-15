@@ -45,4 +45,6 @@ public interface EventDao {
     void checkEvent(@Param("eventId") Long eventId);
     void insertTimeline(TimelineDto timelineDto);
 
+    // 이벤트 알림 수신 처리
+    void markAsSent(@Param("userId") Long userId, @Param("eventId") Long eventId);
 }
