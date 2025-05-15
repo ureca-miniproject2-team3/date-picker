@@ -66,6 +66,35 @@
     if (userId) {
       showCurrentUser(userId);
       document.getElementById("logoutBtn").addEventListener("click", logout);
+      
+      // 이벤트 상태 업데이트
+      try {
+        console.log('이벤트 상태 업데이트 요청 시작...');
+        const csrfToken = await getCsrfToken();
+        const formData = new URLSearchParams();
+        formData.append('_csrf', csrfToken);
+        
+        const res = await fetch('/api/events/status', {
+          method: 'PUT',
+          credentials: 'same-origin',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          },
+          body: formData
+        });
+        console.log('상태 업데이트 응답 상태:', res.status);
+        
+        const result = await res.json();
+        console.log('상태 업데이트 응답:', result);
+        
+        if (result.result === 'success') {
+          console.log('이벤트 상태 업데이트 성공');
+        } else {
+          console.warn('이벤트 상태 업데이트 실패:', result);
+        }
+      } catch (err) {
+        console.error('이벤트 상태 업데이트 요청 실패:', err);
+      }
     }
 
     // 탭 클릭 이벤트 리스너 추가
