@@ -56,4 +56,28 @@ public class UnsentUserEventListTest {
     	assertEquals(0, userEvents.get(0).getIsSent());
     	
     }
+    
+    @Test
+    void updateUnsentUserEvent_정상_동작() {
+    	// given
+    	Long userId = 1L;
+    	Long eventId = 100L;
+    	
+    	// when
+    	eventDao.updateUnsentUserEvent(userId, eventId);
+    	
+    	// then
+        Integer notSentCount = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM user_event WHERE user_id = ? AND is_sent = 0",
+                Integer.class,
+                userId);
+        
+        Integer sentCount = jdbcTemplate.queryForObject(
+        		"SELECT COUNT(*) FROM user_event WHERE user_id = ? AND is_sent = 1",
+        		Integer.class,
+        		userId);
+
+        assertEquals(0, notSentCount);
+        assertEquals(2, sentCount);
+    }
 }
