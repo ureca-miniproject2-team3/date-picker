@@ -17,7 +17,7 @@
       content: '';
       position: absolute;
       bottom: 5px;
-      right: 10px; /* 변경: 왼쪽 모서리로 이동 */
+      right: 10px;
       width: 5px;
       height: 5px;
       background-color: #7c6dfa;
@@ -36,7 +36,6 @@
   <!-- 상단바: 유저 정보 + 로그인/로그아웃 -->
   <div class="flex justify-between items-center">
     <div class="flex items-center gap-4">
-      <!-- 뒤로가기 버튼 추가 -->
       <a href="index.html" class="text-indigo-600 hover:text-indigo-800">
         <i class="fas fa-arrow-left text-xl"></i>
       </a>
@@ -76,7 +75,7 @@
           </button>
         </div>
       </div>
-      
+
       <!-- 요일 헤더 -->
       <div class="grid grid-cols-7 gap-1 mb-2">
         <div class="text-center font-medium text-red-500">일</div>
@@ -87,11 +86,11 @@
         <div class="text-center font-medium">금</div>
         <div class="text-center font-medium text-blue-500">토</div>
       </div>
-      
+
       <!-- 캘린더 그리드 -->
       <div id="calendarGrid" class="grid grid-cols-7 gap-1"></div>
     </div>
-    
+
     <!-- 선택 날짜 이벤트 리스트 -->
     <div class="bg-white rounded-2xl shadow-md p-6">
       <h2 class="text-xl font-semibold mb-4" id="selectedDate"></h2>
@@ -102,6 +101,6 @@
   </div>
 </div>
 
-<script src="js/my-page.js"></script>
+<script src="/js/my-page.js"></script>
 </body>
 </html>

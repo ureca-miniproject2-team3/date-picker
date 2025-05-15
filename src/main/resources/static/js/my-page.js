@@ -152,84 +152,149 @@ function renderCalendar() {
             dayElement.classList.add("has-events");
         }
         
-        // 오늘 날짜인 경우 스타일 추가
-        if (i === todayDate && month === todayMonth && year === todayYear) {
-            dayElement.classList.add("active");
+        // 오늘 날짜인 경우 하이라이트
+        if (todayDate === i && todayMonth === month && todayYear === year) {
+            dayElement.classList.add("font-bold");
+            
+            // 처음 로드할 때만 오늘 날짜를 선택된 상태로 만듦
+            if (!selectedDateElement) {
+                dayElement.classList.add("active");
+                selectedDateElement = dayElement;
+            }
         }
         
         // 날짜 클릭 이벤트
         dayElement.addEventListener("click", () => {
+            // 활성화된 날짜 스타일 제거
             if (selectedDateElement) {
                 selectedDateElement.classList.remove("active");
             }
-            selectedDateElement = dayElement;
-            dayElement.classList.add("active");
             
-            const selectedDate = new Date(year, month, i);
-            filterEventsByDate(selectedDate);
+            // 현재 선택된 날짜 활성화
+            dayElement.classList.add("active");
+            selectedDateElement = dayElement;
+            
+            // 선택된 날짜 이벤트 필터링 및 표시
+            filterEventsByDate(currentDateToCheck);
         });
         
+        calendarGrid.appendChild(dayElement);
+    }
+    
+    // 다음 달의 시작 날짜 (회색으로 표시)
+    const totalCells = 42; // 6주 x 7일
+    const remainingCells = totalCells - (firstDayOfWeek + lastDay.getDate());
+    
+    for (let i = 1; i <= remainingCells; i++) {
+        const dayElement = document.createElement("div");
+        dayElement.className = "calendar-day relative h-16 p-2 text-gray-400 text-right rounded-lg";
+        dayElement.textContent = i;
         calendarGrid.appendChild(dayElement);
     }
 }
 
 function filterEventsByDate(date) {
-    // 선택된 날짜 표시 업데이트
+    // 선택된 날짜 표시
     const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
     document.getElementById("selectedDate").textContent = date.toLocaleDateString('ko-KR', options);
     
     // 해당 날짜의 이벤트 필터링
     filteredEvents = events.filter(event => {
         if (!event.timeline) return false;
-        const eventDate = new Date(event.timeline.startTime);
-        return eventDate.getDate() === date.getDate() && 
-               eventDate.getMonth() === date.getMonth() && 
-               eventDate.getFullYear() === date.getFullYear();
+        
+        const eventStartDate = new Date(event.timeline.startTime);
+        return eventStartDate.getDate() === date.getDate() && 
+               eventStartDate.getMonth() === date.getMonth() && 
+               eventStartDate.getFullYear() === date.getFullYear();
     });
     
-    // 이벤트 목록 렌더링
     renderEventList();
 }
 
 function renderEventList() {
-    const eventList = document.getElementById("eventList");
-    eventList.innerHTML = "";
+    const eventListContainer = document.getElementById("eventList");
+    eventListContainer.innerHTML = "";
     
     if (filteredEvents.length === 0) {
-        eventList.innerHTML = '<div class="text-gray-500 text-center py-4">등록된 이벤트가 없습니다.</div>';
+        eventListContainer.innerHTML = `
+            <div class="text-center text-gray-500 py-6">
+                <p>이 날짜에 예정된 일정이 없습니다.</p>
+            </div>
+        `;
         return;
     }
     
+    // 시간순으로 정렬
+    filteredEvents.sort((a, b) => {
+        return new Date(a.timeline.startTime) - new Date(b.timeline.startTime);
+    });
+    
     filteredEvents.forEach(event => {
+        const startDate = new Date(event.timeline.startTime);
+        const endDate = new Date(event.timeline.endTime);
+        
+        const startTime = `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}`;
+        const endTime = `${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+        
+        const memberCount = event.userIds?.length ?? 0;
+        const memberNames = event.userNames?.join(', ') ?? '';
+        
         const eventElement = document.createElement("div");
-        eventElement.className = `event-item p-4 bg-white rounded-lg shadow-sm ${event.status === "COMPLETED" ? "completed" : ""}`;
-        
-        const startTime = new Date(event.timeline.startTime);
-        const endTime = new Date(event.timeline.endTime);
-        
-        const timeOptions = { hour: '2-digit', minute: '2-digit' };
-        const timeStr = `${startTime.toLocaleTimeString('ko-KR', timeOptions)} - ${endTime.toLocaleTimeString('ko-KR', timeOptions)}`;
-        
+        eventElement.className = `event-item p-3 pl-4 bg-white rounded-lg shadow-sm hover:shadow-md transition ${event.status === "COMPLETED" ? "completed" : ""}`;
         eventElement.innerHTML = `
-            <div class="font-semibold">${event.title}</div>
-            <div class="text-sm text-gray-600">${timeStr}</div>
-            <div class="text-sm text-gray-500">${event.status === "COMPLETED" ? "완료" : "확정"}</div>
+            <div class="flex justify-between items-start">
+                <div class="font-medium">${event.title}</div>
+                <div class="text-xs ${event.status === "COMPLETED" ? "text-emerald-600" : "text-green-600"}">
+                    ${event.status === "COMPLETED" ? "완료" : "확정"}
+                </div>
+            </div>
+            <div class="text-sm text-indigo-600 mt-1">
+                🕓 ${startTime} ~ ${endTime}
+            </div>
+            <div class="text-sm text-gray-600 mt-1">
+                👥 ${memberCount}명: ${memberNames}
+            </div>
         `;
         
-        eventList.appendChild(eventElement);
+        // 클릭 시 이벤트 상세 페이지로 이동
+        eventElement.addEventListener("click", () => {
+            location.href = `event.html?id=${event.eventId}`;
+        });
+        
+        eventListContainer.appendChild(eventElement);
     });
 }
 
 function showLoginRequired() {
-    alert("로그인이 필요한 서비스입니다.");
-    window.location.href = "/login.html";
+    const eventListContainer = document.getElementById("eventList");
+    eventListContainer.innerHTML = `
+        <div class="text-center py-8">
+            <p class="text-lg font-semibold mb-2">로그인이 필요합니다</p>
+            <p class="text-sm text-gray-500">일정을 보려면 로그인 해주세요.</p>
+        </div>
+    `;
 }
 
 function showError(message) {
-    alert(message);
+    const eventListContainer = document.getElementById("eventList");
+    eventListContainer.innerHTML = `
+        <div class="text-center py-8">
+            <p class="text-lg font-semibold mb-2 text-red-500">${message}</p>
+        </div>
+    `;
 }
 
-function logout() {
-    sessionStorage.removeItem("userId");
-    window.location.href = "/";
+async function logout() {
+    const csrf = await getCsrfToken();
+    const urlParams = new URLSearchParams({ _csrf: csrf });
+
+    const res = await fetch("/logout", {
+        method: "POST",
+        body: urlParams,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        credentials: "same-origin"
+    });
+
+    sessionStorage.clear();
+    window.location.href = res.redirected ? res.url : "/";
 } 
