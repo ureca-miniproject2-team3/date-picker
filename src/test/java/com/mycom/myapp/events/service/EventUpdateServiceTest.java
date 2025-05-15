@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.notifications.service.AlertService;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.time.LocalDate;
 import java.util.List;
@@ -29,6 +30,9 @@ public class EventUpdateServiceTest {
 
     @Mock
     private ScheduleDao scheduleDao;
+
+    @Mock
+    private AlertService alertService;
 
     @InjectMocks
     private EventServiceImpl eventService;

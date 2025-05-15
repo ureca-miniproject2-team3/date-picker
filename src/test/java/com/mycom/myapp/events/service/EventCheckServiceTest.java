@@ -19,33 +19,41 @@ import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
 import com.mycom.myapp.events.dto.TimelineDto;
+import com.mycom.myapp.notifications.service.AlertService;
+import com.mycom.myapp.schedules.dao.ScheduleDao;
 
 public class EventCheckServiceTest {
 
 	@Mock
 	private EventDao eventDao;
-	
+
+	@Mock
+	private ScheduleDao scheduleDao;
+
+	@Mock
+	private AlertService alertService;
+
 	@InjectMocks
 	private EventServiceImpl eventService;
-	
+
 	@BeforeEach
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 	}
-	
+
 	@Test
 	void 이벤트_상태_확정_정상_동작() {
 		// given
 		Long eventId = 1L;
 		Long userId = 1L;
 		Long ownerId = 1L;
-		
+
 		TimelineDto timelineDto = TimelineDto.builder()
 					.eventId(eventId)
 					.startTime(LocalDateTime.of(2025, 05, 01, 13, 00, 00))
 					.endTime(LocalDateTime.of(2025, 05, 01, 16, 00, 00))
 					.build();
-		
+
         EventDto eventDto = EventDto.builder()
                 .eventId(eventId)
                 .ownerId(ownerId)
@@ -56,36 +64,36 @@ public class EventCheckServiceTest {
                         LocalDate.of(2025, 5, 3)   // 새로 추가할 날짜
                 ))
                 .build();
-		
+
 		when(eventDao.detailEvent(eventId)).thenReturn(eventDto);
 		doNothing().when(eventDao).checkEvent(timelineDto.getEventId());
 		doNothing().when(eventDao).insertTimeline(timelineDto);
-		
+
 		// when
 		EventResultDto result = eventService.checkEvent(userId, timelineDto);
-		
-		
+
+
 		// then
 		assertEquals("success", result.getResult());
-		
+
 		verify(eventDao).detailEvent(eventId);
 		verify(eventDao).checkEvent(1L);
 		verify(eventDao).insertTimeline(timelineDto);
 	}
-	
+
 	@Test
 	void 이벤트_상태_확정_계정_다름() {
 		// given
 		Long eventId = 1L;
 		Long userId = 1L;
 		Long ownerId = 2L;
-		
+
 		TimelineDto timelineDto = TimelineDto.builder()
 					.eventId(eventId)
 					.startTime(LocalDateTime.of(2025, 05, 01, 13, 00, 00))
 					.endTime(LocalDateTime.of(2025, 05, 01, 16, 00, 00))
 					.build();
-		
+
         EventDto eventDto = EventDto.builder()
                 .eventId(eventId)
                 .ownerId(ownerId)
@@ -96,18 +104,18 @@ public class EventCheckServiceTest {
                         LocalDate.of(2025, 5, 3)   // 새로 추가할 날짜
                 ))
                 .build();
-		
+
 		when(eventDao.detailEvent(eventId)).thenReturn(eventDto);
 		doNothing().when(eventDao).checkEvent(timelineDto.getEventId());
 		doNothing().when(eventDao).insertTimeline(timelineDto);
-		
+
 		// when
 		EventResultDto result = eventService.checkEvent(userId, timelineDto);
-		
-		
+
+
 		// then
 		assertEquals("forbidden", result.getResult());
-		
+
 		verify(eventDao).detailEvent(eventId);
 	}
 
@@ -117,13 +125,13 @@ public class EventCheckServiceTest {
 		Long eventId = 1L;
 		Long userId = 1L;
 		Long ownerId = 2L;
-		
+
 		TimelineDto timelineDto = TimelineDto.builder()
 					.eventId(eventId)
 					.startTime(LocalDateTime.of(2025, 05, 01, 13, 00, 00))
 					.endTime(LocalDateTime.of(2025, 05, 01, 16, 00, 00))
 					.build();
-		
+
         EventDto eventDto = EventDto.builder()
                 .eventId(eventId)
                 .ownerId(ownerId)
@@ -134,14 +142,14 @@ public class EventCheckServiceTest {
                         LocalDate.of(2025, 5, 3)   // 새로 추가할 날짜
                 ))
                 .build();
-		
+
 		when(eventDao.detailEvent(eventId))
 				.thenThrow(new RuntimeException("DB Error"));
-		
+
 		// when
 		EventResultDto result = eventService.checkEvent(userId, timelineDto);
-		
-		
+
+
 		// then
 		assertEquals("fail", result.getResult());
 	}

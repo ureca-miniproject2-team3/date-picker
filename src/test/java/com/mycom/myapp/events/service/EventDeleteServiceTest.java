@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.notifications.service.AlertService;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import com.mycom.myapp.schedules.dto.ScheduleDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,13 +27,16 @@ public class EventDeleteServiceTest {
     @Mock
     private ScheduleDao scheduleDao;
 
+    @Mock
+    private AlertService alertService;
+
     @InjectMocks
     private EventServiceImpl eventService;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        eventService = new EventServiceImpl(eventDao, scheduleDao);
+        eventService = new EventServiceImpl(eventDao, scheduleDao, alertService);
     }
 
     @Test
@@ -198,7 +202,7 @@ public class EventDeleteServiceTest {
         verify(eventDao, never()).deleteTimeline(eventId);
         verify(eventDao, never()).deleteEvent(anyLong());
     }
-    
+
     @Test
     void deleteTimeline_도중_예외_발생() {
         // given
