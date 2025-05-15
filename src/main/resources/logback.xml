@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
+
     <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <include resource="org/springframework/boot/logging/logback/console-appender.xml" />
 
@@ -39,15 +41,24 @@
 
     <!-- Spring Framework Log -->
     <logger name="org.springframework" level="INFO">
-        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ROLLING_FILE" />
+        <appender-ref ref="ERROR_FILE" />
+    </logger>
+
+    <!-- LoggingAspect Log - 파일에만 저장, 콘솔 창 출력 X -->
+    <logger name="com.mycom.myapp.aspect" level="DEBUG" additivity="false">
         <appender-ref ref="ROLLING_FILE" />
         <appender-ref ref="ERROR_FILE" />
     </logger>
 
     <!-- MyApp Log -->
     <logger name="com.mycom.myapp" level="DEBUG">
-        <appender-ref ref="MY_CONSOLE" />
         <appender-ref ref="ROLLING_FILE" />
         <appender-ref ref="ERROR_FILE" />
     </logger>
+
+    <!-- Root logger-->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+    </root>
 </configuration>
