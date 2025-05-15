@@ -2,6 +2,9 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>이벤트 목록</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -15,6 +18,11 @@
               onclick="location.href='login.html'"
               class="px-4 py-2 bg-white rounded-full border border-gray-300 shadow-sm hover:bg-gray-100 transition">
         로그인
+      </button>
+      <button id="myPageBtn"
+              onclick="location.href='my-page.html'"
+              class="px-4 py-2 bg-[#7c6dfa] text-white rounded-full shadow hover:bg-[#6b5de6] transition">
+        마이페이지
       </button>
       <button id="logoutBtn"
               class="px-4 py-2 bg-red-500 text-white rounded-full shadow hover:bg-red-400 transition">
@@ -42,16 +50,19 @@
     </div>
 
     <!-- 이벤트 목록 컨테이너 -->
-    <div id="uncheckedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
-    <div id="checkedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
-    <div id="completedEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
-    <div id="expiredEvents" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 hidden"></div>
+    <div id="uncheckedEvents" class="grid grid-cols-1 gap-6"></div>
+    <div id="checkedEvents" class="grid grid-cols-1 gap-6 hidden"></div>
+    <div id="completedEvents" class="grid grid-cols-1 gap-6 hidden"></div>
+    <div id="expiredEvents" class="grid grid-cols-1 gap-6 hidden"></div>
   </div>
 
   <!-- 이벤트 생성 버튼 -->
-  <div class="text-center">
+  <div class="fixed bottom-8 left-1/2 -translate-x-1/2 z-50">
     <button onclick="location.href='create.html'"
-            class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow hover:bg-[#6b5de6] transition">
+            class="bg-[#7c6dfa] text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl hover:bg-[#6b5de6] hover:-translate-y-1 transition-all duration-200 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
       이벤트 생성
     </button>
   </div>
@@ -62,6 +73,7 @@
     const userId = sessionStorage.getItem("userId");
     document.getElementById("loginBtn").style.display = userId ? "none" : "inline-block";
     document.getElementById("logoutBtn").style.display = userId ? "inline-block" : "none";
+    document.getElementById("myPageBtn").style.display = userId ? "inline-block" : "none";
 
     if (userId) {
       showCurrentUser(userId);
@@ -299,13 +311,20 @@
 
       return `
         <div onclick="location.href='event.html?id=${e.eventId}'"
-           class="relative ${statusClass} w-full aspect-square flex flex-col items-center justify-center text-center rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition px-4 py-6">
-          <div class="absolute top-2 right-3 text-xs ${statusColor}">${statusText}</div>
-          <div class="absolute top-2 left-3 text-xs text-gray-600">👥 ${memberCount}명</div>
-          <div class="text-lg font-semibold mb-1">${e.title}</div>
-          <div class="text-sm text-gray-500">${memberNames}</div>
-          ${timelineInfo}
-          ${overlapTime ? `<div class="text-sm text-indigo-600 mt-2">🕓 ${overlapTime}</div>` : ''}
+           class="relative ${statusClass} w-full h-36 flex flex-col p-6 rounded-2xl shadow-md hover:bg-[#ebe4db] cursor-pointer transition">
+          <div class="flex justify-between items-start mb-4">
+            <div class="text-xl font-semibold">${e.title}</div>
+            <div class="flex items-center gap-3">
+              <div class="text-xs text-gray-600">👥 ${memberCount}명</div>
+              <div class="text-xs ${statusColor}">${statusText}</div>
+            </div>
+          </div>
+          <div class="flex-1"></div>
+          <div class="space-y-2">
+            <div class="text-sm text-gray-500">${memberNames}</div>
+            ${timelineInfo}
+            ${overlapTime ? `<div class="text-sm text-indigo-600">🕓 ${overlapTime}</div>` : ''}
+          </div>
         </div>`;
     }));
 
