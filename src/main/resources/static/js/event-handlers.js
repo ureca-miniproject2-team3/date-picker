@@ -177,8 +177,19 @@ function generateEditCalendar(year, month) {
  * @param {string} scheduleUserId - 스케줄 생성자의 사용자 ID
  */
 function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
+    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
+    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+        Swal.fire({
+            title: '상태 오류',
+            text: '이미 끝난 이벤트입니다.',
+            icon: 'warning',
+            confirmButtonColor: '#7c6dfa'
+        });
+        return;
+    }
+
     // 현재 사용자가 스케줄 생성자인지 확인
-    if (userId !== scheduleUserId) {
+    if (userId !== Number(scheduleUserId)) {
         Swal.fire({
             title: '권한 오류',
             text: '스케줄을 생성한 사용자만 수정할 수 있습니다.',
