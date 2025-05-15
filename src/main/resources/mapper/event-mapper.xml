@@ -184,4 +184,20 @@
             having max(ed.event_date) &lt; curdate()
         )
     </update>
+    
+    <!--is_sent = false (알림 미수신)인 user_event 조회-->
+    <select id="listUnsentUserEvent" resultType="com.mycom.myapp.notifications.dto.UserEventDto">
+    	select user_id as userId, event_id as eventId, is_sent as isSent
+    	from user_event
+    	where is_sent = 0
+    	  and user_id = #{userId}
+    </select>
+    
+    <!--is_sent = false인 user_event를 -->
+    <update id="updateUnsentUserEvent">
+    	update user_event
+    	set is_sent = 1
+    	where user_id = #{userId}
+    	  and event_id = #{eventId}
+    </update>
 </mapper>

@@ -1,12 +1,15 @@
 package com.mycom.myapp.events.dao;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventSummaryDto;
 import com.mycom.myapp.events.dto.TimelineDto;
-import java.time.LocalDate;
-import java.util.List;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Param;
+import com.mycom.myapp.notifications.dto.UserEventDto;
 
 @Mapper
 public interface EventDao {
@@ -45,4 +48,9 @@ public interface EventDao {
     void checkEvent(@Param("eventId") Long eventId);
     void insertTimeline(TimelineDto timelineDto);
 
+    // is_sent = false (알림 미수신)인 user_event 조회
+    List<UserEventDto> listUnsentUserEvent(@Param("userId") Long userId);
+    
+    // is_sent = false인 user_event를 true로 변경
+    void updateUnsentUserEvent(@Param("userId") Long userId, @Param("eventId") Long eventId);
 }
