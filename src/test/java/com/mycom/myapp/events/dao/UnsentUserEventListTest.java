@@ -47,7 +47,7 @@ public class UnsentUserEventListTest {
     	Long userId = 1L;
     	
     	// when
-    	List<UserEventDto> userEvents = eventDao.listUnsentUserEvent();
+    	List<UserEventDto> userEvents = eventDao.listUnsentUserEvent(userId);
     	
     	// then
     	assertEquals(1, userEvents.size());

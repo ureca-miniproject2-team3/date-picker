@@ -189,6 +189,7 @@
     <select id="listUnsentUserEvent" resultType="com.mycom.myapp.notifications.dto.UserEventDto">
     	select user_id as userId, event_id as eventId, is_sent as isSent
     	from user_event
-    	where is_sent = 0;
+    	where is_sent = 0
+    	  and user_id = #{userId}
     </select>
 </mapper>
