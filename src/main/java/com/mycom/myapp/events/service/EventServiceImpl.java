@@ -1,5 +1,6 @@
 package com.mycom.myapp.events.service;
 
+import com.mycom.myapp.notifications.service.AlertService;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +28,7 @@ public class EventServiceImpl implements EventService {
 
     private final EventDao eventDao;
     private final ScheduleDao scheduleDao;
+    private final AlertService alertService;
 
     @Override
     public EventResultDto listEvent(Long userId) {
@@ -188,7 +190,9 @@ public class EventServiceImpl implements EventService {
                         .toList();
 
                 for (Long invitedId : newInvitedUserIds) {
+                    String title = eventDao.detailEvent(eventId).getTitle();
                     eventDao.insertUserEvent(invitedId, eventId);
+                    alertService.sendNotifications(invitedId, eventId, title);
                 }
 
                 result.setResult("success");
