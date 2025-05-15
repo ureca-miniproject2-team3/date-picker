@@ -184,6 +184,12 @@
             having max(ed.event_date) &lt; curdate()
         )
     </update>
+
+    <update id="markAsSent">
+        update user_event
+        set is_sent = 1
+        where user_id = #{userId}
+          and event_id = #{eventId}
     
     <!--is_sent = false (알림 미수신)인 user_event 조회-->
     <select id="listUnsentUserEvent" resultType="com.mycom.myapp.notifications.dto.UserEventDto">

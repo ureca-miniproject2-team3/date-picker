@@ -48,6 +48,9 @@ public interface EventDao {
     void checkEvent(@Param("eventId") Long eventId);
     void insertTimeline(TimelineDto timelineDto);
 
+    // 이벤트 알림 수신 처리
+    void markAsSent(@Param("userId") Long userId, @Param("eventId") Long eventId);
+
     // is_sent = false (알림 미수신)인 user_event 조회
     List<UserEventDto> listUnsentUserEvent(@Param("userId") Long userId);
     

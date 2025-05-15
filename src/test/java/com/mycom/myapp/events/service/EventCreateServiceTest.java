@@ -12,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import com.mycom.myapp.events.dao.EventDao;
 import com.mycom.myapp.events.dto.EventDto;
 import com.mycom.myapp.events.dto.EventResultDto;
+import com.mycom.myapp.notifications.service.AlertService;
 import com.mycom.myapp.schedules.dao.ScheduleDao;
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -22,13 +23,15 @@ import org.junit.jupiter.api.Test;
 public class EventCreateServiceTest {
     private EventDao eventDao;
     private ScheduleDao scheduleDao;
+    private AlertService alertService;
     private EventServiceImpl eventService;
 
     @BeforeEach
     void setUp() {
         eventDao = mock(EventDao.class);
         scheduleDao = mock(ScheduleDao.class);
-        eventService = new EventServiceImpl(eventDao, scheduleDao);
+        alertService = mock(AlertService.class);
+        eventService = new EventServiceImpl(eventDao, scheduleDao, alertService);
     }
 
     @Test
