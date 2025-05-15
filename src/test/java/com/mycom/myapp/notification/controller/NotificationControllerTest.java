@@ -1,6 +1,5 @@
 package com.mycom.myapp.notification.controller;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -49,8 +48,10 @@ public class NotificationControllerTest {
 
         // when & then
         mockMvc.perform(post("/api/notifications/received")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(notificationDto)))
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .param("userId", notificationDto.getUserId().toString())
+                .param("eventId", notificationDto.getEventId().toString())
+                .param("title", notificationDto.getTitle()))
                 .andExpect(status().isOk());
 
         verify(eventDao).markAsSent(notificationDto.getUserId(), notificationDto.getEventId());
