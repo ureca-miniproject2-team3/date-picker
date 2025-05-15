@@ -212,9 +212,36 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                             schedulesByDate[dateStr].push(schedule);
                         });
 
+                        // 각 날짜 그룹 내에서 스케줄을 시작 시간순으로 정렬
+                        Object.keys(schedulesByDate).forEach(dateStr => {
+                            schedulesByDate[dateStr].sort((a, b) => {
+                                return new Date(a.startTime) - new Date(b.startTime);
+                            });
+                        });
+
                         // 날짜 정렬
                         const sortedDates = Object.keys(schedulesByDate).sort((a, b) => {
-                            return new Date(a) - new Date(b);
+                            // Parse the date strings properly
+                            const aMatch = a.match(/(\d{4})년\s+(\d{1,2})월\s+(\d{1,2})일/);
+                            const bMatch = b.match(/(\d{4})년\s+(\d{1,2})월\s+(\d{1,2})일/);
+
+                            if (aMatch && bMatch) {
+                                const aYear = parseInt(aMatch[1]);
+                                const aMonth = parseInt(aMatch[2]) - 1; // JavaScript months are 0-indexed
+                                const aDay = parseInt(aMatch[3]);
+
+                                const bYear = parseInt(bMatch[1]);
+                                const bMonth = parseInt(bMatch[2]) - 1; // JavaScript months are 0-indexed
+                                const bDay = parseInt(bMatch[3]);
+
+                                const aDate = new Date(aYear, aMonth, aDay);
+                                const bDate = new Date(bYear, bMonth, bDay);
+
+                                return aDate - bDate;
+                            }
+
+                            // Fallback to string comparison if parsing fails
+                            return a.localeCompare(b);
                         });
 
                         // 스케줄 시간 범위 계산
