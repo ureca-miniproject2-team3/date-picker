@@ -184,4 +184,11 @@
             having max(ed.event_date) &lt; curdate()
         )
     </update>
+
+    <update id="markAsSent">
+        update user_event
+        set is_sent = 1
+        where user_id = #{userId}
+          and event_id = #{eventId}
+    </update>
 </mapper>
