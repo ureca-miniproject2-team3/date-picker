@@ -50,7 +50,7 @@
 
 ## 실행화면
 
-![gif](https://github.com/user-attachments/assets/902c3d30-0a6f-4a42-9e19-c2cfb229044e)
+![gif](https://github.com/user-attachments/assets/2127ea95-3490-4ada-b249-fc33c4443f49)
 
 ---
 
