@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-[#f8f1e7] min-h-screen flex items-center justify-center px-4">
+<div class="bg-white w-full max-w-md p-8 rounded-2xl shadow-xl">
+    <h1 class="text-2xl font-bold text-center mb-6">회원가입</h1>
+
+    <div class="space-y-4">
+        <div>
+            <label for="name" class="block font-medium text-gray-700 mb-1">이름</label>
+            <input type="text" name="name" id="name"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa]" />
+        </div>
+
+        <div>
+            <label for="email" class="block font-medium text-gray-700 mb-1">이메일</label>
+            <input type="text" name="email" id="email"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa]" />
+        </div>
+
+        <div>
+            <label for="password" class="block font-medium text-gray-700 mb-1">비밀번호</label>
+            <input type="password" name="password" id="password"
+                   class="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#7c6dfa]" />
+        </div>
+
+        <input type="hidden" name="_csrf" value="" id="_csrf" />
+
+        <button id="btnRegister"
+                class="w-full bg-[#7c6dfa] text-white py-2 rounded font-semibold hover:bg-[#6b5de6] transition">
+            회원가입
+        </button>
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        getCsrfToken();
+        document.querySelector("#btnRegister").onclick = register;
+    }
+
+    async function getCsrfToken() {
+        let response = await fetch('/api/auth/csrf-token', { method: 'GET', credentials: 'same-origin' });
+        let data = await response.json();
+        document.querySelector('#_csrf').value = data.token;
+    }
+
+    async function register() {
+        let name = document.querySelector("#name").value;
+        let email = document.querySelector("#email").value;
+        let password = document.querySelector("#password").value;
+        let _csrf = document.querySelector("#_csrf").value;
+
+        let urlParams = new URLSearchParams({ name, email, password, _csrf });
+        let response = await fetch("/api/users", { method: "POST", body: urlParams });
+        let data = await response.json();
+
+        console.log(data);
+
+        if (data.result == "success") {
+            Swal.fire({
+                title: '회원가입 성공',
+                text: '회원가입 되었습니다. 로그인 페이지로 이동합니다.',
+                icon: 'success',
+                confirmButtonColor: '#7c6dfa'
+            }).then(() => {
+                window.location.href = "/login.html";
+            });
+        } else if (data.result == "exist") {
+            Swal.fire({
+                title: '회원가입 실패',
+                text: '이미 등록된 이메일입니다.',
+                icon: 'warning',
+                confirmButtonColor: '#7c6dfa'
+            });
+        } else if (data.result == "fail") {
+            Swal.fire({
+                title: '회원가입 실패',
+                text: '회원가입 과정에서 오류가 발생했습니다.',
+                icon: 'error',
+                confirmButtonColor: '#7c6dfa'
+            });
+        }
+    }
+</script>
+</body>
+</html>

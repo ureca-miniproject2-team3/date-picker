@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycom.myapp.schedules.dao.ScheduleDao">
+	<insert id="insertSchedule" parameterType="com.mycom.myapp.schedules.dto.ScheduleDto"
+			useGeneratedKeys="true" keyProperty="scheduleId" keyColumn="id">
+		INSERT INTO schedule(user_id, event_id, start_time, end_time)
+		VALUES (#{userId}, #{eventId}, #{startTime}, #{endTime})			
+	</insert>
+
+	<delete id="deleteSchedule">
+		delete
+		from schedule
+		where id = #{scheduleId}
+	</delete>
+	
+	<select id="listSchedule" parameterType="java.lang.Long" resultType="com.mycom.myapp.schedules.dto.ScheduleDto">
+		SELECT id as scheduleId, user_id as userId, event_id as eventId, start_time as startTime, end_time as endTime
+		FROM schedule
+		WHERE event_id = #{eventId}
+	</select>
+	
+	<select id="detailSchedule" parameterType="java.lang.Long" resultType="com.mycom.myapp.schedules.dto.ScheduleDto">
+		SELECT id as scheduleId, user_id as userId, event_id as eventId, start_time as startTime, end_time as endTime
+		FROM schedule
+		WHERE id = #{scheduleId}	
+	</select>
+	
+	<update id="updateSchedule" parameterType="com.mycom.myapp.schedules.dto.ScheduleDto">
+		UPDATE schedule
+		SET start_time = #{startTime}, end_time = #{endTime}
+		WHERE id = #{scheduleId}
+	</update>
+</mapper>
