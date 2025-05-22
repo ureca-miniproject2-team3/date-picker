@@ -1,4 +1,14 @@
+// 공통코드를 저장할 전역 변수
+let eventStatusCodes = {};
+let currentActiveTab = '001'; // 기본 활성 탭 (미확정)
+
 window.onload = async () => {
+  // 공통코드 초기화
+  await initCommonCodes();
+  
+  // 탭 동적 생성
+  createEventTabs();
+
   const userId = sessionStorage.getItem("userId");
   document.getElementById("loginBtn").style.display = userId ? "none" : "inline-block";
   document.getElementById("logoutBtn").style.display = userId ? "inline-block" : "none";
@@ -80,35 +90,199 @@ window.onload = async () => {
     }
   }
 
-  // 탭 클릭 이벤트 리스너 추가
-  document.querySelectorAll('[data-tab]').forEach(tab => {
-    tab.addEventListener('click', (e) => {
-      // 모든 탭의 스타일 초기화
-      document.querySelectorAll('[data-tab]').forEach(t => {
-        t.classList.remove('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
-        t.classList.add('text-gray-500');
-      });
-
-      // 클릭된 탭 스타일 적용
-      e.target.classList.remove('text-gray-500');
-      e.target.classList.add('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
-
-      // 모든 이벤트 컨테이너 숨기기
-      document.getElementById('uncheckedEvents').classList.add('hidden');
-      document.getElementById('checkedEvents').classList.add('hidden');
-      document.getElementById('completedEvents').classList.add('hidden');
-      document.getElementById('expiredEvents').classList.add('hidden');
-
-      // 선택된 탭의 이벤트 컨테이너 보이기
-      const selectedTab = e.target.getAttribute('data-tab');
-      document.getElementById(selectedTab + 'Events').classList.remove('hidden');
-
-      fetchEvents();
-    });
-  });
-
   fetchEvents();
 };
+
+/**
+ * 공통코드를 초기화하는 함수
+ */
+async function initCommonCodes() {
+  try {
+    const csrfToken = await getCsrfToken();
+    
+    const response = await fetch('/api/commoncodes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': csrfToken
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(['010']) // 이벤트 상태 그룹코드
+    });
+
+    if (!response.ok) {
+      throw new Error(`공통코드 조회 실패: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.result === 'success' && result.commonCodeDtoListMap && result.commonCodeDtoListMap['010']) {
+      // orderNo 순으로 정렬하여 이벤트 상태 코드를 매핑
+      const sortedCodes = result.commonCodeDtoListMap['010'].sort((a, b) => a.orderNo - b.orderNo);
+      sortedCodes.forEach(code => {
+        eventStatusCodes[code.code] = {
+          codeName: code.codeName,
+          codeNameBrief: code.codeNameBrief,
+          orderNo: code.orderNo
+        };
+      });
+      console.log('공통코드 초기화 완료:', eventStatusCodes);
+    } else {
+      console.error('공통코드 응답 형식 오류:', result);
+      // 기본값 설정
+      setDefaultStatusCodes();
+    }
+  } catch (error) {
+    console.error('공통코드 초기화 중 오류:', error);
+    // 기본값 설정
+    setDefaultStatusCodes();
+  }
+}
+
+/**
+ * 기본 상태 코드 설정 (공통코드 조회 실패 시)
+ */
+function setDefaultStatusCodes() {
+  eventStatusCodes = {
+    '001': { codeName: '미확정', codeNameBrief: '미확정', orderNo: 1 },
+    '002': { codeName: '확정', codeNameBrief: '확정', orderNo: 2 },
+    '003': { codeName: '완료', codeNameBrief: '완료', orderNo: 3 },
+    '004': { codeName: '만료', codeNameBrief: '만료', orderNo: 4 }
+  };
+}
+
+/**
+ * 공통코드를 기반으로 탭을 동적 생성
+ */
+function createEventTabs() {
+  const tabContainer = document.getElementById('eventTabs');
+  if (!tabContainer) return;
+
+  // 기존 탭 제거
+  tabContainer.innerHTML = '';
+
+  // orderNo 순으로 정렬된 코드로 탭 생성
+  const sortedCodes = Object.entries(eventStatusCodes)
+    .sort(([,a], [,b]) => a.orderNo - b.orderNo);
+
+  sortedCodes.forEach(([code, codeInfo], index) => {
+    const tabButton = document.createElement('button');
+    const tabKey = getTabKeyByCode(code);
+    
+    tabButton.className = index === 0 
+      ? 'px-4 py-2 text-[#7c6dfa] border-b-2 border-[#7c6dfa] font-medium'
+      : 'px-4 py-2 text-gray-500 hover:text-gray-700';
+    
+    tabButton.setAttribute('data-tab', tabKey);
+    tabButton.setAttribute('data-code', code);
+    tabButton.textContent = `${codeInfo.codeName} 일정`;
+    
+    // 탭 클릭 이벤트 리스너 추가
+    tabButton.addEventListener('click', (e) => {
+      handleTabClick(e.target);
+    });
+    
+    tabContainer.appendChild(tabButton);
+  });
+
+  // 이벤트 컨테이너도 동적 생성
+  createEventContainers();
+}
+
+/**
+ * 이벤트 컨테이너 동적 생성
+ */
+function createEventContainers() {
+  const mainContainer = document.querySelector('.space-y-6');
+  const tabContainer = document.getElementById('eventTabs');
+  
+  if (!mainContainer || !tabContainer) return;
+
+  // 기존 이벤트 컨테이너 제거 (탭 다음 요소들)
+  const existingContainers = mainContainer.querySelectorAll('[id$="Events"]');
+  existingContainers.forEach(container => container.remove());
+
+  // 새 컨테이너 생성
+  Object.keys(eventStatusCodes).forEach((code, index) => {
+    const tabKey = getTabKeyByCode(code);
+    const container = document.createElement('div');
+    container.id = `${tabKey}Events`;
+    container.className = index === 0 
+      ? 'grid grid-cols-1 gap-6' 
+      : 'grid grid-cols-1 gap-6 hidden';
+    
+    // 탭 컨테이너 다음에 삽입
+    tabContainer.parentNode.insertBefore(container, tabContainer.nextSibling);
+  });
+}
+
+/**
+ * 코드에 따른 탭 키 반환
+ */
+function getTabKeyByCode(code) {
+  const tabKeyMap = {
+    '001': 'unchecked',
+    '002': 'checked', 
+    '003': 'completed',
+    '004': 'expired'
+  };
+  return tabKeyMap[code] || 'unknown';
+}
+
+/**
+ * 탭 클릭 핸들러
+ */
+function handleTabClick(clickedTab) {
+  // 모든 탭의 스타일 초기화
+  document.querySelectorAll('[data-tab]').forEach(tab => {
+    tab.classList.remove('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
+    tab.classList.add('text-gray-500');
+  });
+
+  // 클릭된 탭 스타일 적용
+  clickedTab.classList.remove('text-gray-500');
+  clickedTab.classList.add('text-[#7c6dfa]', 'border-b-2', 'border-[#7c6dfa]', 'font-medium');
+
+  // 모든 이벤트 컨테이너 숨기기
+  Object.keys(eventStatusCodes).forEach(code => {
+    const tabKey = getTabKeyByCode(code);
+    const container = document.getElementById(`${tabKey}Events`);
+    if (container) {
+      container.classList.add('hidden');
+    }
+  });
+
+  // 선택된 탭의 이벤트 컨테이너 보이기
+  const selectedTab = clickedTab.getAttribute('data-tab');
+  const selectedContainer = document.getElementById(`${selectedTab}Events`);
+  if (selectedContainer) {
+    selectedContainer.classList.remove('hidden');
+  }
+
+  // 현재 활성 탭 업데이트
+  currentActiveTab = clickedTab.getAttribute('data-code');
+  
+  fetchEvents();
+}
+
+/**
+ * 코드로 상태명 가져오기
+ */
+function getStatusName(code) {
+  return eventStatusCodes[code]?.codeName || '알 수 없음';
+}
+
+/**
+ * 상태명으로 코드 가져오기
+ */
+function getStatusCode(name) {
+  for (const [code, codeInfo] of Object.entries(eventStatusCodes)) {
+    if (codeInfo.codeName === name) {
+      return code;
+    }
+  }
+  return null;
+}
 
 async function showCurrentUser(userId) {
   try {
@@ -154,10 +328,13 @@ async function fetchOverlap(eventId) {
 
 async function fetchEvents() {
   const userId = sessionStorage.getItem("userId");
-  const uncheckedList = document.getElementById("uncheckedEvents");
-  const checkedList = document.getElementById("checkedEvents");
-  const completedList = document.getElementById("completedEvents");
-  const expiredList = document.getElementById("expiredEvents");
+  
+  // 모든 이벤트 컨테이너 찾기
+  const containers = {};
+  Object.keys(eventStatusCodes).forEach(code => {
+    const tabKey = getTabKeyByCode(code);
+    containers[code] = document.getElementById(`${tabKey}Events`);
+  });
 
   if (!userId) {
     const loginMessage = `
@@ -165,10 +342,9 @@ async function fetchEvents() {
           <p class="text-lg font-semibold mb-2">로그인이 필요합니다</p>
           <p class="text-sm text-gray-500">이벤트 목록을 보려면 로그인 해주세요.</p>
         </div>`;
-    uncheckedList.innerHTML = loginMessage;
-    checkedList.innerHTML = loginMessage;
-    completedList.innerHTML = loginMessage;
-    expiredList.innerHTML = loginMessage;
+    Object.values(containers).forEach(container => {
+      if (container) container.innerHTML = loginMessage;
+    });
     return;
   }
 
@@ -187,36 +363,49 @@ async function fetchEvents() {
             <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-gray-500">
               등록된 이벤트가 없습니다.
             </div>`;
-        uncheckedList.innerHTML = emptyMessage;
-        checkedList.innerHTML = emptyMessage;
-        completedList.innerHTML = emptyMessage;
-        expiredList.innerHTML = emptyMessage;
+        Object.values(containers).forEach(container => {
+          if (container) container.innerHTML = emptyMessage;
+        });
       } else {
+        // 이벤트를 상태별로 분류 (공통코드 사용)
+        const eventsByStatus = {};
+        
+        // 각 상태별 빈 배열 초기화
+        Object.keys(eventStatusCodes).forEach(code => {
+          eventsByStatus[code] = [];
+        });
+
         // 이벤트를 상태별로 분류
-        const uncheckedEvents = events.filter(e => e.status === "UNCHECKED");
-        const checkedEvents = events.filter(e => e.status === "CHECKED")
-            .sort((a, b) => {
-              if (!a.timeline || !b.timeline) return 0;
-              return new Date(a.timeline.startTime) - new Date(b.timeline.startTime);
-            });
-        const completedEvents = events.filter(e => e.status === "COMPLETED");
-        const expiredEvents = events.filter(e => e.status === "EXPIRED");
+        events.forEach(event => {
+          if (eventsByStatus[event.code]) {
+            eventsByStatus[event.code].push(event);
+          }
+        });
+
+        // 확정된 이벤트는 타임라인 기준으로 정렬
+        if (eventsByStatus['002']) {
+          eventsByStatus['002'].sort((a, b) => {
+            if (!a.timeline || !b.timeline) return 0;
+            return new Date(a.timeline.startTime) - new Date(b.timeline.startTime);
+          });
+        }
 
         // 각 상태별 이벤트 렌더링
-        renderEventList(uncheckedList, uncheckedEvents);
-        renderEventList(checkedList, checkedEvents);
-        renderEventList(completedList, completedEvents);
-        renderEventList(expiredList, expiredEvents);
+        Object.keys(eventStatusCodes).forEach(code => {
+          const container = containers[code];
+          if (container) {
+            renderEventList(container, eventsByStatus[code] || []);
+          }
+        });
       }
     } else {
       const errorMessage = `
           <div class="bg-white p-6 rounded-2xl shadow text-center col-span-full text-red-500">
             <p class="text-lg font-semibold">이벤트 목록을 불러오는데 실패했습니다.</p>
           </div>`;
-      uncheckedList.innerHTML = errorMessage;
-      checkedList.innerHTML = errorMessage;
-      completedList.innerHTML = errorMessage;
-      expiredList.innerHTML = errorMessage;
+      Object.values(containers).forEach(container => {
+        if (container) container.innerHTML = errorMessage;
+      });
     }
   } catch (err) {
     const errorMessage = `
@@ -224,10 +413,9 @@ async function fetchEvents() {
           <p class="text-lg font-semibold">예외 발생</p>
           <pre class="text-sm mt-2">${err.message}</pre>
         </div>`;
-    uncheckedList.innerHTML = errorMessage;
-    checkedList.innerHTML = errorMessage;
-    completedList.innerHTML = errorMessage;
-    expiredList.innerHTML = errorMessage;
+    Object.values(containers).forEach(container => {
+      if (container) container.innerHTML = errorMessage;
+    });
     console.error("예외:", err);
   }
 }
@@ -244,29 +432,30 @@ async function renderEventList(container, events) {
   const eventHtmls = await Promise.all(events.map(async (e) => {
     const memberCount = e.userIds?.length ?? 0;
     const memberNames = e.userNames?.join(', ') ?? '';
-    const overlapTime = e.status !== "CHECKED" && e.status !== "COMPLETED" ? await fetchOverlap(e.eventId) : null;
+    
+    // 공통코드를 사용하여 상태명 가져오기
+    const statusName = getStatusName(e.code);
+    
+    // 확정, 완료가 아닌 경우에만 겹치는 시간 조회
+    const overlapTime = (e.code !== '002' && e.code !== '003') ? await fetchOverlap(e.eventId) : null;
 
-    // 상태에 따른 스타일 적용
-    let statusClass, statusText, statusColor;
-    switch(e.status) {
-      case "CHECKED":
+    // 상태에 따른 스타일 적용 (공통코드 기반)
+    let statusClass, statusColor;
+    switch(e.code) {
+      case '002': // 확정
         statusClass = "bg-green-50";
-        statusText = "확정";
         statusColor = "text-blue-600";
         break;
-      case "COMPLETED":
+      case '003': // 완료
         statusClass = "bg-emerald-50/70";
-        statusText = "완료";
         statusColor = "text-green-600";
         break;
-      case "EXPIRED":
+      case '004': // 만료
         statusClass = "bg-red-50/70";
-        statusText = "만료";
         statusColor = "text-red-600";
         break;
-      default:
+      default: // 001: 미확정
         statusClass = "bg-white";
-        statusText = "미확정";
         statusColor = "text-gray-600";
     }
 
@@ -287,7 +476,7 @@ async function renderEventList(container, events) {
             <div class="text-xl font-semibold">${e.title}</div>
             <div class="flex items-center gap-3">
               <div class="text-xs text-gray-600">👥 ${memberCount}명</div>
-              <div class="text-xs ${statusColor}">${statusText}</div>
+              <div class="text-xs ${statusColor}">${statusName}</div>
             </div>
           </div>
           <div class="flex-1"></div>

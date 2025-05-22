@@ -17,7 +17,7 @@
 </head>
 <body class="bg-[#f8f1e7] min-h-screen p-6 text-gray-800">
 <div class="max-w-5xl mx-auto space-y-8">
-  <!-- 상단바: 유저 정보 + 로그인/로귴아웃 -->
+  <!-- 상단바: 유저 정보 + 로그인/로그아웃 -->
   <div class="flex justify-end items-center">
     <div class="flex gap-2 items-center">
       <div class="text-sm text-gray-600" id="userInfo"></div>
@@ -40,27 +40,12 @@
 
   <!-- 이벤트 목록 -->
   <div class="space-y-6">
-    <!-- 탭 메뉴 -->
-    <div class="flex gap-2 border-b border-gray-200">
-      <button class="px-4 py-2 text-[#7c6dfa] border-b-2 border-[#7c6dfa] font-medium" data-tab="unchecked">
-        미확정 일정
-      </button>
-      <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="checked">
-        확정된 일정
-      </button>
-      <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="completed">
-        완료된 일정
-      </button>
-      <button class="px-4 py-2 text-gray-500 hover:text-gray-700" data-tab="expired">
-        만료된 일정
-      </button>
+    <!-- 탭 메뉴 - 공통코드에서 동적으로 생성 -->
+    <div class="flex gap-2 border-b border-gray-200" id="eventTabs">
+      <!-- 탭들이 JavaScript로 동적 생성됩니다 -->
     </div>
 
-    <!-- 이벤트 목록 컨테이너 -->
-    <div id="uncheckedEvents" class="grid grid-cols-1 gap-6"></div>
-    <div id="checkedEvents" class="grid grid-cols-1 gap-6 hidden"></div>
-    <div id="completedEvents" class="grid grid-cols-1 gap-6 hidden"></div>
-    <div id="expiredEvents" class="grid grid-cols-1 gap-6 hidden"></div>
+    <!-- 이벤트 목록 컨테이너들도 동적으로 생성됩니다 -->
   </div>
 
   <!-- 이벤트 생성 버튼 -->
