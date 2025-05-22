@@ -48,12 +48,12 @@ public class EventListControllerTest {
         EventSummaryDto event1 = new EventSummaryDto();
         event1.setEventId(1L);
         event1.setTitle("테스트 이벤트1");
-        event1.setStatus(EventStatus.EXPIRED);
+        event1.setCode("004");
         
         EventSummaryDto event2 = new EventSummaryDto();
         event2.setEventId(2L);
         event2.setTitle("테스트 이벤트2");
-        event2.setStatus(EventStatus.COMPLETED);
+        event2.setCode("003");
         event2.setTimeline(timeline);
         
         eventList.add(event1);

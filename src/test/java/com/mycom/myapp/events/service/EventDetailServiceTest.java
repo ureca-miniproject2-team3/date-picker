@@ -56,7 +56,7 @@ public class EventDetailServiceTest {
                 .title("테스트 이벤트")
                 .ownerId(ownerId)
                 .eventDates(dates)
-                .status(EventStatus.COMPLETED)
+                .code("003")
                 .timeline(timeline)
                 .build();
 
