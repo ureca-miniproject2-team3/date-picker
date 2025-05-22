@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.mycom.myapp.codes.dao.CommonCodeDao">
+    <select id="findByGroupCodes" resultType="com.mycom.myapp.codes.dto.CodeDto">
+        SELECT 
+            group_code as groupCode,
+            code,
+            code_name as codeName,
+            code_name_brief as codeNameBrief,
+            order_no as orderNo
+        FROM code 
+        WHERE group_code IN
+        <foreach collection="groupCodes" item="groupCode" open="(" separator="," close=")">
+            #{groupCode}
+        </foreach>
+        ORDER BY group_code, order_no
+    </select>
+</mapper>
