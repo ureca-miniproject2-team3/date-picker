@@ -22,7 +22,7 @@ public class EventUpdateDaoTest {
 
     @BeforeEach
     public void setUp() {
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (?, ?)", 1L, "테스트 이벤트");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id) VALUES (?, ?, ?)", 1L, "테스트 이벤트", 1L);
         jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 1L, 1L, java.sql.Date.valueOf("2025-05-01"));
         jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 2L, 1L, java.sql.Date.valueOf("2025-05-02"));
     }
@@ -33,6 +33,7 @@ public class EventUpdateDaoTest {
         EventDto eventDto = EventDto.builder()
                 .eventId(1L)
                 .title("회의")
+                .ownerId(1L)
                 .build();
 
         // when

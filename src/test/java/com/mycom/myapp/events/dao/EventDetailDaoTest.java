@@ -40,7 +40,7 @@ public class EventDetailDaoTest {
 
         // 테스트용 이벤트 생성
         jdbcTemplate.update("INSERT INTO event (id, title, owner_id) VALUES (100, '테스트 이벤트1', ?)", userId);
-        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, status) VALUES (200, '테스트 이벤트2', ?, 'CHECKED')", userId);
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (200, '테스트 이벤트2', ?, '002')", userId);
         eventId = 100L;
 
         // 이벤트 날짜 추가

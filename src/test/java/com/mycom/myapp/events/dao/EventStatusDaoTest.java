@@ -26,7 +26,7 @@ public class EventStatusDaoTest {
     void completedCheckedEvents_정상_동작() {
         // given
         // 1. 확정(CHECKED) 상태의 이벤트 생성
-        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, status) VALUES (1, '지난 확정 이벤트', 1, 'CHECKED')");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (1, '지난 확정 이벤트', 1, '002')");
         // 2. 이전 날짜의 타임라인 생성 (확정 스케줄)
         LocalDateTime startTime = LocalDateTime.of(2025, 5, 13, 14, 0); // 예시 시간
         LocalDateTime endTime = LocalDateTime.of(2025, 5, 13, 16, 0);
@@ -41,15 +41,15 @@ public class EventStatusDaoTest {
 
         // then
         String status = jdbcTemplate.queryForObject(
-                "SELECT status FROM event WHERE id = 1", String.class);
-        assertThat(status).isEqualTo("COMPLETED");
+                "SELECT code FROM event WHERE id = 1", String.class);
+        assertThat(status).isEqualTo("003");
     }
 
     @Test
     void completedCheckedEvents_미래날짜_있으면_상태변경_안함() {
         // given
         // 1. 확정(CHECKED) 상태의 이벤트 생성
-        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, status) VALUES (2, '미래 확정 이벤트', 1, 'CHECKED')");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (2, '미래 확정 이벤트', 1, '002')");
         // 2. 이벤트에 미래 날짜 추가
         LocalDate futureDate = LocalDate.now().plusDays(1);
         jdbcTemplate.update("INSERT INTO event_date (event_id, event_date) VALUES (2, ?)", futureDate);
@@ -59,15 +59,15 @@ public class EventStatusDaoTest {
 
         // then
         String status = jdbcTemplate.queryForObject(
-                "SELECT status FROM event WHERE id = 2", String.class);
-        assertThat(status).isEqualTo("CHECKED");
+                "SELECT code FROM event WHERE id = 2", String.class);
+        assertThat(status).isEqualTo("002");
     }
 
     @Test
     void expiredUncheckedEvents_정상_동작() {
         // given
         // 1. 미확정(UNCHECKED) 상태의 이벤트 생성
-        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, status) VALUES (3, '지난 미확정 이벤트', 1, 'UNCHECKED')");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (3, '지난 미확정 이벤트', 1, '001')");
         // 2. 이벤트에 과거 날짜 추가
         LocalDate pastDate = LocalDate.now().minusDays(1);
         jdbcTemplate.update("INSERT INTO event_date (event_id, event_date) VALUES (3, ?)", pastDate);
@@ -77,15 +77,15 @@ public class EventStatusDaoTest {
 
         // then
         String status = jdbcTemplate.queryForObject(
-                "SELECT status FROM event WHERE id = 3", String.class);
-        assertThat(status).isEqualTo("EXPIRED");
+                "SELECT code FROM event WHERE id = 3", String.class);
+        assertThat(status).isEqualTo("004");
     }
 
     @Test
     void expiredUncheckedEvents_미래날짜_있으면_상태변경_안함() {
         // given
         // 1. 미확정(UNCHECKED) 상태의 이벤트 생성
-        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, status) VALUES (4, '미래 미확정 이벤트', 1, 'UNCHECKED')");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (4, '미래 미확정 이벤트', 1, '001')");
         // 2. 이벤트에 미래 날짜 추가
         LocalDate futureDate = LocalDate.now().plusDays(1);
         jdbcTemplate.update("INSERT INTO event_date (event_id, event_date) VALUES (4, ?)", futureDate);
@@ -95,7 +95,7 @@ public class EventStatusDaoTest {
 
         // then
         String status = jdbcTemplate.queryForObject(
-                "SELECT status FROM event WHERE id = 4", String.class);
-        assertThat(status).isEqualTo("UNCHECKED");
+                "SELECT code FROM event WHERE id = 4", String.class);
+        assertThat(status).isEqualTo("001");
     }
 }
