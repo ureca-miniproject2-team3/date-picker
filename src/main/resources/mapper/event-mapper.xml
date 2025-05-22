@@ -9,7 +9,8 @@
 	<resultMap id="eventSummaryMap" type="com.mycom.myapp.events.dto.EventSummaryDto">
 	    <id property="eventId" column="event_id"/>
 	    <result property="title" column="title"/>
-	    <result property="status" column="status" javaType="com.mycom.myapp.events.dto.type.EventStatus" />
+        <result property="code" column="code"/>
+<!--	<result property="status" column="status" javaType="com.mycom.myapp.events.dto.type.EventStatus" /> -->
 	
 	    <association property="timeline" javaType="com.mycom.myapp.events.dto.TimelineDto"
 	    		notNullColumn="timeline_id">
@@ -25,7 +26,7 @@
 	    select
 	        e.id as event_id, 
 	        e.title, 
-	        e.status, 
+	        e.code,
 	        t.id as timeline_id, 
 	        t.start_time, 
 	        t.end_time
@@ -48,7 +49,7 @@
 	    <id property="eventId" column="event_id"/>
 	    <result property="title" column="title"/>
 	    <result property="ownerId" column="owner_id"/>
-	    <result property="status" column="status"/>
+	    <result property="code" column="code"/>
 	    
 	    <association property="timeline" javaType="com.mycom.myapp.events.dto.TimelineDto">
 	        <id property="timelineId" column="timeline_id"/>
@@ -64,7 +65,7 @@
             e.id as event_id,
             e.title,
             e.owner_id,
-            e.status,
+            e.code,
             t.id as timeline_id,
             t.start_time,
             t.end_time
@@ -154,7 +155,7 @@
     <!--확정된 이벤트 Status 변경-->
     <update id="checkEvent">
     	update event
-    	set status='CHECKED'
+    	set code = '002'
     	where id = #{eventId}
     </update>
 
@@ -167,16 +168,16 @@
     <!--이벤트 상태 수정-->
     <update id="completedCheckedEvents">
         update event as e, timeline as t
-        set e.status = 'COMPLETED'
-        where e.status = 'CHECKED'
+        set e.code = '003'
+        where e.code = '002'
           and e.id = t.event_id
           and t.end_time &lt; NOW()
     </update>
 
     <update id="expiredUncheckedEvents">
         update event as e
-        set e.status = 'EXPIRED'
-        where e.status = 'UNCHECKED'
+        set e.code = '004'
+        where e.code = '001'
           and e.id in (
             select ed.event_id
             from event_date as ed

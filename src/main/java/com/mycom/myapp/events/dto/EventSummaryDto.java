@@ -11,6 +11,7 @@ public class EventSummaryDto {
     private String title;
     private List<Long> userIds;
     private List<String> userNames;
-    private EventStatus status;
+    private String code;
+//    private EventStatus status;
     private TimelineDto timeline;
 }
