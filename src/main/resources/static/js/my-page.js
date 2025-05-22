@@ -3,7 +3,73 @@ let events = []; // 전체 이벤트 데이터를 저장할 배열
 let filteredEvents = []; // 선택한 날짜의 이벤트를 저장할 배열
 let selectedDateElement = null;
 
+// 공통코드를 저장할 전역 변수
+let eventStatusCodes = {};
+
+/**
+ * 공통코드를 초기화하는 함수
+ */
+async function initEventStatusCodes() {
+  try {
+    const csrfToken = await getCsrfToken();
+    
+    const response = await fetch('/api/commoncodes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': csrfToken
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(['010']) // 이벤트 상태 그룹코드
+    });
+
+    if (!response.ok) {
+      throw new Error(`공통코드 조회 실패: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.result === 'success' && result.commonCodeDtoListMap && result.commonCodeDtoListMap['010']) {
+      // 이벤트 상태 코드를 매핑
+      result.commonCodeDtoListMap['010'].forEach(code => {
+        eventStatusCodes[code.code] = code.codeName;
+      });
+      console.log('마이페이지 상태 공통코드 초기화 완료:', eventStatusCodes);
+    } else {
+      console.error('공통코드 응답 형식 오류:', result);
+      // 기본값 설정
+      setDefaultEventStatusCodes();
+    }
+  } catch (error) {
+    console.error('공통코드 초기화 중 오류:', error);
+    // 기본값 설정
+    setDefaultEventStatusCodes();
+  }
+}
+
+/**
+ * 기본 상태 코드 설정 (공통코드 조회 실패 시)
+ */
+function setDefaultEventStatusCodes() {
+  eventStatusCodes = {
+    '001': '미확정',
+    '002': '확정',
+    '003': '완료',
+    '004': '만료'
+  };
+}
+
+/**
+ * 코드로 상태명 가져오기
+ */
+function getEventStatusName(code) {
+  return eventStatusCodes[code] || '알 수 없음';
+}
+
 window.onload = async () => {
+    // 공통코드 초기화
+    await initEventStatusCodes();
+    
     const userId = sessionStorage.getItem("userId");
     document.getElementById("loginBtn").style.display = userId ? "none" : "inline-block";
     document.getElementById("logoutBtn").style.display = userId ? "inline-block" : "none";
@@ -67,9 +133,9 @@ async function fetchEvents() {
 
         const result = await res.json();
         if (result.result === "success" && Array.isArray(result.eventDtoList)) {
-            // 확정 및 완료된 이벤트만 필터링
+            // 확정 및 완료된 이벤트만 필터링 (공통코드 사용)
             events = result.eventDtoList.filter(e => 
-                (e.status === "CHECKED" || e.status === "COMPLETED") && e.timeline
+                (e.code === '002' || e.code === '003') && e.timeline // 002: 확정, 003: 완료
             );
             
             // 캘린더에 이벤트 표시 업데이트
@@ -239,13 +305,16 @@ function renderEventList() {
         const memberCount = event.userIds?.length ?? 0;
         const memberNames = event.userNames?.join(', ') ?? '';
         
+        // 공통코드를 사용하여 상태명 가져오기
+        const statusName = getEventStatusName(event.code);
+        
         const eventElement = document.createElement("div");
-        eventElement.className = `event-item p-3 pl-4 bg-white rounded-lg shadow-sm hover:shadow-md transition ${event.status === "COMPLETED" ? "completed" : ""}`;
+        eventElement.className = `event-item p-3 pl-4 bg-white rounded-lg shadow-sm hover:shadow-md transition ${event.code === '003' ? "completed" : ""}`;
         eventElement.innerHTML = `
             <div class="flex justify-between items-start">
                 <div class="font-medium">${event.title}</div>
-                <div class="text-xs ${event.status === "COMPLETED" ? "text-emerald-600" : "text-green-600"}">
-                    ${event.status === "COMPLETED" ? "완료" : "확정"}
+                <div class="text-xs ${event.code === '003' ? "text-emerald-600" : "text-green-600"}">
+                    ${statusName}
                 </div>
             </div>
             <div class="text-sm text-indigo-600 mt-1">
@@ -297,4 +366,4 @@ async function logout() {
 
     sessionStorage.clear();
     window.location.href = res.redirected ? res.url : "/";
-} 
+}
