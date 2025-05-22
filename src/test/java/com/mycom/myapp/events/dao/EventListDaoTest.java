@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import java.util.Objects;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +38,8 @@ public class EventListDaoTest {
         jdbcTemplate.update("DELETE FROM event");
 
         // 이벤트 데이터 추가
-        jdbcTemplate.update("INSERT INTO event (id, title, status) VALUES (?, ?, ?)", 100L, "테스트 이벤트1", "CHECKED");
-        jdbcTemplate.update("INSERT INTO event (id, title, status) VALUES (?, ?, ?)", 200L, "테스트 이벤트2", "UNCHECKED");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (?, ?, ?, ?)", 100L, "테스트 이벤트1", 1L, "002");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (?, ?, ?, ?)", 200L, "테스트 이벤트2", 1L, "001");
 
         // 사용자-이벤트 매핑 데이터 추가 (기존 사용자 ID 사용)
         jdbcTemplate.update("INSERT INTO user_event (id, user_id, event_id) VALUES (?, ?, ?)", 100L, 1L, 100L);
@@ -68,12 +69,12 @@ public class EventListDaoTest {
 
         for (EventSummaryDto event : events) {
             if (event.getEventId() == 100L && "테스트 이벤트1".equals(event.getTitle())
-                    && event.getStatus() == EventStatus.CHECKED
+                    && Objects.equals(event.getCode(), "002")
                     && event.getTimeline().getStartTime().equals(LocalDateTime.of(2025, 5, 1, 13, 0, 0))
                     && event.getTimeline().getEndTime().equals(LocalDateTime.of(2025, 5, 1, 16, 0, 0))) {
                 foundEvent1 = true;
             } else if (event.getEventId() == 200L && "테스트 이벤트2".equals(event.getTitle())
-                    && event.getStatus() == EventStatus.UNCHECKED
+                    && Objects.equals(event.getCode(), "001")
                     && event.getTimeline() == null) {
                 foundEvent2 = true;
             }

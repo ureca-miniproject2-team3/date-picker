@@ -53,12 +53,12 @@ public class EventListServiceTest {
         EventSummaryDto event1 = new EventSummaryDto();
         event1.setEventId(1L);
         event1.setTitle("테스트 이벤트1");
-        event1.setStatus(EventStatus.UNCHECKED);
+        event1.setCode("001");
 
         EventSummaryDto event2 = new EventSummaryDto();
         event2.setEventId(2L);
         event2.setTitle("테스트 이벤트2");
-        event2.setStatus(EventStatus.CHECKED);
+        event2.setCode("002");
         event2.setTimeline(timeline);
 
         eventList.add(event1);

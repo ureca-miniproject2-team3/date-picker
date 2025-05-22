@@ -33,8 +33,8 @@ public class UnsentUserEventListTest {
         jdbcTemplate.update("DELETE FROM event");
 
         // 이벤트 데이터 추가
-        jdbcTemplate.update("INSERT INTO event (id, title, status) VALUES (?, ?, ?)", 100L, "테스트 이벤트1", "CHECKED");
-        jdbcTemplate.update("INSERT INTO event (id, title, status) VALUES (?, ?, ?)", 200L, "테스트 이벤트2", "UNCHECKED");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (?, ?, ?, ?)", 100L, "테스트 이벤트1", 1L, "002");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id, code) VALUES (?, ?, ?, ?)", 200L, "테스트 이벤트2", 1L, "001");
 
         // 사용자-이벤트 매핑 데이터 추가 (기존 사용자 ID 사용)
         jdbcTemplate.update("INSERT INTO user_event (id, user_id, event_id) VALUES (?, ?, ?)", 100L, 1L, 100L);

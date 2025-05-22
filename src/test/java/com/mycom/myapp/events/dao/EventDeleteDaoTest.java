@@ -25,7 +25,7 @@ public class EventDeleteDaoTest {
     @BeforeEach
     public void setUp() {
         // 테스트 데이터 설정
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (?, ?)", 1L, "테스트 이벤트");
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id) VALUES (?, ?, ?)", 1L, "테스트 이벤트", 1L);
         jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 1L, 1L, java.sql.Date.valueOf("2025-05-01"));
         jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 2L, 1L, java.sql.Date.valueOf("2025-05-02"));
         jdbcTemplate.update("INSERT INTO user_event (id, user_id, event_id) VALUES (?, ?, ?)", 1L, 1L, 1L);
