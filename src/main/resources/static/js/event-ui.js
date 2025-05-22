@@ -1,5 +1,86 @@
 // event-ui.js - event.html을 위한 UI 렌더링 및 모달 관리
 
+// 공통코드를 저장할 전역 변수
+let eventStatusCodes = {};
+
+/**
+ * 공통코드를 초기화하는 함수
+ */
+async function initEventStatusCodes() {
+  try {
+    const csrfToken = await getCsrfToken();
+    
+    const response = await fetch('/api/commoncodes', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-XSRF-TOKEN': csrfToken
+      },
+      credentials: 'same-origin',
+      body: JSON.stringify(['010']) // 이벤트 상태 그룹코드
+    });
+
+    if (!response.ok) {
+      throw new Error(`공통코드 조회 실패: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    if (result.result === 'success' && result.commonCodeDtoListMap && result.commonCodeDtoListMap['010']) {
+      // 이벤트 상태 코드를 매핑
+      result.commonCodeDtoListMap['010'].forEach(code => {
+        eventStatusCodes[code.code] = code.codeName;
+      });
+      console.log('이벤트 상태 공통코드 초기화 완료:', eventStatusCodes);
+    } else {
+      console.error('공통코드 응답 형식 오류:', result);
+      // 기본값 설정
+      setDefaultEventStatusCodes();
+    }
+  } catch (error) {
+    console.error('공통코드 초기화 중 오류:', error);
+    // 기본값 설정
+    setDefaultEventStatusCodes();
+  }
+}
+
+/**
+ * 기본 상태 코드 설정 (공통코드 조회 실패 시)
+ */
+function setDefaultEventStatusCodes() {
+  eventStatusCodes = {
+    '001': '미확정',
+    '002': '확정',
+    '003': '완료',
+    '004': '만료'
+  };
+}
+
+/**
+ * 코드로 상태명 가져오기
+ */
+function getEventStatusName(code) {
+  return eventStatusCodes[code] || '알 수 없음';
+}
+
+/**
+ * 상태에 따른 CSS 클래스 반환
+ */
+function getStatusStyle(code) {
+  switch(code) {
+    case '002': // 확정
+      return { class: 'bg-green-100 text-green-800', text: getEventStatusName(code) };
+    case '001': // 미확정
+      return { class: 'bg-yellow-100 text-yellow-800', text: getEventStatusName(code) };
+    case '003': // 완료
+      return { class: 'bg-blue-100 text-blue-800', text: getEventStatusName(code) };
+    case '004': // 만료
+      return { class: 'bg-gray-100 text-gray-800', text: getEventStatusName(code) };
+    default:
+      return { class: 'bg-gray-100 text-gray-800', text: '알 수 없음' };
+  }
+}
+
 /**
  * 이벤트 HTML 콘텐츠 렌더링
  * @param {Object} event - 이벤트 데이터
@@ -9,6 +90,8 @@
  */
 function renderEventHTML(event, schedules, timeSlots, maxCount) {
     const container = document.getElementById("eventContainer");
+    const statusStyle = getStatusStyle(event.code);
+    
     container.innerHTML = `
         <div class="mb-4">
             <a href="/index.html" class="text-[#7c6dfa] hover:text-[#6a5cd6] flex items-center">
@@ -20,28 +103,16 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
         <div class="flex justify-between items-center border-b pb-5">
             <div class="flex items-center">
                 <h1 class="text-3xl font-bold">${event.title}</h1>
-                ${event.status ? `
-                <span class="ml-3 px-3 py-1 text-sm rounded-full ${
-                    event.status === 'CHECKED' ? 'bg-green-100 text-green-800' : 
-                    event.status === 'UNCHECKED' ? 'bg-yellow-100 text-yellow-800' : 
-                    event.status === 'COMPLETED' ? 'bg-blue-100 text-blue-800' : 
-                    event.status === 'EXPIRED' ? 'bg-gray-100 text-gray-800' : ''
-                }">
-                    ${
-                        event.status === 'CHECKED' ? '확정' : 
-                        event.status === 'UNCHECKED' ? '미확정' : 
-                        event.status === 'COMPLETED' ? '완료' : 
-                        event.status === 'EXPIRED' ? '만료' : ''
-                    }
+                <span class="ml-3 px-3 py-1 text-sm rounded-full ${statusStyle.class}">
+                    ${statusStyle.text}
                 </span>
-                ` : ''}
             </div>
             ${userId === event.ownerId ? `
             <div class="flex space-x-2">
                 <button onclick="editEvent('${event.eventId}', '${event.title}', ${event.eventId})"
                         data-dates='${JSON.stringify(event.eventDates)}'
-                        ${event.status !== 'UNCHECKED' ? 'disabled' : ''}
-                        class="${event.status === 'UNCHECKED' ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-full text-sm flex items-center">
+                        ${event.code !== '001' ? 'disabled' : ''}
+                        class="${event.code === '001' ? 'bg-yellow-400 hover:bg-yellow-300' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-full text-sm flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                     </svg>
@@ -55,8 +126,8 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                     <span class="leading-normal">이벤트 삭제</span>
                 </button>
                 <button onclick="showInviteModal()" 
-                        ${event.status !== 'UNCHECKED' ? 'disabled' : ''}
-                        class="${event.status === 'UNCHECKED' ? 'bg-[#7c6dfa] hover:bg-[#6a5cd6]' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-full text-sm flex items-center">
+                        ${event.code !== '001' ? 'disabled' : ''}
+                        class="${event.code === '001' ? 'bg-[#7c6dfa] hover:bg-[#6a5cd6]' : 'bg-gray-400 cursor-not-allowed'} text-white px-4 py-2 rounded-full text-sm flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                     </svg>
@@ -150,21 +221,21 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
                         const isBestTime = slot.userIds.length === maxCount;
 
                         // 확정된 시간인지 확인 (완료된 이벤트에서도 확정된 일정 표시)
-                        const isConfirmedTime = (event.status === 'CHECKED' || event.status === 'COMPLETED') && event.timeline && 
+                        const isConfirmedTime = (event.code === '002' || event.code === '003') && event.timeline && 
                             new Date(event.timeline.startTime).getTime() === new Date(slot.start).getTime() && 
                             new Date(event.timeline.endTime).getTime() === new Date(slot.end).getTime();
 
                         return `
-                            <div class="time-slot ${isConfirmedTime ? 'border-2 border-green-500 shadow-md' : isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
+                            <div class="time-slot ${isConfirmedTime ? 'border-2 border-green-500 shadow-md' : isBestTime ? 'border-2 border-[#7c6dfa] shadow-md' : 'border border-gray-100'} bg-white rounded-lg overflow-hidden ${isBestTime && userId === event.ownerId && event.code === '001' ? 'cursor-pointer hover:bg-gray-50' : ''}" 
                                  style="height: ${isBestTime || isConfirmedTime ? '76px' : '60px'}"
-                                 ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
+                                 ${isBestTime && userId === event.ownerId && event.code === '001' ? `onclick="showConfirmEventModal('${slot.start}', '${slot.end}')"` : ''}>
                                 <div class="time-slot-bg" style="width: ${percentage}%"></div>
                                 <div class="time-slot-content">
                                     <div>
                                         <div class="${isConfirmedTime ? 'font-bold text-green-500 text-base leading-normal' : isBestTime ? 'font-bold text-[#7c6dfa] text-base leading-normal' : 'font-semibold leading-normal'}">
                                             ${formatDateWithDay(startTime)} ${formatTimeOnly(startTime)} ~ ${formatTimeOnly(endTime)}
                                             ${isConfirmedTime ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정됨</span>' : isBestTime ? '<span class="ml-2 text-xs bg-[#7c6dfa] text-white px-2 py-0.5 rounded-full font-bold">BEST</span>' : ''}
-                                            ${isBestTime && userId === event.ownerId && event.status === 'UNCHECKED' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
+                                            ${isBestTime && userId === event.ownerId && event.code === '001' ? '<span class="ml-2 text-xs bg-green-500 text-white px-2 py-0.5 rounded-full font-bold">확정 가능</span>' : ''}
                                         </div>
                                         <div class="text-xs text-gray-500 mt-1.5 flex flex-wrap leading-relaxed">
                                             ${slot.userIds.map(uid => `
@@ -568,8 +639,8 @@ function renderEventHTML(event, schedules, timeSlots, maxCount) {
         <div class="mt-8">
             <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-10">
                 <button onclick="location.href='/schedule.html?eventId=${event.eventId}'"
-                        ${event.status !== 'UNCHECKED' ? 'disabled' : ''}
-                        class="${event.status === 'UNCHECKED' ? 'bg-[#7c6dfa] hover:bg-[#6a5cd6]' : 'bg-gray-400 cursor-not-allowed'} text-white px-5 py-2.5 rounded-full flex items-center shadow-md transition duration-200 ease-in-out hover:shadow-lg">
+                        ${event.code !== '001' ? 'disabled' : ''}
+                        class="${event.code === '001' ? 'bg-[#7c6dfa] hover:bg-[#6a5cd6]' : 'bg-gray-400 cursor-not-allowed'} text-white px-5 py-2.5 rounded-full flex items-center shadow-md transition duration-200 ease-in-out hover:shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>

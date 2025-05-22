@@ -24,8 +24,8 @@ let cells = [];
  * 초대 모달 표시
  */
 function showInviteModal() {
-    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
-    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+    // 이벤트 상태가 미확정(001)인지 확인
+    if (currentEvent && currentEvent.code !== '001') {
         let errorMessage = '미확정 상태의 이벤트만 사용자를 초대할 수 있습니다.';
 
         Swal.fire({
@@ -57,8 +57,8 @@ function closeInviteModal() {
  * @param {string} eventIdForDates - 날짜를 위한 이벤트 ID
  */
 function editEvent(eventId, currentTitle, eventIdForDates) {
-    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
-    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+    // 이벤트 상태가 미확정(001)인지 확인
+    if (currentEvent && currentEvent.code !== '001') {
         let errorMessage = '미확정 상태의 이벤트만 수정할 수 있습니다.';
 
         Swal.fire({
@@ -177,8 +177,8 @@ function generateEditCalendar(year, month) {
  * @param {string} scheduleUserId - 스케줄 생성자의 사용자 ID
  */
 function editSchedule(scheduleId, startTime, endTime, scheduleUserId) {
-    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
-    if (currentEvent && currentEvent.status !== 'UNCHECKED') {
+    // 이벤트 상태가 미확정(001)인지 확인
+    if (currentEvent && currentEvent.code !== '001') {
         Swal.fire({
             title: '상태 오류',
             text: '이미 끝난 이벤트입니다.',
@@ -364,15 +364,15 @@ function showConfirmEventModal(startTime, endTime) {
         return;
     }
 
-    // 이벤트 상태가 미확정(UNCHECKED)인지 확인
-    if (currentEvent.status !== 'UNCHECKED') {
+    // 이벤트 상태가 미확정(001)인지 확인
+    if (currentEvent.code !== '001') {
         let errorMessage = '';
 
-        if (currentEvent.status === 'CHECKED') {
+        if (currentEvent.code === '002') {
             errorMessage = '이미 확정된 이벤트입니다.';
-        } else if (currentEvent.status === 'COMPLETED') {
+        } else if (currentEvent.code === '003') {
             errorMessage = '완료된 이벤트입니다.';
-        } else if (currentEvent.status === 'EXPIRED') {
+        } else if (currentEvent.code === '004') {
             errorMessage = '만료된 이벤트입니다.';
         } else {
             errorMessage = '미확정 상태의 이벤트만 확정할 수 있습니다.';

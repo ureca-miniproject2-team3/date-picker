@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', async function () {
             location.href = "/";
         });
     } else {
+        // 공통코드 초기화 먼저 수행
+        await initEventStatusCodes();
+        
         // 이벤트 페이지 초기화
         await renderEvent();
     }
