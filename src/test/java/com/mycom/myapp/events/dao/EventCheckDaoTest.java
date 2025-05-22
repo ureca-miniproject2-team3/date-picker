@@ -27,34 +27,34 @@ public class EventCheckDaoTest {
 	
     @BeforeEach
     public void setUp() {
-        jdbcTemplate.update("INSERT INTO event (id, title) VALUES (?, ?)", 1L, "테스트 이벤트");
-        jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 1L, 1L, java.sql.Date.valueOf("2025-05-01"));
-        jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 2L, 1L, java.sql.Date.valueOf("2025-05-02"));
+        jdbcTemplate.update("INSERT INTO event (id, title, owner_id) VALUES (?, ?, ?)", 100L, "테스트 이벤트", 1L);
+        jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 2L, 100L, java.sql.Date.valueOf("2025-05-01"));
+        jdbcTemplate.update("INSERT INTO event_date (id, event_id, event_date) VALUES (?, ?, ?)", 3L, 100L, java.sql.Date.valueOf("2025-05-02"));
     } 
     
     @Test
     void 이벤트_상태_확정_정상_동작() {
     	// given
-    	Long eventId = 1L;
+    	Long eventId = 100L;
     	
     	// when
     	eventDao.checkEvent(eventId);
     	
     	// then
-    	EventStatus updatedStatus = jdbcTemplate.queryForObject(
-    			"SELECT status FROM event WHERE id = ?",
-    			new Object[] {1L},
-    			EventStatus.class
+    	String updatedStatus = jdbcTemplate.queryForObject(
+    			"SELECT code FROM event WHERE id = ?",
+    			new Object[] {100L},
+    			String.class
 		);
     	
-    	assertEquals(EventStatus.CHECKED, updatedStatus);
+    	assertEquals("002", updatedStatus);
     }
     
     @Test
     void 이벤트_타임라인_확정_정상_동작() {
     	// given
     	TimelineDto timelineDto = TimelineDto.builder()
-    			.eventId(1L)
+    			.eventId(100L)
     			.startTime(LocalDateTime.of(2025, 05, 01, 13, 00, 00))
     			.endTime(LocalDateTime.of(2025, 05, 01, 16, 00, 00))
     			.build();
